@@ -3,721 +3,362 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>안전보건교육 통합 전산 포털사이트</title>
+    <title>세아씨엠 안전 AI 플랫폼</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts (Noto Sans KR) -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --scm-navy: #1B3A6B;
+            --scm-navy-dark: #122B52;
+            --scm-navy-darker: #0E1F3D;
+            --scm-blue: #2563EB;
+            --scm-bg: #FFFFFF;
+            --scm-card: #FFFFFF;
+            --scm-border: #E1E7EF;
+            --scm-text: #1E293B;
+            --scm-subtext: #64748B;
+            --scm-danger-bg: #FDECEC;
+            --scm-danger-border: #F6C6C6;
+            --scm-danger-text: #C0392B;
+            --scm-accent: #2E7D5B;
+        }
         body {
             font-family: 'Noto Sans KR', sans-serif;
+            background: var(--scm-bg);
         }
-        /* 시뮬레이터 모바일 프레임 데코레이션 */
-        .phone-frame {
+        .scm-navy { background-color: var(--scm-navy); }
+        .scm-navy-dark { background-color: var(--scm-navy-dark); }
+        .scm-card {
+            background: var(--scm-card);
+            border: 1px solid var(--scm-border);
+            border-radius: 14px;
+            box-shadow: 0 1px 3px 0 rgba(15, 31, 61, 0.06);
+        }
+        .scm-nav-link {
             position: relative;
-            border: 12px solid #1e293b;
-            border-radius: 36px;
-            overflow: hidden;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            color: #C9D6E8;
         }
-        .phone-frame::before {
+        .scm-nav-link:hover { color: #ffffff; }
+        .scm-nav-link.active {
+            color: #ffffff;
+        }
+        .scm-nav-link.active::after {
             content: '';
             position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 120px;
-            height: 20px;
-            background: #1e293b;
-            border-bottom-left-radius: 12px;
-            border-bottom-right-radius: 12px;
-            z-index: 40;
+            left: 0; right: 0; bottom: -17px;
+            height: 3px;
+            background: #ffffff;
+            border-radius: 2px 2px 0 0;
         }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col md:flex-row overflow-x-hidden">
+<body class="text-slate-800 min-h-screen flex flex-col overflow-x-hidden" style="background: var(--scm-bg);">
 
-    <!-- 모바일 탑바 (데스크톱에서는 숨김) -->
-    <header class="md:hidden bg-slate-950 text-white p-4 flex justify-between items-center sticky top-0 z-50 shadow-md">
-        <div class="flex items-center space-x-2">
-            <div class="bg-emerald-500 text-slate-950 px-2 py-1 rounded font-black text-xs">포털</div>
-            <span class="font-extrabold text-sm tracking-tight">안전보건 통합 포털</span>
-        </div>
-        <div class="flex items-center space-x-2">
-            <!-- 역할 간이 스위치 -->
-            <select onchange="changeGlobalRole(this.value)" class="text-xs bg-slate-800 text-white border border-slate-700 rounded p-1">
-                <option value="manager">안전 총괄 관리자</option>
-                <option value="worker">현장 근로자</option>
-            </select>
-            <button onclick="toggleSidebar()" class="p-2 text-slate-300 hover:text-white">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
-                </svg>
-            </button>
+    <!-- ============================================
+         상단 메인 헤더: 로고 + 가로 메인 메뉴 (7개) + 사용자 정보
+         ============================================ -->
+    <header class="scm-navy sticky top-0 z-50 shadow-md">
+        <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- 로고: 클릭 시 홈으로 이동 -->
+                <button onclick="switchTab('home')" class="flex items-center gap-2.5 shrink-0 bg-white rounded-lg px-2.5 py-1.5 hover:opacity-90 transition-opacity" aria-label="홈으로 이동">
+                    <img src="data:image/png;base64,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" alt="SeAH 세아씨엠" class="h-6 w-auto">
+                </button>
+
+                <!-- 데스크톱 가로 메인 메뉴 (홈 + 7개) -->
+                <nav class="hidden lg:flex items-center h-16 gap-5 xl:gap-8">
+                    <button onclick="switchTab('home')" id="btn-tab-home" class="tab-btn scm-nav-link active h-16 text-[13px] font-bold flex items-center transition-colors whitespace-nowrap">
+                        홈
+                    </button>
+                    <button onclick="switchTab('management')" id="btn-tab-management" class="tab-btn scm-nav-link h-16 text-[13px] font-bold flex items-center transition-colors whitespace-nowrap">
+                        경영
+                    </button>
+                    <button onclick="switchTab('risk')" id="btn-tab-risk" class="tab-btn scm-nav-link h-16 text-[13px] font-bold flex items-center transition-colors whitespace-nowrap">
+                        위험요인 발굴
+                    </button>
+                    <button onclick="switchTab('work')" id="btn-tab-work" class="tab-btn scm-nav-link h-16 text-[13px] font-bold flex items-center transition-colors whitespace-nowrap">
+                        작업
+                    </button>
+                    <button onclick="switchTab('education')" id="btn-tab-education" class="tab-btn scm-nav-link h-16 text-[13px] font-bold flex items-center transition-colors whitespace-nowrap">
+                        교육
+                    </button>
+                    <button onclick="switchTab('iso')" id="btn-tab-iso" class="tab-btn scm-nav-link h-16 text-[13px] font-bold flex items-center transition-colors whitespace-nowrap">
+                        ISO 45001
+                    </button>
+                    <button onclick="switchTab('event')" id="btn-tab-event" class="tab-btn scm-nav-link h-16 text-[13px] font-bold flex items-center transition-colors whitespace-nowrap">
+                        이벤트
+                    </button>
+                    <button onclick="switchTab('chemical')" id="btn-tab-chemical" class="tab-btn scm-nav-link h-16 text-[13px] font-bold flex items-center transition-colors whitespace-nowrap">
+                        화학물질
+                    </button>
+                </nav>
+
+                <!-- 우측: 사용자 정보 + 모바일 메뉴 버튼 -->
+                <div class="flex items-center gap-3 shrink-0">
+                    <div class="hidden sm:flex items-center gap-1.5 text-blue-50">
+                        <svg class="w-4 h-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                        <span class="text-[13px] font-bold whitespace-nowrap">황준하 <span class="font-medium text-blue-200/80">(관리자)</span></span>
+                    </div>
+                    <button onclick="toggleSidebar()" id="mobile-menu-btn" class="lg:hidden p-2 text-blue-100 hover:text-white">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
         </div>
     </header>
 
-    <!-- 좌측 사이드바 네비게이션 -->
-    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-72 bg-slate-950 text-slate-300 flex flex-col justify-between border-r border-slate-800 transition-transform duration-300 -translate-x-full md:translate-x-0 md:static md:h-screen shrink-0">
-        <div>
-            <!-- 로고 영역 -->
-            <div class="p-5 border-b border-slate-800">
-                <div class="flex items-center space-x-3 mb-4">
-                    <div class="bg-emerald-500 text-slate-950 p-2.5 rounded-xl font-black text-sm flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                        EHS
-                    </div>
-                    <div>
-                        <h1 class="text-sm font-black text-white tracking-tight leading-none">안전보건 교육포털</h1>
-                        <span class="text-[10px] text-slate-500 mt-1.5 block">전산 통합 마스터 플래너</span>
-                    </div>
-                </div>
-
-                <!-- 👥 글로벌 접속자 권한 설정 패널 -->
-                <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
-                    <label class="block text-[10px] text-slate-500 font-bold mb-1.5 uppercase tracking-wider">접속 권한 설정 (Role-Switch)</label>
-                    <div class="relative">
-                        <select id="global-role-selector" onchange="changeGlobalRole(this.value)" class="w-full bg-slate-950 text-xs text-white font-extrabold py-2 px-3 rounded-lg border border-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer">
-                            <option value="manager">🛡️ 안전 총괄 관리자</option>
-                            <option value="worker">👷 현장 근로자 (이철수)</option>
-                        </select>
-                    </div>
-                </div>
+    <!-- ============================================
+         모바일 드롭다운 메뉴 (lg 미만에서만 표시)
+         ============================================ -->
+    <div id="sidebar" class="hidden lg:hidden scm-navy-dark border-t border-white/10 sticky top-16 z-40 shadow-lg">
+        <div class="px-4 py-3 space-y-1">
+            <div class="flex items-center gap-2 px-2 py-2 mb-1 text-blue-50">
+                <svg class="w-4 h-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+                <span class="text-[13px] font-bold">황준하 <span class="font-medium text-blue-200/80">(관리자)</span></span>
             </div>
-
-            <!-- 주 메뉴 리스트 -->
-            <nav class="p-4 space-y-1">
-                <span class="px-3 text-[10px] font-extrabold text-slate-500 tracking-wider uppercase block mb-2">포털 주요 허브</span>
-                
-                <button onclick="switchTab('materials')" id="btn-tab-materials" class="tab-btn w-full px-3 py-2.5 rounded-lg text-xs font-bold text-left flex items-center gap-2.5 transition-all bg-emerald-600 text-white">
-                    <span class="text-base">📚</span> 1. 안전보건교육자료
-                </button>
-                <button onclick="switchTab('sign')" id="btn-tab-sign" class="tab-btn w-full px-3 py-2.5 rounded-lg text-xs font-bold text-left flex items-center gap-2.5 transition-all text-slate-400 hover:bg-slate-900 hover:text-slate-100">
-                    <span class="text-base">✍️</span> 근로자 간편 서명 단말
-                </button>
-                <button onclick="switchTab('dashboard')" id="btn-tab-dashboard" class="tab-btn w-full px-3 py-2.5 rounded-lg text-xs font-bold text-left flex items-center gap-2.5 transition-all text-slate-400 hover:bg-slate-900 hover:text-slate-100">
-                    <span class="text-base">📊</span> 2. 교육명단 리스트
-                </button>
-                <button onclick="switchTab('schedule')" id="btn-tab-schedule" class="tab-btn w-full px-3 py-2.5 rounded-lg text-xs font-bold text-left flex items-center gap-2.5 transition-all text-slate-400 hover:bg-slate-900 hover:text-slate-100">
-                    <span class="text-base">📅</span> 법정교육 일정 및 신청
-                </button>
-
-                <span class="px-3 pt-4 text-[10px] font-extrabold text-slate-500 tracking-wider uppercase block mb-2">개발 & 기획 분석 허브</span>
-                
-                <button onclick="switchTab('prompt')" id="btn-tab-prompt" class="tab-btn w-full px-3 py-2.5 rounded-lg text-xs font-bold text-left flex items-center gap-2.5 transition-all text-slate-400 hover:bg-slate-900 hover:text-slate-100">
-                    <span class="text-base">⚡</span> RICCE 프롬프트 생성기
-                </button>
-                <button onclick="switchTab('docs')" id="btn-tab-docs" class="tab-btn w-full px-3 py-2.5 rounded-lg text-xs font-bold text-left flex items-center gap-2.5 transition-all text-slate-400 hover:bg-slate-900 hover:text-slate-100">
-                    <span class="text-base">📋</span> 기획서 및 DB 설계
-                </button>
-            </nav>
-
-            <!-- 동적 서브 목차 (TOC) -->
-            <div class="px-4 py-2 border-t border-slate-900">
-                <span class="px-3 text-[10px] font-extrabold text-slate-500 tracking-wider uppercase block mb-2">현재 화면 구조 (TOC)</span>
-                <div id="dynamic-toc" class="space-y-1.5 pl-3 border-l border-slate-800">
-                    <!-- JS 연동 -->
-                </div>
-            </div>
+            <button onclick="switchTab('home')" class="mobile-tab-btn w-full px-3 py-2.5 rounded-lg text-[13px] font-bold text-left text-blue-50 hover:bg-white/10">홈</button>
+            <button onclick="switchTab('management')" class="mobile-tab-btn w-full px-3 py-2.5 rounded-lg text-[13px] font-bold text-left text-blue-50 hover:bg-white/10">경영</button>
+            <button onclick="switchTab('risk')" class="mobile-tab-btn w-full px-3 py-2.5 rounded-lg text-[13px] font-bold text-left text-blue-50 hover:bg-white/10">위험요인 발굴</button>
+            <button onclick="switchTab('work')" class="mobile-tab-btn w-full px-3 py-2.5 rounded-lg text-[13px] font-bold text-left text-blue-50 hover:bg-white/10">작업</button>
+            <button onclick="switchTab('education')" class="mobile-tab-btn w-full px-3 py-2.5 rounded-lg text-[13px] font-bold text-left text-blue-50 hover:bg-white/10">교육</button>
+            <button onclick="switchTab('iso')" class="mobile-tab-btn w-full px-3 py-2.5 rounded-lg text-[13px] font-bold text-left text-blue-50 hover:bg-white/10">ISO 45001</button>
+            <button onclick="switchTab('event')" class="mobile-tab-btn w-full px-3 py-2.5 rounded-lg text-[13px] font-bold text-left text-blue-50 hover:bg-white/10">이벤트</button>
+            <button onclick="switchTab('chemical')" class="mobile-tab-btn w-full px-3 py-2.5 rounded-lg text-[13px] font-bold text-left text-blue-50 hover:bg-white/10">화학물질</button>
         </div>
-
-        <!-- 하단 위젯 -->
-        <div class="p-4 border-t border-slate-900 space-y-3 bg-slate-950/50">
-            <div class="bg-slate-900 p-3 rounded-lg border border-slate-800">
-                <div class="flex justify-between text-[11px] mb-1">
-                    <span class="text-slate-500">당일 권장 이수율</span>
-                    <span id="sb-rate" class="text-emerald-400 font-bold">0%</span>
-                </div>
-                <div class="w-full bg-slate-800 h-1 rounded-full overflow-hidden">
-                    <div id="sb-progress" class="bg-emerald-500 h-1 rounded-full transition-all duration-500" style="width: 0%"></div>
-                </div>
-            </div>
-            <div class="text-[10px] text-slate-600 text-center">
-                © 2026 EHS Portal Ecosystem
-            </div>
-        </div>
-    </aside>
-
-    <!-- 모바일 사이드바 오픈용 백드롭 -->
-    <div id="sidebar-backdrop" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black/70 z-30 md:hidden"></div>
+    </div>
 
     <!-- 우측 통합 컨텐츠 메인 영역 -->
-    <main class="flex-grow p-4 sm:p-6 lg:p-8 overflow-y-auto h-screen bg-slate-950">
+    <main class="flex-grow w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
 
-        <!-- [상단 헤더 표시줄]: 실시간 포털 스태츠 공지 -->
-        <div class="bg-slate-900 rounded-2xl p-4 mb-6 border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-                <div class="w-3 h-3 bg-red-500 rounded-full animate-ping shrink-0"></div>
-                <p class="text-xs text-slate-300 font-bold">
-                    <span class="text-red-400 font-extrabold">[EHS 경보]</span> 최근 동절기 밀폐공간 환기 수칙 위반 시 무관용 조치가 취해집니다.
+        <!-- [상단 경보 배너] -->
+        <div class="rounded-lg px-4 py-3 mb-5 flex flex-col md:flex-row md:items-center justify-between gap-3" style="background: var(--scm-danger-bg); border: 1px solid var(--scm-danger-border);">
+            <div class="flex items-center gap-2.5">
+                <span class="shrink-0" style="color: var(--scm-danger-text);">⚠️</span>
+                <p class="text-[13px] font-medium" style="color: var(--scm-danger-text);">
+                    <strong class="font-bold">[안전보건 경보]</strong> 본 사이트의 모든 첨부 파일 및 데이터는 사내 기밀 자료로 분류되며, 무단 반출 시 사내 규정에 따라 징계 조치될 수 있습니다.
                 </p>
             </div>
-            <div class="flex items-center gap-2 self-start md:self-auto text-xs text-slate-400">
-                <span>안전 등급: <strong class="text-emerald-400">Class AAA</strong></span>
-                <span class="text-slate-700">|</span>
-                <span>서버 원격 상태: <strong class="text-emerald-400 font-mono" id="server-status">Connecting...</strong></span>
+            <div class="flex items-center gap-2 self-start md:self-auto text-[11px] shrink-0" style="color: var(--scm-danger-text);">
+                <span>안전 등급: <strong>Class AAA</strong></span>
             </div>
         </div>
 
         <!-- ==============================================
-             1. 안전보건교육자료 탭
+             0. 홈 탭
              ============================================== -->
-        <section id="tab-materials" class="tab-content block space-y-6">
-            <div id="sec-materials-header" class="border-b border-slate-800 pb-4">
-                <h2 class="text-2xl font-black text-white">📚 1. 현장 안전보건교육자료 학습 센터</h2>
-                <p class="text-xs text-slate-400 mt-1.5">근로자 및 관리자용 법정 필수 교육 수칙 리스트입니다. 자료 열람 후 필수 퀴즈를 통과하면 서명 자격이 주어집니다.</p>
-            </div>
+        <section id="tab-home" class="tab-content block space-y-6">
 
-            <!-- 자료 카테고리 필터 -->
-            <div class="flex gap-2 overflow-x-auto pb-1">
-                <button onclick="filterMaterials('all')" class="category-btn bg-emerald-600 text-slate-950 text-xs font-bold px-4 py-1.5 rounded-lg shrink-0">전체보기</button>
-                <button onclick="filterMaterials('중대재해')" class="category-btn bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-bold px-4 py-1.5 rounded-lg shrink-0">⚠️ 중대재해 관리</button>
-                <button onclick="filterMaterials('보호구')" class="category-btn bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-bold px-4 py-1.5 rounded-lg shrink-0">🛡️ 보호구 착용</button>
-                <button onclick="filterMaterials('일반')" class="category-btn bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-bold px-4 py-1.5 rounded-lg shrink-0">⚙️ 일반 교육</button>
-            </div>
-
-            <!-- 교육자료 리스트 -->
-            <div id="sec-materials-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 scroll-mt-20">
-                <!-- 카드 1 -->
-                <div class="material-card bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden hover:border-emerald-500/50 transition-all flex flex-col justify-between" data-category="중대재해">
-                    <div class="p-5">
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="text-[10px] font-bold bg-amber-500/10 text-amber-400 px-2.5 py-0.5 rounded border border-amber-500/20">중대재해 집중관리</span>
-                            <span class="text-xs text-slate-400 font-mono">⏱️ 10분</span>
-                        </div>
-                        <h3 class="text-base font-extrabold text-white mb-2">밀폐공간 질식 및 질소 재해 예방 교육</h3>
-                        <p class="text-xs text-slate-400 leading-relaxed">맨홀, 탱크 내부 등 유해가스 잔류 위험 지역에 진입하기 전, 반드시 지켜야 할 가스 정화 및 산소농도 측정 지침을 규정합니다.</p>
-                        <div class="mt-4 space-y-1.5 border-t border-slate-800/80 pt-3">
-                            <div class="flex items-center text-xs text-slate-300 gap-2">
-                                <span class="text-emerald-400">✔️</span> 산소농도 18% ~ 23.5% 범위 준수
-                            </div>
-                            <div class="flex items-center text-xs text-slate-300 gap-2">
-                                <span class="text-emerald-400">✔️</span> 송풍기 상시 가동 및 보호구 착용
-                            </div>
-                        </div>
-                    </div>
-                    <div class="p-4 bg-slate-950 border-t border-slate-800/50">
-                        <button onclick="startEducation('밀폐공간 질식 및 질소 재해 예방 교육', '밀폐')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black py-2.5 px-4 rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5">
-                            📖 학습 시작 및 퀴즈 응시
-                        </button>
-                    </div>
-                </div>
-
-                <!-- 카드 2 -->
-                <div class="material-card bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden hover:border-emerald-500/50 transition-all flex flex-col justify-between" data-category="중대재해">
-                    <div class="p-5">
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="text-[10px] font-bold bg-rose-500/10 text-rose-400 px-2.5 py-0.5 rounded border border-rose-500/20">떨어짐 방지</span>
-                            <span class="text-xs text-slate-400 font-mono">⏱️ 10분</span>
-                        </div>
-                        <h3 class="text-base font-extrabold text-white mb-2">고소 작업 추락 방지 안전대책</h3>
-                        <p class="text-xs text-slate-400 leading-relaxed">2m 이상 고소 작업대 및 비계에서 조립 또는 자재 운반 시, 안전걸이 생명줄 확보와 상하 동시 작업 금지 수칙을 학습합니다.</p>
-                        <div class="mt-4 space-y-1.5 border-t border-slate-800/80 pt-3">
-                            <div class="flex items-center text-xs text-slate-300 gap-2">
-                                <span class="text-emerald-400">✔️</span> 안전모 턱끈 완벽 조임 준수
-                            </div>
-                            <div class="flex items-center text-xs text-slate-300 gap-2">
-                                <span class="text-emerald-400">✔️</span> 죔줄 이중 체결 지지력 확보
-                            </div>
-                        </div>
-                    </div>
-                    <div class="p-4 bg-slate-950 border-t border-slate-800/50">
-                        <button onclick="startEducation('고소 작업 추락 방지 안전대책', '추락')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black py-2.5 px-4 rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5">
-                            📖 학습 시작 및 퀴즈 응시
-                        </button>
-                    </div>
-                </div>
-
-                <!-- 카드 3 -->
-                <div class="material-card bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden hover:border-emerald-500/50 transition-all flex flex-col justify-between" data-category="보호구">
-                    <div class="p-5">
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="text-[10px] font-bold bg-blue-500/10 text-blue-400 px-2.5 py-0.5 rounded border border-blue-500/20">MSDS 정기교육</span>
-                            <span class="text-xs text-slate-400 font-mono">⏱️ 15분</span>
-                        </div>
-                        <h3 class="text-base font-extrabold text-white mb-2">유해화학물질 유출 및 보호구 착용 수칙</h3>
-                        <p class="text-xs text-slate-400 leading-relaxed">공장 배관 및 약품 밸브 정비 과정에서 독성 용제가 유출되었을 경우, 긴급 대피 기준 및 내화학용 앞치마/방독마스크 세팅 가이드입니다.</p>
-                        <div class="mt-4 space-y-1.5 border-t border-slate-800/80 pt-3">
-                            <div class="flex items-center text-xs text-slate-300 gap-2">
-                                <span class="text-emerald-400">✔️</span> 물질안전보건자료(MSDS) 숙지
-                            </div>
-                            <div class="flex items-center text-xs text-slate-300 gap-2">
-                                <span class="text-emerald-400">✔️</span> 내산 장갑 및 방독정화통 관리 철저
-                            </div>
-                        </div>
-                    </div>
-                    <div class="p-4 bg-slate-950 border-t border-slate-800/50">
-                        <button onclick="startEducation('유해화학물질 유출 및 보호구 착용 수칙', '화학')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black py-2.5 px-4 rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5">
-                            📖 학습 시작 및 퀴즈 응시
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 🚨 [인터랙티브 팝업형 학습 및 퀴즈 공간] -->
-            <div id="education-modal" class="hidden bg-slate-900 rounded-2xl border border-slate-800 shadow-2xl overflow-hidden max-w-2xl mx-auto scroll-mt-20">
-                <div class="bg-slate-950 text-white px-6 py-4 flex items-center justify-between border-b border-slate-800">
-                    <span class="text-xs font-bold text-emerald-400 flex items-center gap-2">
-                        <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
-                        실시간 지능형 EHS 교육 모듈
-                    </span>
-                    <button onclick="closeEducation()" class="text-slate-400 hover:text-white font-bold text-lg">×</button>
-                </div>
-                <div class="p-6 space-y-5">
-                    <h3 id="edu-modal-title" class="text-lg font-black text-white">밀폐공간 질식 및 질소 재해 예방 교육</h3>
-                    
-                    <div class="bg-amber-500/10 border-l-4 border-amber-500 p-4 rounded text-xs text-amber-300 leading-relaxed">
-                        <strong>EHS 중요 지침:</strong> 교육 수강 완료를 인정받기 위해 아래 내용을 읽고 하단의 '안전 골든벨 퀴즈'를 맞혀 주셔야 합니다. (오답 시 전산 서명 패드로 진입이 불가합니다)
-                    </div>
-
-                    <!-- 정적 교안 정보 -->
-                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800/80 text-xs text-slate-300 space-y-2">
-                        <p class="font-bold text-slate-200">📌 핵심 숙지 항목:</p>
-                        <p>1. 산소농도 상시 측정: 가스 유출 및 정체지역은 작업 착수 전, 중간, 작업 후 항시 측정한다.</p>
-                        <p>2. 비상연락망 유지: 외부 감시인 배치는 법적 의무이며 무전기 수신 상태를 점검한다.</p>
-                    </div>
-
-                    <!-- 🧠 퀴즈 섹션 -->
-                    <div class="bg-slate-950/80 p-5 rounded-xl border-2 border-emerald-500/20 space-y-3">
-                        <p class="text-xs font-black text-emerald-400">❓ 안전 수칙 검증 퀴즈 (확인 필수)</p>
-                        <p id="quiz-question" class="text-sm font-bold text-white">질문 내용 로딩 중...</p>
-                        
-                        <div id="quiz-options" class="grid grid-cols-1 gap-2 mt-2">
-                            <!-- 퀴즈 옵션 버튼들 동적 배치 -->
-                        </div>
-                    </div>
-
-                    <div class="flex justify-between items-center gap-4 border-t border-slate-800 pt-4">
-                        <button onclick="closeEducation()" class="w-1/3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl text-xs transition">
-                            닫기
-                        </button>
-                        <button id="btn-submit-quiz" onclick="verifyQuizAnswer()" class="w-2/3 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black py-3 rounded-xl text-xs shadow-lg transition flex items-center justify-center gap-2">
-                            확인 완료 & 서명하기 ➡️
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ==============================================
-             2. 근로자 간편 서명 단말기 탭
-             ============================================== -->
-        <section id="tab-sign" class="tab-content hidden space-y-6">
-            <div id="sec-sign-header" class="border-b border-slate-800 pb-4">
-                <h2 class="text-2xl font-black text-white">✍️ 근로자 모바일 간편 서명 단말기</h2>
-                <p class="text-xs text-slate-400 mt-1.5">현장 태블릿 및 개별 근로자 모바일을 대체하는 완벽한 가상 목업 프레임입니다.</p>
-            </div>
-
-            <div class="flex flex-col items-center justify-center min-h-[500px]">
-                <div id="sec-worker-sign" class="w-full max-w-sm flex flex-col items-center">
-                    
-                    <!-- 모바일 프레임 모형 -->
-                    <div class="phone-frame w-full bg-slate-900 aspect-[9/18] flex flex-col border border-slate-800">
-                        <!-- 모바일 상단 바 -->
-                        <div class="bg-slate-950 text-white pt-6 pb-4 px-4 flex justify-between items-center border-b border-slate-800/80">
-                            <span class="text-xs font-extrabold text-emerald-400 flex items-center gap-1.5">
-                                <span class="w-2 h-2 bg-emerald-400 rounded-full animate-ping"></span>
-                                EHS Mobile Sign
-                            </span>
-                            <span class="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-slate-400">v2.1</span>
-                        </div>
-                        
-                        <!-- 모바일 본문 -->
-                        <div class="flex-grow p-4 flex flex-col justify-between overflow-y-auto">
-                            <div>
-                                <!-- 상단 지정된 교육 마일스톤 -->
-                                <div class="bg-slate-950 p-3 rounded-xl mb-4 border-l-4 border-emerald-500">
-                                    <h4 class="text-[10px] font-bold text-slate-500 uppercase">학습 이수한 교육명</h4>
-                                    <p class="text-xs font-extrabold text-white mt-1" id="m-edu-title">밀폐공간 질식 및 질소 재해 예방 교육</p>
-                                    <div class="flex justify-between items-center mt-2 text-[9px] text-slate-400">
-                                        <span>상태: <strong class="text-emerald-400">퀴즈 합격인증 완료</strong></span>
-                                        <span class="text-slate-600">|</span>
-                                        <span>강사: 김태완</span>
-                                    </div>
-                                </div>
-
-                                <!-- 간편 사번 인증 / QR 스캔 -->
-                                <div class="mb-4">
-                                    <label class="block text-[11px] font-bold text-slate-400 mb-1.5">근로자 본인 확인</label>
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <button onclick="toggleAuthMode('id')" id="btn-auth-id" class="py-2 text-[10px] rounded-lg font-bold border-2 border-emerald-500 bg-emerald-500/10 text-emerald-400 flex items-center justify-center gap-1">
-                                            사번/이름 입력
-                                        </button>
-                                        <button onclick="toggleAuthMode('qr')" id="btn-auth-qr" class="py-2 text-[10px] rounded-lg font-bold border border-slate-800 bg-slate-950 text-slate-400 flex items-center justify-center gap-1">
-                                            사원증 QR 태그
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- 정보입력인풋 -->
-                                <div id="form-auth-id" class="space-y-2 mb-4">
-                                    <div>
-                                        <label class="block text-[10px] font-bold text-slate-500">성명</label>
-                                        <input type="text" id="input-worker-name" placeholder="성함 입력" class="w-full px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-950 text-white border border-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-500">
-                                    </div>
-                                    <div>
-                                        <label class="block text-[10px] font-bold text-slate-500">사원번호 (6자리)</label>
-                                        <input type="text" id="input-worker-id" placeholder="예: 240510" class="w-full px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-950 text-white border border-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-500">
-                                    </div>
-                                </div>
-
-                                <!-- QR스캐너 모의 -->
-                                <div id="form-auth-qr" class="hidden text-center p-3 bg-slate-950 border border-dashed border-slate-800 rounded-lg mb-4">
-                                    <div class="w-16 h-16 bg-white border border-slate-800 mx-auto flex items-center justify-center mb-2 rounded shadow">
-                                        <svg class="w-12 h-12 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
-                                        </svg>
-                                    </div>
-                                    <button onclick="simulateQRScan()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded transition">
-                                        스마트 사원증 원클릭 태그
-                                    </button>
-                                </div>
-
-                                <!-- 드로잉 서명 공간 -->
-                                <div class="mb-4">
-                                    <div class="flex justify-between items-center mb-1">
-                                        <label class="block text-[10px] font-bold text-slate-400">법정 서명 확인</label>
-                                        <button onclick="clearSignature()" class="text-[9px] text-red-400 hover:underline">다시 작성</button>
-                                    </div>
-                                    <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-950 h-28 relative">
-                                        <canvas id="signature-pad" class="w-full h-full cursor-crosshair block touch-none"></canvas>
-                                        <span id="signature-placeholder" class="absolute inset-0 flex items-center justify-center text-[10px] text-slate-600 pointer-events-none select-none">
-                                            여기에 한글 수기 서명을 기입해 주세요
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- 최종 전송 버튼 -->
-                            <button onclick="submitSignature()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black py-3 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-1.5 text-xs">
-                                🔒 이수 완료 & 블록체인 서명 제출
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ==============================================
-             3. 교육명단 리스트 탭
-             ============================================== -->
-        <section id="tab-dashboard" class="tab-content hidden space-y-6">
-            <div id="sec-dashboard-header" class="border-b border-slate-800 pb-4">
-                <h2 class="text-2xl font-black text-white">📊 2. 안전교육명단 실시간 집계 대시보드</h2>
-                <p class="text-xs text-slate-400 mt-1.5">이수 현황 및 전자 서명 이력의 정합성을 법적 기준에 맞춰 무결하게 검증합니다.</p>
-            </div>
-
-            <!-- 관리자용 통계 지표 위젯 -->
-            <div id="sec-dashboard" class="grid grid-cols-2 sm:grid-cols-4 gap-4 scroll-mt-20">
-                <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800">
-                    <p class="text-xs font-bold text-slate-500">당일 현장 총원</p>
-                    <p class="text-2xl font-black text-white mt-1" id="stat-total">8명</p>
-                    <span class="text-[10px] text-slate-500">A/B교대 총원 대비</span>
-                </div>
-                <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800">
-                    <p class="text-xs font-bold text-emerald-400">서명 이수 완료</p>
-                    <p class="text-2xl font-black text-emerald-500 mt-1" id="stat-completed">0명</p>
-                    <span class="text-[10px] text-emerald-400">실시간 전산 승인</span>
-                </div>
-                <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800">
-                    <p class="text-xs font-bold text-amber-500">미이수자 (투입 불가)</p>
-                    <p class="text-2xl font-black text-amber-500 mt-1" id="stat-pending">8명</p>
-                    <span class="text-[10px] text-amber-500">출입 차단 시스템 대기</span>
-                </div>
-                <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800">
-                    <p class="text-xs font-bold text-indigo-400">실시간 이수율</p>
-                    <p class="text-2xl font-black text-indigo-500 mt-1" id="stat-rate">0%</p>
-                    <div class="w-full bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
-                        <div id="stat-progress-bar" class="bg-indigo-500 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-4">
-                <h3 class="text-base font-black text-white flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping"></span>
-                    전산 보존 일지 명단 데이터베이스
-                </h3>
-                <div class="flex gap-2">
-                    <button onclick="resetMockData()" class="bg-slate-900 hover:bg-slate-800 text-slate-400 border border-slate-800 px-3 py-1.5 rounded-lg text-xs font-bold transition">
-                        전체 초기화(DB포맷)
+            <!-- 공지사항 -->
+            <div class="scm-card p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <button onclick="toggleNoticeBoard()" class="flex items-center gap-2 font-extrabold text-[15px]" style="color: var(--scm-text);">
+                        <span style="color: var(--scm-blue);">📣</span> 공지사항
+                        <svg id="notice-toggle-icon" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
+                        </svg>
                     </button>
-                    <button onclick="generateMockWorker()" class="bg-emerald-600 hover:bg-emerald-500 text-slate-950 px-3 py-1.5 rounded-lg text-xs font-bold transition">
-                        + 임의 이수 가상 등록
+                    <button onclick="showComingSoon('공지 등록')" class="text-white text-xs font-bold px-3.5 py-2 rounded-lg flex items-center gap-1.5 hover:opacity-90 transition-opacity" style="background: var(--scm-navy);">
+                        <span class="text-sm leading-none">+</span> 공지 등록
+                    </button>
+                </div>
+                <div id="notice-list" class="space-y-3">
+                    <button onclick="showComingSoon('작업 신청 기능 사용 안내')" class="w-full flex items-center justify-between text-left group">
+                        <span class="text-[13px] font-medium flex items-center gap-1.5 group-hover:underline" style="color: var(--scm-text);">
+                            <span style="color: var(--scm-subtext);">📎</span> 작업 신청 기능 사용 안내
+                        </span>
+                        <span class="text-[12px] shrink-0 ml-4" style="color: var(--scm-subtext);">2026-05-15</span>
+                    </button>
+                    <button onclick="showComingSoon('AI 플랫폼 홈 화면 추가 방법 안내')" class="w-full flex items-center justify-between text-left group">
+                        <span class="text-[13px] font-medium flex items-center gap-1.5 group-hover:underline" style="color: var(--scm-text);">
+                            <span style="color: var(--scm-subtext);">📎</span> AI 플랫폼 홈 화면 추가 방법 안내
+                        </span>
+                        <span class="text-[12px] shrink-0 ml-4" style="color: var(--scm-subtext);">2026-04-21</span>
+                    </button>
+                    <button onclick="showComingSoon('안전 AI 플랫폼 사용 안내')" class="w-full flex items-center justify-between text-left group">
+                        <span class="text-[13px] font-medium flex items-center gap-1.5 group-hover:underline" style="color: var(--scm-text);">
+                            <span style="color: var(--scm-subtext);">📎</span> 안전 AI 플랫폼 사용 안내
+                        </span>
+                        <span class="text-[12px] shrink-0 ml-4" style="color: var(--scm-subtext);">2026-04-02</span>
                     </button>
                 </div>
             </div>
 
-            <!-- 테이블 명세 -->
-            <div id="sec-sign-list" class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden scroll-mt-20">
-                <div class="px-5 py-4 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                    <p class="text-xs text-slate-400">스마트폰 인증 좌표 및 서명 타임스탬프 로깅</p>
-                    <div class="flex items-center gap-2">
-                        <span class="text-xs text-slate-500">교육 주제 필터:</span>
-                        <select id="dashboard-date-filter" class="text-xs bg-slate-950 text-white border border-slate-800 rounded p-1" onchange="filterEduTopic(this.value)">
-                            <option value="all">전체 목록</option>
-                            <option value="질식">밀폐공간 질식 예방</option>
-                            <option value="추락">고소 작업 추락 방지</option>
-                            <option value="보호구">유해화학물질 보호구</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse text-xs">
-                        <thead>
-                            <tr class="bg-slate-950/60 text-slate-400 font-bold border-b border-slate-800">
-                                <th class="p-4">성명 (사번)</th>
-                                <th class="p-4">교육 세션 명</th>
-                                <th class="p-4">서명제출 일자 및 시각</th>
-                                <th class="p-4">인증방식</th>
-                                <th class="p-4">수기 서명 상태</th>
-                                <th class="p-4">무결성 검증 해시</th>
-                            </tr>
-                        </thead>
-                        <tbody id="worker-table-body" class="divide-y divide-slate-800 text-slate-300">
-                            <!-- 로컬 가상 리스트 JS 연동 -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- 감사 로그 -->
-            <div id="sec-audit-log" class="bg-slate-950 p-5 rounded-2xl border border-slate-800 scroll-mt-20">
-                <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-3">
-                    <div class="flex items-center gap-2">
-                        <span class="text-xs bg-emerald-500/10 text-emerald-400 p-1 rounded font-mono">HASH</span>
-                        <h3 class="text-sm font-bold text-white">블록체인 정합성 감사 이력 (Audit Log Stream)</h3>
-                    </div>
-                </div>
-                <div class="space-y-1.5 max-h-36 overflow-y-auto font-mono text-[10px] text-emerald-500" id="audit-log-box">
-                    <!-- Dynamic -->
-                </div>
-            </div>
-        </section>
-
-        <!-- ==============================================
-             4. 법정교육 일정 및 신청 탭
-             ============================================== -->
-        <section id="tab-schedule" class="tab-content hidden space-y-6">
-            <div id="sec-schedule-header" class="border-b border-slate-800 pb-4">
-                <h2 class="text-2xl font-black text-white">📅 법정 안전보건교육 일정 수립 및 신청</h2>
-                <p class="text-xs text-slate-400 mt-1.5">안전감독인, 특별안전교육 및 신규 근로자 의무 수강 일정 스케줄러입니다.</p>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                <!-- 캘린더 모의 구역 (왼쪽) -->
-                <div class="lg:col-span-8 bg-slate-900 p-6 rounded-2xl border border-slate-800">
-                    <div class="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
-                        <span class="text-sm font-black text-white">📆 2026년 06월 정기 일정계획</span>
-                        <span class="text-xs text-emerald-400">총 3개 예정</span>
-                    </div>
-
-                    <div class="space-y-3">
-                        <!-- 교육일정 항목 1 -->
-                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex justify-between items-center gap-4">
-                            <div>
-                                <span class="bg-red-500/10 text-red-400 text-[10px] font-bold px-2 py-0.5 rounded">D-2일전</span>
-                                <h4 class="text-sm font-bold text-white mt-1">질소 가스 누출 대피 소방 정기 모의 훈련</h4>
-                                <p class="text-xs text-slate-500 mt-0.5 font-mono">일시: 2026.06.25 14:00 | 강사: EHS 특수방재팀</p>
-                            </div>
-                            <button onclick="registerEvent('질소 가스 누출 대피 소방 정기 모의 훈련')" class="bg-emerald-600 hover:bg-emerald-500 text-slate-950 text-xs font-black px-4 py-2 rounded-xl shrink-0 transition-colors">
-                                참석 신청
-                            </button>
-                        </div>
-
-                        <!-- 교육일정 항목 2 -->
-                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex justify-between items-center gap-4">
-                            <div>
-                                <span class="bg-amber-500/10 text-amber-400 text-[10px] font-bold px-2 py-0.5 rounded">D-7일전</span>
-                                <h4 class="text-sm font-bold text-white mt-1">특별 안전 보건 지도관 관리감독자 보수과정</h4>
-                                <p class="text-xs text-slate-500 mt-0.5 font-mono">일시: 2026.06.30 09:00 | 강사: 안전보건공단 초청강사</p>
-                            </div>
-                            <button onclick="registerEvent('특별 안전 보건 지도관 관리감독자 보수과정')" class="bg-emerald-600 hover:bg-emerald-500 text-slate-950 text-xs font-black px-4 py-2 rounded-xl shrink-0 transition-colors">
-                                참석 신청
-                            </button>
-                        </div>
-
-                        <!-- 교육일정 항목 3 -->
-                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex justify-between items-center gap-4">
-                            <div>
-                                <span class="bg-blue-500/10 text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded">D-15일전</span>
-                                <h4 class="text-sm font-bold text-white mt-1">신규 배치자 특수 정밀 장비 취급 수칙 세션</h4>
-                                <p class="text-xs text-slate-500 mt-0.5 font-mono">일시: 2026.07.08 10:00 | 강사: 생산총괄 이부장</p>
-                            </div>
-                            <button onclick="registerEvent('신규 배치자 특수 정밀 장비 취급 수칙 세션')" class="bg-emerald-600 hover:bg-emerald-500 text-slate-950 text-xs font-black px-4 py-2 rounded-xl shrink-0 transition-colors">
-                                참석 신청
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 부서별 신청 승인 상태 (오른쪽) -->
-                <div class="lg:col-span-4 bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
-                    <h3 class="text-sm font-black text-white border-b border-slate-800 pb-2">팀별 실시간 신청 카운트</h3>
-                    <div class="space-y-3 text-xs text-slate-400">
-                        <div class="flex justify-between items-center bg-slate-950 p-3 rounded-lg border border-slate-850">
-                            <span>공장 생산 1팀</span>
-                            <span class="text-white font-extrabold" id="dept-1">14명 승인</span>
-                        </div>
-                        <div class="flex justify-between items-center bg-slate-950 p-3 rounded-lg border border-slate-850">
-                            <span>환경설비 안전팀</span>
-                            <span class="text-white font-extrabold" id="dept-2">8명 승인</span>
-                        </div>
-                        <div class="flex justify-between items-center bg-slate-950 p-3 rounded-lg border border-slate-850">
-                            <span>물류 배송 지원조</span>
-                            <span class="text-white font-extrabold" id="dept-3">5명 승인</span>
-                        </div>
-                    </div>
-                    <p class="text-[10px] text-slate-500 leading-relaxed">수강 인원이 승인 완료되면 근로자 모바일 앱 카카오톡 알림으로 QR 탑재 확인서가 자동 전송됩니다.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- ==============================================
-             5. RICCE 프롬프트 생성기 탭
-             ============================================== -->
-        <section id="tab-prompt" class="tab-content hidden space-y-6">
-            <div id="sec-prompt-title" class="border-b border-slate-800 pb-4">
-                <h2 class="text-2xl font-black text-white">⚡ EHS 실무자 전용 RICCE 프롬프트 커스터마이저</h2>
-                <p class="text-xs text-slate-400 mt-1.5">포털 전산 개발 및 법정 안전 규범 교육 자료 초안 작성을 위해 생성형 AI용 고해상도 지시 프롬프트를 획득하세요.</p>
-            </div>
-
-            <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800">
-                <div id="sec-prompt-setting" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 scroll-mt-20">
-                    <div>
-                        <label class="block text-xs font-extrabold text-slate-300 mb-2">🏭 업종 분류 (Industry)</label>
-                        <select id="p-industry" onchange="generateCustomPrompt()" class="w-full bg-slate-950 text-slate-300 px-3 py-2 text-sm rounded-lg border border-slate-800 focus:ring-2 focus:ring-emerald-500">
-                            <option value="중화학 공장 설비">중화학 및 가스정밀 공장설비 업종</option>
-                            <option value="대형 토목 및 주택 건설 현장" selected>대형 토목 및 아파트 주택 건설현장</option>
-                            <option value="정밀 기계 및 금속가공 제조업">정밀 기계제조 및 가공공장 조립라인</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-extrabold text-slate-300 mb-2">👥 근로자 연령대 (Constraints)</label>
-                        <select id="p-age" onchange="generateCustomPrompt()" class="w-full bg-slate-950 text-slate-300 px-3 py-2 text-sm rounded-lg border border-slate-800 focus:ring-2 focus:ring-emerald-500">
-                            <option value="평균 50대 이상의 모바일 조작 미숙 고연령 근로자층" selected>5060대 고연령 위주 (매우 극도의 가독성)</option>
-                            <option value="모바일 웹 조작 및 디지털 알림에 숙련도가 확보된 3040 청장년층">3040 세대 위주 (알림톡 전송 연계)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-extrabold text-slate-300 mb-2">🛠️ 목표 설계 솔루션 형태 (Platform)</label>
-                        <select id="p-platform" onchange="generateCustomPrompt()" class="w-full bg-slate-950 text-slate-300 px-3 py-2 text-sm rounded-lg border border-slate-800 focus:ring-2 focus:ring-emerald-500">
-                            <option value="구글 스프레드시트 연동 초경량 AppSheet 모듈" selected>로우코드 앱시트(AppSheet) 모의형</option>
-                            <option value="React & Node.js 맞춤형 하이브리드 EHS 전문 솔루션">React + Node.js 전용 독립형 포털</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div id="sec-prompt-result" class="space-y-2 scroll-mt-20">
-                    <div class="flex justify-between items-center">
-                        <span class="text-xs font-extrabold text-slate-400">AI 입력 복사용 텍스트</span>
-                        <button onclick="copyPromptToClipboard()" class="bg-emerald-600 hover:bg-emerald-500 text-slate-950 text-xs font-black py-1.5 px-3 rounded-lg flex items-center gap-1.5 shadow-lg shadow-emerald-500/10">
-                            지문 전체 클립보드 복사
+            <!-- 안전 Dash Board + 업무 알리미 -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                <!-- 안전 Dash Board -->
+                <div class="lg:col-span-2 scm-card p-5">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-extrabold text-[15px]" style="color: var(--scm-text);">안전 Dash Board</h3>
+                        <button onclick="showComingSoon('안전 Dash Board 편집')" class="p-1.5 rounded hover:bg-slate-100 transition-colors" style="color: var(--scm-subtext);" aria-label="대시보드 편집">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                            </svg>
                         </button>
                     </div>
-                    <textarea id="prompt-textbox" readonly class="w-full h-80 bg-slate-950 text-slate-300 font-mono text-xs p-4 rounded-xl border border-slate-800 leading-relaxed focus:outline-none"></textarea>
+                    <div class="overflow-x-auto">
+                        <table class="w-full min-w-[560px] text-left border-collapse text-[13px]">
+                            <thead>
+                                <tr class="font-bold whitespace-nowrap" style="color: var(--scm-subtext);">
+                                    <th class="py-2 pr-3 font-bold">경영 목표</th>
+                                    <th class="py-2 pr-3 font-bold">행동관찰</th>
+                                    <th class="py-2 pr-3 font-bold">아차사고/안전제안</th>
+                                    <th class="py-2 pr-3 font-bold">안전사고</th>
+                                    <th class="py-2 pr-3 font-bold">화재/폭발/누출</th>
+                                    <th class="py-2 pr-3 font-bold">법규 준수</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y" style="color: var(--scm-text); border-color: var(--scm-border);">
+                                <tr>
+                                    <td class="py-2.5 pr-3 font-semibold" style="color: var(--scm-subtext);">목표</td>
+                                    <td class="py-2.5 pr-3 font-bold" style="color: var(--scm-blue);">1,420건 이상</td>
+                                    <td class="py-2.5 pr-3 font-bold" style="color: var(--scm-blue);">1,330건 이상</td>
+                                    <td class="py-2.5 pr-3">0건</td>
+                                    <td class="py-2.5 pr-3">0건</td>
+                                    <td class="py-2.5 pr-3">0건</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2.5 pr-3 font-semibold" style="color: var(--scm-subtext);">누계/평균</td>
+                                    <td class="py-2.5 pr-3">790건</td>
+                                    <td class="py-2.5 pr-3">1,132건</td>
+                                    <td class="py-2.5 pr-3">6건</td>
+                                    <td class="py-2.5 pr-3">0건</td>
+                                    <td class="py-2.5 pr-3">0건</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2.5 pr-3 font-semibold" style="color: var(--scm-subtext);">달성률</td>
+                                    <td class="py-2.5 pr-3 font-bold">56%</td>
+                                    <td class="py-2.5 pr-3 font-bold">85%</td>
+                                    <td class="py-2.5 pr-3 font-bold" style="color: var(--scm-danger-text);">6건 발생</td>
+                                    <td class="py-2.5 pr-3 font-bold" style="color: var(--scm-accent);">달성</td>
+                                    <td class="py-2.5 pr-3 font-bold" style="color: var(--scm-accent);">달성</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 업무 알리미 -->
+                <div class="scm-card p-5">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-extrabold text-[15px]" style="color: var(--scm-text);">업무 알리미</h3>
+                        <button onclick="showComingSoon('알림 관리')" class="text-xs font-bold px-3 py-1.5 rounded-lg border flex items-center gap-1.5 hover:bg-slate-50 transition-colors" style="border-color: var(--scm-border); color: var(--scm-text);">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                            </svg>
+                            알림 관리
+                        </button>
+                    </div>
+                    <div class="flex gap-2 mb-4">
+                        <select class="flex-1 text-[12.5px] border rounded-lg px-2.5 py-1.5 bg-white" style="border-color: var(--scm-border); color: var(--scm-text);">
+                            <option>전체 사업소</option>
+                        </select>
+                        <select class="flex-1 text-[12.5px] border rounded-lg px-2.5 py-1.5 bg-white" style="border-color: var(--scm-border); color: var(--scm-text);">
+                            <option>전체 부서</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center justify-center py-10 text-[13px]" style="color: var(--scm-subtext);">
+                        등록된 업무 알림이 없습니다
+                    </div>
                 </div>
             </div>
         </section>
 
         <!-- ==============================================
-             6. 기획서 및 DB 설계 탭
+             1. 경영 탭
              ============================================== -->
-        <section id="tab-docs" class="tab-content hidden space-y-6">
-            <div id="sec-docs-title" class="border-b border-slate-800 pb-4">
-                <h2 class="text-2xl font-black text-white">📋 전산 시스템 아키텍처 및 스키마 명세</h2>
-                <p class="text-xs text-slate-400 mt-1.5">법적 디지털 무결성 확보 규범과 실 데이터 마이그레이션을 위한 명세서입니다.</p>
+        <section id="tab-management" class="tab-content hidden space-y-6">
+            <div class="pb-1">
+                <h2 class="text-xl font-black" style="color: var(--scm-text);">🏢 경영 관리</h2>
+                <p class="text-[13px] mt-1.5" style="color: var(--scm-subtext);">경영방침과 목표, 법규 준수 및 이행결과를 통합 관리하는 영역입니다.</p>
             </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div id="sec-docs-legal" class="bg-slate-900 p-6 rounded-2xl border border-slate-800 scroll-mt-20">
-                    <h3 class="text-sm font-black text-white flex items-center gap-2 mb-3">
-                        <span class="p-1 bg-amber-500/10 text-amber-400 rounded">⚖️</span>
-                        전산 서명 교육일지의 법적 효력 확보 기준
-                    </h3>
-                    <ul class="space-y-2.5 text-xs text-slate-300 list-disc list-inside">
-                        <li><strong>본인 증명의 확실성:</strong> 사번 매치 및 디바이스 모델 고유 식별 결합 보존</li>
-                        <li><strong>무결성 체인 설계:</strong> 서명 제출 즉시 SHA-256 구조의 비수정 해시블록 생성</li>
-                        <li><strong>포용적 UX 확보:</strong> 태블릿 일괄 서명 및 예비용 지면 병행 프로세스 구축</li>
-                    </ul>
-                </div>
-                <div id="sec-docs-strategy" class="bg-slate-900 p-6 rounded-2xl border border-slate-800 scroll-mt-20">
-                    <h3 class="text-sm font-black text-white flex items-center gap-2 mb-3">
-                        <span class="p-1 bg-emerald-500/10 text-emerald-400 rounded">💡</span>
-                        단계적 전산화 도입 전략 (MVP-to-Scale)
-                    </h3>
-                    <ul class="space-y-2.5 text-xs text-slate-300 list-disc list-inside">
-                        <li><strong>1단계 (초기 2주):</strong> 구글 시트 + 앱시트 프로토타이핑을 통한 현장 시험</li>
-                        <li><strong>2단계 (1.5개월):</strong> 반응형 포털을 통한 근로자 스마트폰 퀴즈 연동화</li>
-                        <li><strong>3단계 (장기):</strong> 전사 ERP 및 고용노동부 근로감독관 감사 제출 연계</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- DB 스키마 명세 -->
-            <div id="sec-docs-db" class="bg-slate-900 p-6 rounded-2xl border border-slate-800 scroll-mt-20">
-                <h3 class="text-sm font-black text-white mb-3">📐 전산 시스템 관계형 데이터베이스 스키마 명세</h3>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs border-collapse">
-                        <thead>
-                            <tr class="bg-slate-950 text-slate-400 font-bold border-b border-slate-850">
-                                <th class="p-3">테이블</th>
-                                <th class="p-3">필드명(물리/논리)</th>
-                                <th class="p-3">타입</th>
-                                <th class="p-3">설명</th>
-                                <th class="p-3">제약규격</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-850 text-slate-300 font-mono text-[11px]">
-                            <tr>
-                                <td class="p-3 font-semibold text-white" rowspan="3">EducationLog<br>(교육 메인)</td>
-                                <td>id (일지UUID)</td>
-                                <td>VARCHAR(36)</td>
-                                <td>각 교육 일지의 고유 세션 키</td>
-                                <td>PK</td>
-                            </tr>
-                            <tr>
-                                <td>topic (교육 세션명)</td>
-                                <td>VARCHAR(255)</td>
-                                <td>예: 고소작업 추락 방지 가이드</td>
-                                <td>NOT NULL</td>
-                            </tr>
-                            <tr>
-                                <td>edu_date (진행일자)</td>
-                                <td>DATE</td>
-                                <td>안전보건관리 실행 일자</td>
-                                <td>DEFAULT Current</td>
-                            </tr>
-                            <tr class="border-t border-slate-850">
-                                <td class="p-3 font-semibold text-white" rowspan="4">SigneeHistory<br>(이수 이력)</td>
-                                <td>id (일련키)</td>
-                                <td>BIGINT</td>
-                                <td>건별 순차 레코드 인덱스</td>
-                                <td>PK, Auto_Inc</td>
-                            </tr>
-                            <tr>
-                                <td>worker_name (성명)</td>
-                                <td>VARCHAR(50)</td>
-                                <td>근로자 실명 데이터</td>
-                                <td>NOT NULL</td>
-                            </tr>
-                            <tr>
-                                <td>signature_data (서명값)</td>
-                                <td>TEXT</td>
-                                <td>서명 패드 Base64 바이너리 정보</td>
-                                <td>NOT NULL</td>
-                            </tr>
-                            <tr>
-                                <td>auth_hash (위변조 검증용)</td>
-                                <td>VARCHAR(64)</td>
-                                <td>무결성 무력화 예방용 암호화 해시</td>
-                                <td>NOT NULL</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            <div id="management-menu-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"></div>
         </section>
+
+        <!-- ==============================================
+             2. 위험요인 발굴 탭
+             ============================================== -->
+        <section id="tab-risk" class="tab-content hidden space-y-6">
+            <div class="pb-1">
+                <h2 class="text-xl font-black" style="color: var(--scm-text);">⚠️ 위험요인 발굴</h2>
+                <p class="text-[13px] mt-1.5" style="color: var(--scm-subtext);">위험성평가, 아차사고, 안전제안 등 현장 위험요인을 발굴하고 관리합니다.</p>
+            </div>
+            <div id="risk-menu-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"></div>
+        </section>
+
+        <!-- ==============================================
+             3. 작업 탭
+             ============================================== -->
+        <section id="tab-work" class="tab-content hidden space-y-6">
+            <div class="pb-1">
+                <h2 class="text-xl font-black" style="color: var(--scm-text);">🛠️ 작업 관리</h2>
+                <p class="text-[13px] mt-1.5" style="color: var(--scm-subtext);">작업허가서, 체감온도 기록, 직무 스트레스 등 작업 단위 안전을 관리합니다.</p>
+            </div>
+            <div id="work-menu-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"></div>
+        </section>
+
+        <!-- ==============================================
+             4. 교육 탭
+             ============================================== -->
+        <section id="tab-education" class="tab-content hidden space-y-6">
+            <div class="pb-1">
+                <h2 class="text-xl font-black" style="color: var(--scm-text);">📚 교육 관리</h2>
+                <p class="text-[13px] mt-1.5" style="color: var(--scm-subtext);">교육 평가 및 교육 자료를 통합 관리하는 영역입니다.</p>
+            </div>
+            <div id="education-menu-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"></div>
+        </section>
+
+        <!-- ==============================================
+             5. ISO 45001 탭
+             ============================================== -->
+        <section id="tab-iso" class="tab-content hidden space-y-6">
+            <div class="pb-1">
+                <h2 class="text-xl font-black" style="color: var(--scm-text);">📋 ISO 45001 관리</h2>
+                <p class="text-[13px] mt-1.5" style="color: var(--scm-subtext);">이슈, 이해관계자, 리스크 및 기회 등 ISO 45001 경영시스템 요구사항을 관리합니다.</p>
+            </div>
+            <div id="iso-menu-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"></div>
+        </section>
+
+        <!-- ==============================================
+             6. 이벤트 탭
+             ============================================== -->
+        <section id="tab-event" class="tab-content hidden space-y-6">
+            <div class="pb-1">
+                <h2 class="text-xl font-black" style="color: var(--scm-text);">🎉 이벤트</h2>
+                <p class="text-[13px] mt-1.5" style="color: var(--scm-subtext);">안전퀴즈, 공모전 등 임직원 참여형 안전 캠페인을 운영합니다.</p>
+            </div>
+            <div id="event-menu-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"></div>
+        </section>
+
+        <!-- ==============================================
+             7. 화학물질 탭
+             ============================================== -->
+        <section id="tab-chemical" class="tab-content hidden space-y-6">
+            <div class="pb-1">
+                <h2 class="text-xl font-black" style="color: var(--scm-text);">🧪 화학물질 관리</h2>
+                <p class="text-[13px] mt-1.5" style="color: var(--scm-subtext);">MSDS 검색 등 화학물질 안전 정보를 통합 관리합니다.</p>
+            </div>
+            <div id="chemical-menu-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"></div>
+        </section>
+
     </main>
+
+    <!-- 하단 푸터 -->
+    <footer class="border-t mt-auto" style="border-color: var(--scm-border); background: #FFFFFF;">
+        <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <span class="text-[11px]" style="color: var(--scm-subtext);">© 2026 SEAH CM. 세아씨엠 안전 AI 플랫폼</span>
+        </div>
+    </footer>
 
     <!-- 글로벌 커스텀 알림 토스트 -->
     <div id="toast" class="hidden fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 z-[9999] transition-all duration-300 transform translate-y-10 border border-slate-800">
@@ -725,785 +366,139 @@
         <span id="toast-msg" class="text-xs font-bold">성공적으로 처리되었습니다.</span>
     </div>
 
-    <!-- 비즈니스 자바스크립트 코드 -->
-    <script type="module">
-        // Firebase v11 모듈 가져오기
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // 사용자 제공 Firebase config 연동 및 Canvas 환경용 가변 폴백
-        const fallbackConfig = {
-            apiKey: "AIzaSyBb7Ux265fX6ACunF0Vl4bT_OiA7Tcs074",
-            authDomain: "seah-safe.firebaseapp.com",
-            projectId: "seah-safe",
-            storageBucket: "seah-safe.firebasestorage.app",
-            messagingSenderId: "797255013706",
-            appId: "1:797255013706:web:39b54df39592f7bbdeddb3"
-        };
-
-        const configSource = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : fallbackConfig;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'seah-safe-app';
-
-        const app = initializeApp(configSource);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // 글로벌 상태 관리
-        let currentUser = null;
-        let unsubscribeSync = null;
-        let currentRole = 'manager'; // manager or worker
-        let activeTab = 'materials';
-        let authMode = 'id';
-        let canvas, ctx, isDrawing = false;
-        let lastX = 0, lastY = 0;
-
-        // 🧠 퀴즈 문제 은행 데이터베이스
-        const quizBank = {
-            '밀폐공간': {
-                question: "밀폐공간 진입 및 유지보수 시 작업이 가능한 가장 적정(적합) 산소 농도의 최적 범위는?",
-                options: [
-                    "8% 이상 10% 미만",
-                    "12% 이상 15% 미만",
-                    "18% 이상 23.5% 미만 (최적 상태)",
-                    "30% 이상 초과 산소 풍부상태"
-                ],
-                correctIndex: 2
+    <script>
+        // ============================================
+        // 메뉴 구조 데이터 (플랫폼 구성 다이어그램의 하위 항목 기반)
+        // ============================================
+        const menuData = {
+            management: {
+                icon: '🏢',
+                color: '#2563EB',
+                items: ['경영방침, 목표', '업무수행평가', '법규등록부', '이행결과 분석']
             },
-            '추락': {
-                question: "높이 2미터 이상 비계 고소 작업장에서 근로 시 반드시 지지선(생명줄)에 완벽 체결해야 하는 절대적 장구류는?",
-                options: [
-                    "일반 정비용 공구 벨트",
-                    "안전대(죔줄 이중고리식) 및 턱끈 조여진 안전모",
-                    "면장갑과 고무 신발",
-                    "간이 비닐 보안경"
-                ],
-                correctIndex: 1
+            risk: {
+                icon: '⚠️',
+                color: '#DC2626',
+                items: ['위험성평가', '아차사고', '안전제안', '안전점검', '행동관찰', 'TBM']
             },
-            '화학': {
-                question: "유독물질 및 강산 액체 주입/배출관 정비 시 최우선 세팅 및 확인해야 하는 자료의 규약 명칭은?",
-                options: [
-                    "MSDS (물질안전보건자료) 및 방독 안전 장갑 세트",
-                    "장비 자산 관리 카드",
-                    "일반 환경 위생 보고서",
-                    "외래인 출입 관리장"
-                ],
-                correctIndex: 0
+            work: {
+                icon: '🛠️',
+                color: '#D97706',
+                items: ['작업허가서', '체감온도 기록', '직무 스트레스']
+            },
+            education: {
+                icon: '📚',
+                color: '#0891B2',
+                items: ['교육 평가', '교육 자료']
+            },
+            iso: {
+                icon: '📋',
+                color: '#7C3AED',
+                items: ['이슈', '이해관계자', '리스크 및 기회', '안전보건 목표', '내부심사', '경영검토']
+            },
+            event: {
+                icon: '🎉',
+                color: '#DB2777',
+                items: ['안전퀴즈', '공모전 제출']
+            },
+            chemical: {
+                icon: '🧪',
+                color: '#16A34A',
+                items: ['MSDS 검색']
             }
         };
 
-        let currentActiveQuizKey = '밀폐';
-        let mockWorkers = []; // Firestore 실시간 데이터 바인딩 공간
-        const TARGET_ATTENDEES = 8;
+        // ============================================
+        // 각 탭의 메뉴 그리드 렌더링
+        // ============================================
+        function renderMenuGrid(tabId) {
+            const data = menuData[tabId];
+            const grid = document.getElementById(`${tabId}-menu-grid`);
+            if (!data || !grid) return;
 
-        // 초기 화면 설정 및 이벤트 바인딩
-        window.onload = function() {
-            initAuthAndSync();
-            generateCustomPrompt();
-            updateTOC();
-            
-            addAuditLog("Portal engine online. Secure TLS handshake verified.");
-        };
-
-        // 🔒 [RULE 3] Auth 실행 후 쿼리 연결
-        async function initAuthAndSync() {
-            document.getElementById('server-status').innerText = "Connecting...";
-            document.getElementById('server-status').className = "text-amber-400 font-mono";
-
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (err) {
-                console.error("Auth failed:", err);
-                showToast("⚠️ 데이터베이스 실시간 세션 연결에 실패했습니다.", "warning");
-                document.getElementById('server-status').innerText = "OFFLINE";
-                document.getElementById('server-status').className = "text-rose-500 font-mono";
-            }
-
-            onAuthStateChanged(auth, (user) => {
-                currentUser = user;
-                if (user) {
-                    document.getElementById('server-status').innerText = "ONLINE";
-                    document.getElementById('server-status').className = "text-emerald-400 font-mono";
-                    addAuditLog(`Firebase Authenticated. User Token Hash: ${user.uid.substring(0, 10)}...`);
-                    
-                    // 실시간 Firestore 리스너 시작
-                    startSyncing();
-                } else {
-                    document.getElementById('server-status').innerText = "UNAUTHORIZED";
-                    document.getElementById('server-status').className = "text-amber-500 font-mono";
-                }
-            });
+            grid.innerHTML = data.items.map(item => `
+                <button onclick="showComingSoon('${item.replace(/'/g, "\\'")}')" class="scm-card p-5 text-left hover:shadow-md hover:-translate-y-0.5 transition-all group">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center text-base mb-3" style="background: ${data.color}1A; color: ${data.color};">
+                        ${data.icon}
+                    </div>
+                    <h3 class="text-sm font-extrabold group-hover:underline" style="color: var(--scm-text);">${item}</h3>
+                    <p class="text-[11px] mt-1" style="color: var(--scm-subtext);">바로가기 →</p>
+                </button>
+            `).join('');
         }
 
-        // ☁️ [RULE 1] 엄격한 수집 경로 및 실시간 Sync
-        function startSyncing() {
-            if (!currentUser) return;
-            if (unsubscribeSync) unsubscribeSync();
+        // 모든 탭 메뉴 초기 렌더링
+        Object.keys(menuData).forEach(renderMenuGrid);
 
-            // [RULE 1] 엄격한 서명 보존 경로
-            const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'signatures');
-
-            // [RULE 2] 복합 쿼리 제외, 단순 onSnapshot 스캔 후 클라이언트 정렬
-            unsubscribeSync = onSnapshot(colRef, (snapshot) => {
-                const loaded = [];
-                snapshot.forEach((doc) => {
-                    loaded.push({ docId: doc.id, ...doc.data() });
-                });
-
-                // 타임스탬프 기준 인메모리 역순 정렬 (최신순)
-                loaded.sort((a, b) => {
-                    const timeA = a.timestamp || 0;
-                    const timeB = b.timestamp || 0;
-                    return timeB - timeA;
-                });
-
-                mockWorkers = loaded;
-
-                // 최초 셋업 시 데이터가 전혀 없으면 더미 씨드(Seed) 전산 입력
-                if (mockWorkers.length === 0) {
-                    addAuditLog("Firestore collection empty. Populating default EHS seed records...");
-                    seedInitialData();
-                } else {
-                    renderTable();
-                    updateStats();
-                }
-            }, (error) => {
-                console.error("Firestore loading error:", error);
-                showToast("⚠️ 실시간 전산 데이터를 갱신하지 못했습니다.", "warning");
-            });
-        }
-
-        // 신규 데이터베이스 빈 상태 방지용 씨드 적재
-        async function seedInitialData() {
-            if (!currentUser) return;
-            const seedList = [
-                { id: "240110", name: "김태식", topic: "밀폐공간 질식 및 질소 재해 예방 교육", time: "2026-06-16 08:12", timestamp: new Date("2026-06-16T08:12:00").getTime(), method: "사번 입력", signature: "dummy_sig_1", logId: "LOG-0616-A1" },
-                { id: "240112", name: "박정웅", topic: "밀폐공간 질식 및 질소 재해 예방 교육", time: "2026-06-16 08:15", timestamp: new Date("2026-06-16T08:15:00").getTime(), method: "QR 스캔", signature: "dummy_sig_2", logId: "LOG-0616-A2" },
-                { id: "240115", name: "최일순", topic: "밀폐공간 질식 및 질소 재해 예방 교육", time: "2026-06-16 08:19", timestamp: new Date("2026-06-16T08:19:00").getTime(), method: "사번 입력", signature: "dummy_sig_3", logId: "LOG-0616-A3" },
-                { id: "240120", name: "정태형", topic: "고소 작업 추락 방지 안전대책", time: "2026-06-16 13:05", timestamp: new Date("2026-06-16T13:05:00").getTime(), method: "QR 스캔", signature: "dummy_sig_4", logId: "LOG-0616-B1" },
-                { id: "240125", name: "이명수", topic: "고소 작업 추락 방지 안전대책", time: "2026-06-16 13:10", timestamp: new Date("2026-06-16T13:10:00").getTime(), method: "사번 입력", signature: "dummy_sig_5", logId: "LOG-0616-B2" }
-            ];
-
-            const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'signatures');
-            try {
-                for (const item of seedList) {
-                    await addDoc(colRef, item);
-                }
-                addAuditLog("Seeding successfully executed.");
-            } catch (err) {
-                console.error("Seed error:", err);
-            }
-        }
-
-        // 👥 역할 체인지 기능
-        function changeGlobalRole(role) {
-            currentRole = role;
-            const selector = document.getElementById('global-role-selector');
-            if (selector) selector.value = role;
-
-            showToast(`⚙️ [${role === 'manager' ? '안전 총괄 관리자' : '현장 근로자 이철수'}] 모드로 제어 전환`, "success");
-            addAuditLog(`EHS Session role switched to [${role.toUpperCase()}]. Interface redrawn.`);
-            
-            adjustUIByRole();
-            updateTOC();
-        }
-
-        // 역할에 따른 동적 UI 가시성 보정
-        function adjustUIByRole() {
-            const promptBtn = document.getElementById('btn-tab-prompt');
-            const docsBtn = document.getElementById('btn-tab-docs');
-
-            if (currentRole === 'worker') {
-                if (promptBtn) promptBtn.classList.add('hidden');
-                if (docsBtn) docsBtn.classList.add('hidden');
-                
-                if (activeTab === 'prompt' || activeTab === 'docs') {
-                    switchTab('materials');
-                }
-            } else {
-                if (promptBtn) promptBtn.classList.remove('hidden');
-                if (docsBtn) docsBtn.classList.remove('hidden');
-            }
-        }
-
-        // 반응형 모바일 사이드바 제어
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const backdrop = document.getElementById('sidebar-backdrop');
-            
-            if (sidebar.classList.contains('-translate-x-full')) {
-                sidebar.classList.remove('-translate-x-full');
-                backdrop.classList.remove('hidden');
-            } else {
-                sidebar.classList.add('-translate-x-full');
-                backdrop.classList.add('hidden');
-            }
-        }
-
-        // 탭 전환 코디네이터
+        // ============================================
+        // 탭 전환
+        // ============================================
+        let activeTab = 'home';
         function switchTab(tabId) {
             activeTab = tabId;
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`tab-${tabId}`).classList.remove('hidden');
 
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.className = "tab-btn w-full px-3 py-2.5 rounded-lg text-xs font-bold text-left flex items-center gap-2.5 transition-all text-slate-400 hover:bg-slate-900 hover:text-slate-100";
-            });
-            
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             const activeBtn = document.getElementById(`btn-tab-${tabId}`);
-            if (activeBtn) {
-                activeBtn.className = "tab-btn w-full px-3 py-2.5 rounded-lg text-xs font-bold text-left flex items-center gap-2.5 transition-all bg-emerald-600 text-white";
-            }
+            if (activeBtn) activeBtn.classList.add('active');
 
-            updateTOC();
-
+            // 모바일 드롭다운 메뉴는 탭 선택 시 자동으로 닫기
             const sidebar = document.getElementById('sidebar');
-            if (!sidebar.classList.contains('-translate-x-full') && window.innerWidth < 768) {
+            if (sidebar && !sidebar.classList.contains('hidden') && window.innerWidth < 1024) {
                 toggleSidebar();
             }
-
-            if (tabId === 'sign') {
-                setTimeout(initCanvas, 50);
-            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // 동적 목차 생성
-        function updateTOC() {
-            const tocContainer = document.getElementById('dynamic-toc');
-            tocContainer.innerHTML = '';
-
-            let sections = [];
-
-            if (activeTab === 'materials') {
-                sections = [
-                    { name: '📚 안전자료 리스트', id: 'sec-materials-list' },
-                    { name: '📝 스마트 안전 퀴즈', id: 'education-modal' }
-                ];
-            } else if (activeTab === 'sign') {
-                sections = [
-                    { name: '📱 서명 단말기', id: 'sec-worker-sign' }
-                ];
-            } else if (activeTab === 'dashboard') {
-                sections = [
-                    { name: '📊 교육지표 대시보드', id: 'sec-dashboard' },
-                    { name: '📋 교육명단 리스트', id: 'sec-sign-list' },
-                    { name: '🔒 위변조 감사 이력', id: 'sec-audit-log' }
-                ];
-            } else if (activeTab === 'schedule') {
-                sections = [
-                    { name: '📆 캘린더 정기계획', id: 'tab-schedule' }
-                ];
-            } else if (activeTab === 'prompt' && currentRole === 'manager') {
-                sections = [
-                    { name: '⚙️ 프롬프트 빌더', id: 'sec-prompt-setting' },
-                    { name: '📝 완성본 복사', id: 'sec-prompt-result' }
-                ];
-            } else if (activeTab === 'docs' && currentRole === 'manager') {
-                sections = [
-                    { name: '⚖️ 법정 효력 기준', id: 'sec-docs-legal' },
-                    { name: '💡 단계적 도입 가이드', id: 'sec-docs-strategy' },
-                    { name: '📐 DB 스키마 설계', id: 'sec-docs-db' }
-                ];
-            }
-
-            sections.forEach(sec => {
-                const link = document.createElement('a');
-                link.href = `#${sec.id}`;
-                link.className = "block text-[11px] text-slate-500 hover:text-emerald-400 transition-all font-medium py-1 pl-1";
-                link.innerText = sec.name;
-                link.onclick = function(e) {
-                    e.preventDefault();
-                    const targetEl = document.getElementById(sec.id);
-                    if (targetEl) {
-                        targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                }
-                tocContainer.appendChild(link);
-            });
+        // ============================================
+        // 모바일 드롭다운 메뉴 제어
+        // ============================================
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
         }
 
-        // 📚 교육자료 필터 기능
-        function filterMaterials(cat) {
-            document.querySelectorAll('.material-card').forEach(card => {
-                if (cat === 'all' || card.getAttribute('data-category') === cat) {
-                    card.classList.remove('hidden');
-                } else {
-                    card.classList.add('hidden');
-                }
-            });
-
-            const btns = event.target.parentElement.querySelectorAll('button');
-            btns.forEach(btn => {
-                btn.className = "category-btn bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-bold px-4 py-1.5 rounded-lg shrink-0";
-            });
-            event.target.className = "category-btn bg-emerald-600 text-slate-950 text-xs font-bold px-4 py-1.5 rounded-lg shrink-0";
+        // ============================================
+        // 공지사항 카드 접기/펼치기
+        // ============================================
+        function toggleNoticeBoard() {
+            const list = document.getElementById('notice-list');
+            const icon = document.getElementById('notice-toggle-icon');
+            list.classList.toggle('hidden');
+            icon.classList.toggle('rotate-180');
         }
 
-        // 📚 1. 안전보건교육자료 기동 및 퀴즈 연동
-        function startEducation(topicName, quizKey) {
-            currentActiveQuizKey = quizKey;
-            const modal = document.getElementById('education-modal');
-            const title = document.getElementById('edu-modal-title');
-            
-            title.innerText = topicName;
-            
-            const targetQuiz = quizBank[quizKey] || quizBank['밀폐'];
-            document.getElementById('quiz-question').innerText = targetQuiz.question;
-            
-            const optionsBox = document.getElementById('quiz-options');
-            optionsBox.innerHTML = '';
-            
-            targetQuiz.options.forEach((opt, idx) => {
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = "quiz-opt-btn w-full text-left px-4 py-2.5 rounded-lg border border-slate-800 bg-slate-900 text-xs hover:border-emerald-500 transition text-slate-300";
-                btn.innerText = `${idx + 1}. ${opt}`;
-                btn.onclick = () => selectQuizOption(idx);
-                optionsBox.appendChild(btn);
-            });
-
-            selectedOptionIndex = -1;
-
-            modal.classList.remove('hidden');
-            modal.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            showToast("📖 자료 수강 완료 후 핵심 퀴즈를 풀어주세요.", "success");
+        // ============================================
+        // 준비중 안내 (하위 메뉴 클릭 시)
+        // ============================================
+        function showComingSoon(menuName) {
+            showToast(`🔧 [${menuName}] 메뉴는 현재 구축 중입니다.`, 'info');
         }
 
-        let selectedOptionIndex = -1;
-        function selectQuizOption(idx) {
-            selectedOptionIndex = idx;
-            document.querySelectorAll('.quiz-opt-btn').forEach((btn, bidx) => {
-                if (bidx === idx) {
-                    btn.className = "quiz-opt-btn w-full text-left px-4 py-2.5 rounded-lg border-2 border-emerald-500 bg-emerald-500/10 text-xs text-white font-bold";
-                } else {
-                    btn.className = "quiz-opt-btn w-full text-left px-4 py-2.5 rounded-lg border border-slate-800 bg-slate-900 text-xs text-slate-400";
-                }
-            });
-        }
-
-        function verifyQuizAnswer() {
-            const targetQuiz = quizBank[currentActiveQuizKey] || quizBank['밀폐'];
-            const correctIdx = targetQuiz.correctIndex;
-
-            if (selectedOptionIndex === -1) {
-                showToast("⚠️ 정답 보기를 선택하셔야 수강 완료가 가능합니다.", "warning");
-                return;
-            }
-
-            if (selectedOptionIndex !== correctIdx) {
-                showToast("❌ 오답입니다. 교안 핵심 수칙을 다시 파악해주세요.", "warning");
-                addAuditLog("Quiz fail. Incorrect safety protocol option targeted.");
-                return;
-            }
-
-            const topicName = document.getElementById('edu-modal-title').innerText;
-            document.getElementById('m-edu-title').innerText = topicName;
-
-            switchTab('sign');
-            closeEducation();
-
-            showToast("🎉 정답입니다! 전산 인증 서명을 통해 서명을 완료하세요.", "success");
-            addAuditLog(`Quiz success block generated. Safety answer valid. Proceeding to Sign pad.`);
-        }
-
-        function closeEducation() {
-            document.getElementById('education-modal').classList.add('hidden');
-        }
-
-        function registerEvent(eventName) {
-            showToast(`✅ [${eventName}] 수강 등록 처리가 신청되었습니다.`, "success");
-            addAuditLog(`Schedule registration request received: [${eventName}]`);
-            
-            const numEl = document.getElementById('dept-1');
-            const currVal = parseInt(numEl.innerText);
-            numEl.innerText = `${currVal + 1}명 승인`;
-        }
-
-        function toggleAuthMode(mode) {
-            authMode = mode;
-            if (mode === 'id') {
-                document.getElementById('btn-auth-id').className = "py-2 text-[10px] rounded-lg font-bold border-2 border-emerald-500 bg-emerald-500/10 text-emerald-400 flex items-center justify-center gap-1";
-                document.getElementById('btn-auth-qr').className = "py-2 text-[10px] rounded-lg font-bold border border-slate-800 bg-slate-950 text-slate-500 flex items-center justify-center gap-1";
-                document.getElementById('form-auth-id').classList.remove('hidden');
-                document.getElementById('form-auth-qr').classList.add('hidden');
-            } else {
-                document.getElementById('btn-auth-id').className = "py-2 text-[10px] rounded-lg font-bold border border-slate-800 bg-slate-950 text-slate-500 flex items-center justify-center gap-1";
-                document.getElementById('btn-auth-qr').className = "py-2 text-[10px] rounded-lg font-bold border-2 border-emerald-500 bg-emerald-500/10 text-emerald-400 flex items-center justify-center gap-1";
-                document.getElementById('form-auth-id').classList.add('hidden');
-                document.getElementById('form-auth-qr').classList.remove('hidden');
-            }
-        }
-
-        function simulateQRScan() {
-            const randomID = "QR-" + Math.floor(100000 + Math.random() * 900000);
-            const randomNames = ["정광수", "이민혁", "장진국", "황태성", "한은지"];
-            const chosenName = randomNames[Math.floor(Math.random() * randomNames.length)];
-            
-            showToast("🔍 모바일 사원증 전산 정보 판독 완료", "success");
-            
-            toggleAuthMode('id');
-            document.getElementById('input-worker-name').value = chosenName;
-            document.getElementById('input-worker-id').value = randomID;
-        }
-
-        function initCanvas() {
-            canvas = document.getElementById('signature-pad');
-            if (!canvas) return;
-            
-            ctx = canvas.getContext('2d');
-            const container = canvas.parentElement;
-            canvas.width = container.clientWidth;
-            canvas.height = container.clientHeight;
-
-            ctx.strokeStyle = '#34d399';
-            ctx.lineWidth = 3;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-
-            canvas.addEventListener('mousedown', startDrawing);
-            canvas.addEventListener('mousemove', draw);
-            canvas.addEventListener('mouseup', stopDrawing);
-            canvas.addEventListener('mouseout', stopDrawing);
-
-            canvas.addEventListener('touchstart', function(e) {
-                e.preventDefault();
-                const touch = e.touches[0];
-                const mouseEvent = new MouseEvent('mousedown', {
-                    clientX: touch.clientX,
-                    clientY: touch.clientY
-                });
-                canvas.dispatchEvent(mouseEvent);
-            }, { passive: false });
-
-            canvas.addEventListener('touchmove', function(e) {
-                e.preventDefault();
-                const touch = e.touches[0];
-                const mouseEvent = new MouseEvent('mousemove', {
-                    clientX: touch.clientX,
-                    clientY: touch.clientY
-                });
-                canvas.dispatchEvent(mouseEvent);
-            }, { passive: false });
-
-            canvas.addEventListener('touchend', function() {
-                canvas.dispatchEvent(new MouseEvent('mouseup', {}));
-            });
-        }
-
-        function startDrawing(e) {
-            isDrawing = true;
-            const rect = canvas.getBoundingClientRect();
-            lastX = e.clientX - rect.left;
-            lastY = e.clientY - rect.top;
-            document.getElementById('signature-placeholder').classList.add('hidden');
-        }
-
-        function draw(e) {
-            if (!isDrawing) return;
-            const rect = canvas.getBoundingClientRect();
-            const currX = e.clientX - rect.left;
-            const currY = e.clientY - rect.top;
-
-            ctx.beginPath();
-            ctx.moveTo(lastX, lastY);
-            ctx.lineTo(currX, currY);
-            ctx.stroke();
-
-            lastX = currX;
-            lastY = currY;
-        }
-
-        function stopDrawing() {
-            isDrawing = false;
-        }
-
-        function clearSignature() {
-            if (!ctx) return;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            document.getElementById('signature-placeholder').classList.remove('hidden');
-        }
-
-        // 📝 Firestore 저장 바인딩
-        async function submitSignature() {
-            if (!currentUser) {
-                showToast("⚠️ 데이터베이스 세션 연결 대기 중입니다.", "warning");
-                return;
-            }
-
-            const name = document.getElementById('input-worker-name').value.trim();
-            const id = document.getElementById('input-worker-id').value.trim();
-            const topic = document.getElementById('m-edu-title').innerText;
-
-            if (!name || !id) {
-                showToast("⚠️ 근로자 이름과 사원인증번호를 입력해주세요.", "warning");
-                return;
-            }
-
-            const blankBuffer = document.createElement('canvas');
-            blankBuffer.width = canvas.width;
-            blankBuffer.height = canvas.height;
-            if (canvas.toDataURL() === blankBuffer.toDataURL()) {
-                showToast("⚠️ 빈 화면으로 제출할 수 없습니다. 서명해 주십시오.", "warning");
-                return;
-            }
-
-            const sigImgData = canvas.toDataURL();
-            const now = new Date();
-            const formattedTime = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-            const logHex = 'LOG-' + Math.floor(1000 + Math.random() * 9000) + '-' + name.charCodeAt(0).toString(16).toUpperCase();
-
-            const newWorker = {
-                id: id,
-                name: name,
-                topic: topic,
-                time: formattedTime,
-                timestamp: Date.now(), // [정렬용 필드]
-                method: authMode === 'id' ? '사번 입력' : 'QR 스캔',
-                signature: sigImgData,
-                logId: logHex
-            };
-
-            showToast("🔒 클라우드에 서명 동기화 중...", "success");
-
-            try {
-                // [RULE 1] 경로 규격 준수하여 업로드
-                const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'signatures');
-                await addDoc(colRef, newWorker);
-                
-                clearSignature();
-                document.getElementById('input-worker-name').value = '';
-                document.getElementById('input-worker-id').value = '';
-
-                switchTab('dashboard');
-                showToast("🔒 전산 교육 명단부에 이수 기록이 안전하게 바인딩되었습니다.", "success");
-                addAuditLog(`New EHS Signature Block chained. Worker: ${name}, UUID: ${logHex}`);
-            } catch (err) {
-                console.error("Firestore submit error:", err);
-                showToast("⚠️ 데이터베이스 업로드에 실패했습니다.", "warning");
-            }
-        }
-
-        // 실시간 전산 이력 UI 테이블 렌더링
-        function renderTable(filterTopic = 'all') {
-            const tbody = document.getElementById('worker-table-body');
-            tbody.innerHTML = '';
-
-            let filtered = mockWorkers;
-            if (filterTopic !== 'all') {
-                filtered = mockWorkers.filter(w => w.topic.includes(filterTopic));
-            }
-
-            filtered.forEach(worker => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-900/50 transition-colors border-b border-slate-800";
-                
-                let sigMarkup = '';
-                if (worker.signature && worker.signature.startsWith('data:image')) {
-                    sigMarkup = `<img src="${worker.signature}" class="h-6 object-contain border border-slate-800 bg-slate-950 rounded p-0.5" alt="서명">`;
-                } else {
-                    sigMarkup = `<span class="inline-flex items-center text-emerald-400 font-bold font-mono">🖊️ Verified</span>`;
-                }
-
-                tr.innerHTML = `
-                    <td class="p-4 font-bold text-white">${worker.name} <span class="text-slate-500 font-normal">(${worker.id})</span></td>
-                    <td class="p-4 text-slate-400 font-medium">${worker.topic}</td>
-                    <td class="p-4 text-slate-500 font-mono">${worker.time}</td>
-                    <td class="p-4">
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${worker.method === 'QR 스캔' ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20' : 'bg-slate-800 text-slate-300'}">
-                            ${worker.method}
-                        </span>
-                    </td>
-                    <td class="p-4">${sigMarkup}</td>
-                    <td class="p-4 font-mono text-emerald-500/70 text-[10px]">${worker.logId}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function filterEduTopic(val) {
-            renderTable(val);
-        }
-
-        function updateStats() {
-            const completedCount = mockWorkers.length;
-            const pendingCount = Math.max(0, TARGET_ATTENDEES - completedCount);
-            const totalCount = Math.max(TARGET_ATTENDEES, completedCount);
-            const rate = ((completedCount / totalCount) * 100).toFixed(1);
-
-            document.getElementById('stat-total').innerText = `${totalCount}명`;
-            document.getElementById('stat-completed').innerText = `${completedCount}명`;
-            document.getElementById('stat-pending').innerText = `${pendingCount}명`;
-            document.getElementById('stat-rate').innerText = `${rate}%`;
-            document.getElementById('stat-progress-bar').style.width = `${rate}%`;
-
-            document.getElementById('sb-rate').innerText = `${rate}%`;
-            document.getElementById('sb-progress').style.width = `${rate}%`;
-        }
-
-        // 가상 근로자 클라우드 자동 생성 이수
-        async function generateMockWorker() {
-            if (!currentUser) return;
-            const sampleNames = ["강대형", "오원석", "서주일", "백동현", "임진석"];
-            const sampleIDs = ["240191", "240195", "240201", "240203", "240211"];
-            const randIndex = Math.floor(Math.random() * sampleNames.length);
-            
-            const now = new Date();
-            const formattedTime = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-            const logHex = 'LOG-GEN-' + Math.floor(1000 + Math.random() * 9000);
-
-            const topics = [
-                "밀폐공간 질식 및 질소 재해 예방 교육",
-                "고소 작업 추락 방지 안전대책",
-                "유해화학물질 유출 및 보호구 착용 수칙"
-            ];
-
-            const newWorker = {
-                id: sampleIDs[randIndex],
-                name: sampleNames[randIndex],
-                topic: topics[Math.floor(Math.random() * topics.length)],
-                time: formattedTime,
-                timestamp: Date.now(),
-                method: Math.random() > 0.5 ? "QR 스캔" : "사번 입력",
-                signature: "dummy_sig_generated",
-                logId: logHex
-            };
-
-            try {
-                const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'signatures');
-                await addDoc(colRef, newWorker);
-                showToast(`➕ 가상 근로자 [${newWorker.name}] 무결성 검증 추가 완료`, "success");
-            } catch (err) {
-                console.error("Firestore random generator failure:", err);
-                showToast("⚠️ 가상 데이터를 업로드하는 중 오류가 발생했습니다.", "warning");
-            }
-        }
-
-        // 🗑️ 데이터베이스 초기 포맷팅 리셋
-        async function resetMockData() {
-            if (!currentUser) return;
-            showToast("⚠️ 데이터베이스 공장 초기화 중...", "warning");
-
-            try {
-                const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'signatures');
-                
-                // 각 문서를 순회하며 삭제 처리
-                for (const worker of mockWorkers) {
-                    if (worker.docId) {
-                        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'signatures', worker.docId);
-                        await deleteDoc(docRef);
-                    }
-                }
-
-                addAuditLog("All database records dropped. Hard-reset succeeded.");
-                await seedInitialData();
-                showToast("🔄 모든 클라우드 데이터 리셋 및 신규 씨드(Seed) 주입 완료", "success");
-            } catch (err) {
-                console.error("Format reset error:", err);
-                showToast("⚠️ 리셋 도중 오류가 일어났습니다.", "warning");
-            }
-        }
-
-        function showToast(msg, type = "success") {
+        // ============================================
+        // 토스트 알림
+        // ============================================
+        let toastTimer = null;
+        function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
-            const toastMsg = document.getElementById('toast-msg');
-            const toastIcon = document.getElementById('toast-icon');
+            const icon = document.getElementById('toast-icon');
+            const msg = document.getElementById('toast-msg');
 
-            toastMsg.innerText = msg;
-            if (type === "success") {
-                toastIcon.innerText = "✔️";
-                toast.className = "fixed bottom-5 right-5 bg-emerald-600 text-slate-950 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 z-[9999] border border-emerald-500 transition-all duration-300 transform translate-y-0 text-xs font-black";
-            } else if (type === "warning") {
-                toastIcon.innerText = "⚠️";
-                toast.className = "fixed bottom-5 right-5 bg-amber-600 text-slate-950 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 z-[9999] border border-amber-500 transition-all duration-300 transform translate-y-0 text-xs font-black";
-            }
+            msg.innerText = message;
+            icon.innerText = type === 'success' ? '✔️' : (type === 'info' ? 'ℹ️' : '⚠️');
 
-            setTimeout(() => {
-                toast.className = "hidden fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 z-[9999] transition-all duration-300 transform translate-y-10";
-            }, 3000);
+            toast.classList.remove('hidden');
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-10');
+            });
+
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                toast.classList.add('translate-y-10');
+                setTimeout(() => toast.classList.add('hidden'), 300);
+            }, 2600);
         }
-
-        function addAuditLog(text) {
-            const logBox = document.getElementById('audit-log-box');
-            if (!logBox) return;
-
-            const timeStamp = new Date().toLocaleTimeString();
-            const logEntry = document.createElement('p');
-            logEntry.className = "hover:text-emerald-300 transition-colors py-0.5";
-            logEntry.innerHTML = `<span class="text-slate-600">[${timeStamp}]</span> > ${text}`;
-            
-            logBox.appendChild(logEntry);
-            logBox.scrollTop = logBox.scrollHeight;
-        }
-
-        // RICCE 프롬프트 실시간 합성기
-        function generateCustomPrompt() {
-            const industry = document.getElementById('p-industry').value;
-            const ageGroup = document.getElementById('p-age').value;
-            const platform = document.getElementById('p-platform').value;
-
-            const promptText = `[Role (역할)]
-당신은 ${industry} 현장을 전담하여 맞춤형 안전보건 교육 체계를 수립하고 전산 솔루션을 구축하는 15년 차 선임 IT 시스템 설계사입니다.
-
-[Instructions (지시사항)]
-현재 종이철로 서명받아 수기 관리 중인 '안전교육일지'를 전산화 포털 사이트 규격으로 마이그레이션하기 위한 세부 로드맵과 DB 연동 사양서를 제출하세요.
-반드시 포함되어야 할 내용은 다음과 같습니다:
-1. 근로자 모바일 뷰와 관리자 웹 대시보드 뷰 간의 권한 분리 모델
-2. 수기 드로잉 서명의 이미지 무결성 방지 및 보존 기술 방법
-3. 핵심 릴레이션 테이블 관계도 설계 사양 (ERD 구조 지침)
-4. 단계별 자체 구축 비용 대비 이수율 상승 기대 수치 시뮬레이션
-
-[Context (맥락)]
-우리는 매 작업 교대 전 신속한 교육 수강과 즉각적인 증빙을 마쳐야 중대재해법 리스크로부터 안전합니다. 그러나 기존 서명 누락, 고연령층의 전형적인 기기 조작 공포감으로 인해 전환에 심각한 마찰을 겪고 있습니다.
-
-[Constraints (제약조건)]
-1. 주 타겟 사용자는 [${ageGroup}] 입니다. UI의 모든 요소를 극단적으로 단순화하여 원버튼식 흐름이어야 합니다.
-2. 시스템 인프라는 [${platform}] 구조를 차용하여 첫 MVP 구현 일정을 최대한 타이트하게 단축시켜 설계해주세요.
-
-[Expectations (기대 결과)]
-최종 아웃풋은 보고서 형식의 구체적 명세서로 전개해주시고, 각 스키마 테이블 구조는 칼럼, 데이터타입, 쓰임새를 표 포맷으로 명세하십시오.`;
-
-            document.getElementById('prompt-textbox').value = promptText;
-        }
-
-        function copyPromptToClipboard() {
-            const textarea = document.getElementById('prompt-textbox');
-            textarea.select();
-            
-            try {
-                const successful = document.execCommand('copy');
-                if (successful) {
-                    showToast("📋 RICCE 프롬프트가 성공적으로 복사되었습니다.", "success");
-                } else {
-                    showToast("⚠️ 복사 권한이 제한되었습니다. 수동 복사하세요.", "warning");
-                }
-            } catch (err) {
-                showToast("⚠️ 클립보드 장치 접근 실패", "warning");
-            }
-        }
-
-        // ES6 모듈 함수를 HTML 글로벌 window 인바운드에 할당
-        window.changeGlobalRole = changeGlobalRole;
-        window.toggleSidebar = toggleSidebar;
-        window.switchTab = switchTab;
-        window.filterMaterials = filterMaterials;
-        window.startEducation = startEducation;
-        window.selectQuizOption = selectQuizOption;
-        window.verifyQuizAnswer = verifyQuizAnswer;
-        window.closeEducation = closeEducation;
-        window.registerEvent = registerEvent;
-        window.toggleAuthMode = toggleAuthMode;
-        window.simulateQRScan = simulateQRScan;
-        window.clearSignature = clearSignature;
-        window.submitSignature = submitSignature;
-        window.filterEduTopic = filterEduTopic;
-        window.generateMockWorker = generateMockWorker;
-        window.resetMockData = resetMockData;
-        window.generateCustomPrompt = generateCustomPrompt;
-        window.copyPromptToClipboard = copyPromptToClipboard;
     </script>
 </body>
 </html>
