@@ -308,14 +308,385 @@
         </section>
 
         <!-- ==============================================
-             4. 교육 탭
+             4. 교육 탭 - 교육 평가 시스템 포함
              ============================================== -->
         <section id="tab-education" class="tab-content hidden space-y-6">
-            <div class="pb-1">
-                <h2 class="text-xl font-black" style="color: var(--scm-text);">📚 교육 관리</h2>
-                <p class="text-[13px] mt-1.5" style="color: var(--scm-subtext);">교육 평가 및 교육 자료를 통합 관리하는 영역입니다.</p>
+
+            <!-- 교육 탭 서브 뷰 컨트롤러 -->
+            <!-- edu-view: 'menu' | 'eval-admin' | 'eval-participate' | 'eval-manage' -->
+
+            <!-- [A] 교육 메뉴 목록 -->
+            <div id="edu-view-menu">
+                <div class="pb-1">
+                    <h2 class="text-xl font-black" style="color: var(--scm-text);">📚 교육 관리</h2>
+                    <p class="text-[13px] mt-1.5" style="color: var(--scm-subtext);">교육 평가 및 교육 자료를 통합 관리하는 영역입니다.</p>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-4">
+                    <!-- 교육 평가 카드 -->
+                    <button onclick="eduShowView('eval-admin')" class="scm-card p-6 text-left hover:shadow-md hover:-translate-y-0.5 transition-all group">
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center text-xl mb-4" style="background: #E0F2FE; color: #0891B2;">📝</div>
+                        <h3 class="text-base font-extrabold mb-1" style="color: var(--scm-text);">교육 평가</h3>
+                        <p class="text-[12.5px] leading-relaxed" style="color: var(--scm-subtext);">교육 세션을 만들고, 참여 링크·관리 링크를 생성합니다. 교육생은 링크 하나로 자료 열람 → 시험 응시 → 합격 확인까지 진행합니다.</p>
+                        <span class="inline-block mt-3 text-[12px] font-bold" style="color: #0891B2;">시스템 열기 →</span>
+                    </button>
+                    <!-- 교육 자료 카드 -->
+                    <button onclick="showComingSoon('교육 자료')" class="scm-card p-6 text-left hover:shadow-md hover:-translate-y-0.5 transition-all group">
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center text-xl mb-4" style="background: #F0FDF4; color: #16A34A;">📂</div>
+                        <h3 class="text-base font-extrabold mb-1" style="color: var(--scm-text);">교육 자료</h3>
+                        <p class="text-[12.5px] leading-relaxed" style="color: var(--scm-subtext);">법정 안전보건교육 자료, 공지 자료, 강의자료를 통합 관리합니다.</p>
+                        <span class="inline-block mt-3 text-[12px] font-bold" style="color: var(--scm-subtext);">준비 중 →</span>
+                    </button>
+                </div>
             </div>
-            <div id="education-menu-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"></div>
+
+            <!-- =============================================
+                 [B] 관리자: 교육 세션 생성 화면
+                 ============================================= -->
+            <div id="edu-view-eval-admin" class="hidden space-y-5">
+                <div class="flex items-center gap-3">
+                    <button onclick="eduShowView('menu')" class="text-[12.5px] font-bold flex items-center gap-1.5 hover:underline" style="color: var(--scm-subtext);">
+                        ← 교육 관리
+                    </button>
+                    <span style="color: var(--scm-border);">/</span>
+                    <span class="text-[12.5px] font-bold" style="color: var(--scm-text);">교육 평가 시스템</span>
+                </div>
+
+                <!-- 탭 전환: 세션 생성 / 세션 목록 -->
+                <div class="flex border-b" style="border-color: var(--scm-border);">
+                    <button id="eval-tab-create" onclick="switchEvalAdminTab('create')" class="px-5 py-2.5 text-sm font-bold border-b-2 -mb-px" style="border-color: var(--scm-navy); color: var(--scm-navy);">+ 새 세션 만들기</button>
+                    <button id="eval-tab-list" onclick="switchEvalAdminTab('list')" class="px-5 py-2.5 text-sm font-bold border-b-2 -mb-px" style="border-color: transparent; color: var(--scm-subtext);">세션 목록</button>
+                </div>
+
+                <!-- [B-1] 새 세션 만들기 -->
+                <div id="eval-panel-create" class="space-y-5">
+                    <div class="scm-card p-6 space-y-5">
+                        <h3 class="text-base font-black" style="color: var(--scm-text);">① 교육 정보</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="md:col-span-2">
+                                <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">교육명 <span style="color:#DC2626;">*</span></label>
+                                <input id="eval-title" type="text" placeholder="예: 밀폐공간 질식 예방 교육" class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); color: var(--scm-text);">
+                            </div>
+                            <div>
+                                <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">교육 시작일 <span style="color:#DC2626;">*</span></label>
+                                <input id="eval-date-start" type="date" class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); color: var(--scm-text);">
+                            </div>
+                            <div>
+                                <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">교육 종료일</label>
+                                <input id="eval-date-end" type="date" class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); color: var(--scm-text);">
+                                <p class="text-[11px] mt-1" style="color: var(--scm-subtext);">비워두면 시작일과 동일한 단일 일자로 처리됩니다.</p>
+                            </div>
+                            <div>
+                                <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">강사명</label>
+                                <input id="eval-instructor" type="text" placeholder="예: 황준하 안전팀장" class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); color: var(--scm-text);">
+                            </div>
+                            <div>
+                                <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">전체 합격 기준점 (%)</label>
+                                <input id="eval-pass-score" type="number" value="60" min="1" max="100" class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); color: var(--scm-text);">
+                                <p class="text-[11px] mt-1" style="color: var(--scm-subtext);">문제별 배점 합산 점수가 이 기준 이상이면 합격입니다.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="scm-card p-6 space-y-4">
+                        <h3 class="text-base font-black" style="color: var(--scm-text);">② 교육 자료</h3>
+                        <p class="text-[12.5px]" style="color: var(--scm-subtext);">교육생이 시험 전 열람할 자료를 등록합니다. URL 또는 직접 입력 중 하나를 사용하세요.</p>
+                        <div>
+                            <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">자료 URL (유튜브, PDF, 문서 링크 등)</label>
+                            <input id="eval-material-url" type="url" placeholder="https://..." class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); color: var(--scm-text);">
+                        </div>
+                        <div>
+                            <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">자료 직접 입력 (URL과 함께 또는 단독 사용)</label>
+                            <textarea id="eval-material-text" rows="5" placeholder="교육 내용을 여기에 직접 입력하세요. (핵심 수칙, 주의사항 등)" class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2 resize-none" style="border-color: var(--scm-border); color: var(--scm-text);"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="scm-card p-6 space-y-4">
+                        <div class="flex items-center justify-between flex-wrap gap-2">
+                            <h3 class="text-base font-black" style="color: var(--scm-text);">③ 시험 문제</h3>
+                            <div class="flex items-center gap-2">
+                                <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg" style="background:#F8FAFC; border:1px solid var(--scm-border);">
+                                    <span class="text-[11px] font-bold" style="color:var(--scm-subtext);">배점 합계</span>
+                                    <span id="eval-score-sum" class="text-[13px] font-black" style="color:var(--scm-accent);">100%</span>
+                                </div>
+                                <button onclick="evalRedistributeScores()" class="text-[12px] font-bold px-2.5 py-1.5 rounded-lg border hover:bg-slate-50 transition-colors" style="border-color: var(--scm-border); color: var(--scm-subtext);">균등분배</button>
+                                <button onclick="evalAddQuestion()" class="text-[12.5px] font-bold px-3 py-1.5 rounded-lg border hover:bg-slate-50 transition-colors flex items-center gap-1" style="border-color: var(--scm-border); color: var(--scm-navy);">
+                                    <span class="text-sm">+</span> 문제 추가
+                                </button>
+                            </div>
+                        </div>
+                        <div id="eval-questions-list" class="space-y-5"></div>
+                        <p class="text-[12px]" style="color: var(--scm-subtext);">* 최소 1문제 이상 등록해야 세션을 생성할 수 있습니다. 배점 합계는 100%가 되어야 합니다 (균등분배 버튼으로 자동 조정 가능).</p>
+                    </div>
+
+                    <div class="flex justify-end">
+                        <button onclick="evalCreateSession()" class="text-white font-bold px-8 py-3 rounded-xl text-[14px] flex items-center gap-2 hover:opacity-90 transition-opacity shadow-sm" style="background: var(--scm-navy);">
+                            🔗 세션 생성 및 링크 발급
+                        </button>
+                    </div>
+
+                    <!-- 생성 결과 -->
+                    <div id="eval-result-box" class="hidden scm-card p-6 space-y-4" style="border: 2px solid #2563EB;">
+                        <div class="flex items-center gap-2 text-base font-black" style="color: var(--scm-blue);">
+                            ✅ 세션이 생성되었습니다!
+                        </div>
+                        <div class="space-y-3">
+                            <div class="rounded-lg p-4" style="background: #EFF6FF; border: 1px solid #BFDBFE;">
+                                <p class="text-[11px] font-bold mb-1.5" style="color: #1D4ED8;">👤 교육생 참여 링크 (교육생에게 전달)</p>
+                                <div class="flex items-center gap-2">
+                                    <code id="eval-participate-link" class="flex-1 text-[12px] break-all font-mono" style="color: #1E40AF;"></code>
+                                    <button onclick="evalCopyLink('participate')" class="shrink-0 text-[11px] font-bold px-2.5 py-1.5 rounded-lg border" style="border-color: #93C5FD; color: #1D4ED8; background: white;">복사</button>
+                                </div>
+                            </div>
+                            <div class="rounded-lg p-4" style="background: #F0FDF4; border: 1px solid #BBF7D0;">
+                                <p class="text-[11px] font-bold mb-1.5" style="color: #15803D;">🛡️ 관리자 관리 링크 (본인만 보관)</p>
+                                <div class="flex items-center gap-2">
+                                    <code id="eval-manage-link" class="flex-1 text-[12px] break-all font-mono" style="color: #166534;"></code>
+                                    <button onclick="evalCopyLink('manage')" class="shrink-0 text-[11px] font-bold px-2.5 py-1.5 rounded-lg border" style="border-color: #86EFAC; color: #15803D; background: white;">복사</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 pt-2">
+                            <button onclick="evalOpenParticipate()" class="flex-1 text-white text-[13px] font-bold py-2.5 rounded-lg hover:opacity-90 transition-opacity" style="background: var(--scm-blue);">참여 화면 미리보기</button>
+                            <button onclick="evalOpenManage()" class="flex-1 text-[13px] font-bold py-2.5 rounded-lg border hover:bg-slate-50 transition-colors" style="border-color: var(--scm-border); color: var(--scm-text);">이수 현황 관리</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- [B-2] 세션 목록 -->
+                <div id="eval-panel-list" class="hidden">
+                    <div id="eval-session-list-empty" class="py-16 text-center" style="color: var(--scm-subtext);">
+                        <p class="text-3xl mb-3">📋</p>
+                        <p class="text-[13px]">생성된 교육 세션이 없습니다.</p>
+                        <p class="text-[12px] mt-1">새 세션 만들기 탭에서 교육을 생성해 보세요.</p>
+                    </div>
+                    <div id="eval-session-list-table" class="hidden scm-card overflow-hidden">
+                        <table class="w-full text-left text-[13px]">
+                            <thead>
+                                <tr style="background: #F8FAFC; border-bottom: 1px solid var(--scm-border);">
+                                    <th class="px-4 py-3 font-bold" style="color: var(--scm-subtext);">교육명</th>
+                                    <th class="px-4 py-3 font-bold" style="color: var(--scm-subtext);">일자</th>
+                                    <th class="px-4 py-3 font-bold" style="color: var(--scm-subtext);">이수자</th>
+                                    <th class="px-4 py-3 font-bold" style="color: var(--scm-subtext);">상태</th>
+                                    <th class="px-4 py-3 font-bold" style="color: var(--scm-subtext);">관리</th>
+                                </tr>
+                            </thead>
+                            <tbody id="eval-session-list-tbody" class="divide-y" style="border-color: var(--scm-border);"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =============================================
+                 [C] 교육생: 참여 화면 (이름·사번 → 자료 → 시험 → 결과)
+                 ============================================= -->
+            <div id="edu-view-eval-participate" class="hidden">
+                <div class="max-w-2xl mx-auto space-y-5">
+                    <!-- 헤더 -->
+                    <div class="scm-card px-6 py-5 flex items-center gap-4" style="background: var(--scm-navy);">
+                        <div class="w-10 h-10 rounded-lg flex items-center justify-center text-xl" style="background: rgba(255,255,255,0.15);">📝</div>
+                        <div>
+                            <p class="text-[11px] font-bold text-blue-200">세아씨엠 안전 AI 플랫폼</p>
+                            <h2 id="part-title" class="text-base font-black text-white"></h2>
+                        </div>
+                    </div>
+
+                    <!-- 단계 표시 -->
+                    <div class="flex items-center justify-center gap-0">
+                        <div class="step-indicator flex items-center gap-0" id="step-bar">
+                            <!-- JS로 렌더링 -->
+                        </div>
+                    </div>
+
+                    <!-- 단계별 패널 -->
+                    <!-- Step 1: 본인 확인 -->
+                    <div id="part-step-1" class="scm-card p-6 space-y-5">
+                        <div>
+                            <h3 class="text-base font-bold mb-1" style="color: var(--scm-text);">본인 확인</h3>
+                            <p class="text-[12.5px]" style="color: var(--scm-subtext);">교육 시작 전 이름과 사번을 입력해 주세요. 회원가입 없이 바로 참여 가능합니다.</p>
+                        </div>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">성명 <span style="color:#DC2626;">*</span></label>
+                                <input id="part-name" type="text" placeholder="홍길동" class="w-full border rounded-lg px-3 py-3 text-[14px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border);">
+                            </div>
+                            <div>
+                                <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">사번 <span style="color:#DC2626;">*</span></label>
+                                <input id="part-empno" type="text" placeholder="예: 240510" class="w-full border rounded-lg px-3 py-3 text-[14px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border);">
+                            </div>
+                        </div>
+                        <button onclick="partStep1Next()" class="w-full text-white font-bold py-3.5 rounded-xl text-[14px] hover:opacity-90 transition-opacity" style="background: var(--scm-navy);">
+                            교육 자료 보기 →
+                        </button>
+                    </div>
+
+                    <!-- Step 2: 교육 자료 열람 -->
+                    <div id="part-step-2" class="hidden scm-card p-6 space-y-5">
+                        <div>
+                            <h3 class="text-base font-bold mb-1" style="color: var(--scm-text);">교육 자료 열람</h3>
+                            <p class="text-[12.5px]" style="color: var(--scm-subtext);">아래 자료를 충분히 확인한 후 시험에 응시해 주세요.</p>
+                        </div>
+                        <div id="part-material-url-box" class="hidden">
+                            <a id="part-material-url-link" href="#" target="_blank" rel="noopener" class="flex items-center gap-2.5 p-4 rounded-xl border hover:shadow-sm transition-all font-bold text-[13px]" style="border-color: var(--scm-blue); color: var(--scm-blue); background: #EFF6FF;">
+                                <span class="text-lg">🔗</span>
+                                <span id="part-material-url-text">자료 링크 열기</span>
+                                <span class="ml-auto text-[11px] opacity-70">새 탭에서 열림 ↗</span>
+                            </a>
+                        </div>
+                        <div id="part-material-text-box" class="hidden">
+                            <div class="rounded-xl p-5 border text-[13px] leading-relaxed whitespace-pre-line" style="border-color: var(--scm-border); background: #FAFBFD; color: var(--scm-text);" id="part-material-text-content"></div>
+                        </div>
+                        <div class="rounded-lg px-4 py-3 flex items-start gap-2.5 text-[12.5px]" style="background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E;">
+                            <span class="shrink-0 mt-0.5">⚠️</span>
+                            <span>자료를 충분히 확인하셨나요? 시험은 자료 기반으로 출제됩니다.</span>
+                        </div>
+                        <button onclick="partStep2Next()" class="w-full text-white font-bold py-3.5 rounded-xl text-[14px] hover:opacity-90 transition-opacity" style="background: var(--scm-navy);">
+                            자료 확인 완료 · 시험 응시 →
+                        </button>
+                    </div>
+
+                    <!-- Step 3: 시험 응시 -->
+                    <div id="part-step-3" class="hidden space-y-4">
+                        <div class="scm-card px-6 py-4 flex items-center justify-between">
+                            <div>
+                                <h3 class="text-base font-bold" style="color: var(--scm-text);">시험 응시</h3>
+                                <p class="text-[12.5px]" style="color: var(--scm-subtext);">모든 문제에 답변 후 제출하세요.</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-[11px]" style="color: var(--scm-subtext);">합격 기준</p>
+                                <p class="text-base font-black" style="color: var(--scm-navy);" id="part-pass-label"></p>
+                            </div>
+                        </div>
+                        <div id="part-quiz-list" class="space-y-4"></div>
+                        <button onclick="partSubmitExam()" class="w-full text-white font-bold py-3.5 rounded-xl text-[14px] hover:opacity-90 transition-opacity" style="background: var(--scm-navy);">
+                            📨 시험 제출
+                        </button>
+                    </div>
+
+                    <!-- Step 4: 결과 확인 -->
+                    <div id="part-step-4" class="hidden scm-card p-8 text-center space-y-5">
+                        <div id="part-result-icon" class="text-5xl"></div>
+                        <div>
+                            <h3 id="part-result-title" class="text-xl font-black mb-1"></h3>
+                            <p id="part-result-desc" class="text-[13px]" style="color: var(--scm-subtext);"></p>
+                        </div>
+                        <div class="rounded-xl p-5 space-y-2" id="part-result-box-inner" style="background: #F8FAFC;">
+                            <div class="flex justify-between text-[13px]">
+                                <span style="color: var(--scm-subtext);">성명</span>
+                                <span class="font-bold" id="part-result-name" style="color: var(--scm-text);"></span>
+                            </div>
+                            <div class="flex justify-between text-[13px]">
+                                <span style="color: var(--scm-subtext);">사번</span>
+                                <span class="font-bold" id="part-result-empno" style="color: var(--scm-text);"></span>
+                            </div>
+                            <div class="flex justify-between text-[13px]">
+                                <span style="color: var(--scm-subtext);">교육명</span>
+                                <span class="font-bold" id="part-result-edu" style="color: var(--scm-text);"></span>
+                            </div>
+                            <div class="flex justify-between text-[13px]">
+                                <span style="color: var(--scm-subtext);">점수</span>
+                                <span class="font-black text-base" id="part-result-score" style="color: var(--scm-navy);"></span>
+                            </div>
+                            <div class="flex justify-between text-[13px]">
+                                <span style="color: var(--scm-subtext);">합격 여부</span>
+                                <span class="font-black" id="part-result-pass"></span>
+                            </div>
+                            <div class="flex justify-between text-[13px]">
+                                <span style="color: var(--scm-subtext);">응시 일시</span>
+                                <span class="font-bold" id="part-result-time" style="color: var(--scm-text);"></span>
+                            </div>
+                        </div>
+                        <div class="flex gap-3">
+                            <button onclick="evalPrintResult()" class="flex-1 border font-bold py-3 rounded-xl text-[13px] hover:bg-slate-50 transition-colors flex items-center justify-center gap-1.5" style="border-color: var(--scm-border); color: var(--scm-text);">
+                                🖨️ 수료증 출력
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =============================================
+                 [D] 관리자: 이수 현황 관리
+                 ============================================= -->
+            <div id="edu-view-eval-manage" class="hidden space-y-5">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <button onclick="eduShowView('eval-admin'); switchEvalAdminTab('list')" class="text-[12.5px] font-bold flex items-center gap-1.5 hover:underline" style="color: var(--scm-subtext);">
+                            ← 세션 목록
+                        </button>
+                        <span style="color: var(--scm-border);">/</span>
+                        <span class="text-[12.5px] font-bold" style="color: var(--scm-text);">이수 현황 관리</span>
+                    </div>
+                    <button onclick="evalExportPDF()" class="text-white text-[12.5px] font-bold px-4 py-2 rounded-lg flex items-center gap-1.5 hover:opacity-90 transition-opacity" style="background: var(--scm-navy);">
+                        📄 결과 PDF 다운로드
+                    </button>
+                </div>
+
+                <!-- 세션 정보 -->
+                <div class="scm-card p-5">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-[13px]">
+                        <div>
+                            <p class="text-[11px] font-bold mb-0.5" style="color: var(--scm-subtext);">교육명</p>
+                            <p class="font-extrabold" id="manage-title" style="color: var(--scm-text);"></p>
+                        </div>
+                        <div>
+                            <p class="text-[11px] font-bold mb-0.5" style="color: var(--scm-subtext);">교육 일자</p>
+                            <p class="font-extrabold" id="manage-date" style="color: var(--scm-text);"></p>
+                        </div>
+                        <div>
+                            <p class="text-[11px] font-bold mb-0.5" style="color: var(--scm-subtext);">강사</p>
+                            <p class="font-extrabold" id="manage-instructor" style="color: var(--scm-text);"></p>
+                        </div>
+                        <div>
+                            <p class="text-[11px] font-bold mb-0.5" style="color: var(--scm-subtext);">합격 기준</p>
+                            <p class="font-extrabold" id="manage-pass-score" style="color: var(--scm-text);"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 통계 카드 -->
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="scm-card p-4 text-center">
+                        <p class="text-[11px] font-bold mb-1" style="color: var(--scm-subtext);">전체 응시</p>
+                        <p class="text-2xl font-black" id="manage-stat-total" style="color: var(--scm-text);">0</p>
+                    </div>
+                    <div class="scm-card p-4 text-center">
+                        <p class="text-[11px] font-bold mb-1" style="color: var(--scm-accent);">합격</p>
+                        <p class="text-2xl font-black" id="manage-stat-pass" style="color: var(--scm-accent);">0</p>
+                    </div>
+                    <div class="scm-card p-4 text-center">
+                        <p class="text-[11px] font-bold mb-1" style="color: #DC2626;">불합격</p>
+                        <p class="text-2xl font-black" id="manage-stat-fail" style="color: #DC2626;">0</p>
+                    </div>
+                </div>
+
+                <!-- 이수자 테이블 -->
+                <div class="scm-card overflow-hidden">
+                    <div class="px-5 py-4 border-b flex items-center justify-between" style="border-color: var(--scm-border); background: #F8FAFC;">
+                        <p class="text-[13px] font-bold" style="color: var(--scm-text);">이수자 현황</p>
+                        <p class="text-[12px]" style="color: var(--scm-subtext);">실시간 업데이트</p>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full min-w-[600px] text-left text-[13px]">
+                            <thead>
+                                <tr style="background: #F8FAFC; border-bottom: 1px solid var(--scm-border);">
+                                    <th class="px-4 py-3 font-bold" style="color: var(--scm-subtext);">#</th>
+                                    <th class="px-4 py-3 font-bold" style="color: var(--scm-subtext);">성명</th>
+                                    <th class="px-4 py-3 font-bold" style="color: var(--scm-subtext);">사번</th>
+                                    <th class="px-4 py-3 font-bold" style="color: var(--scm-subtext);">점수</th>
+                                    <th class="px-4 py-3 font-bold" style="color: var(--scm-subtext);">합격 여부</th>
+                                    <th class="px-4 py-3 font-bold" style="color: var(--scm-subtext);">응시 일시</th>
+                                </tr>
+                            </thead>
+                            <tbody id="manage-tbody" class="divide-y" style="border-color: var(--scm-border);">
+                                <tr id="manage-empty-row">
+                                    <td colspan="6" class="px-4 py-12 text-center text-[13px]" style="color: var(--scm-subtext);">아직 응시자가 없습니다.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
         </section>
 
         <!-- ==============================================
@@ -499,6 +870,641 @@
                 setTimeout(() => toast.classList.add('hidden'), 300);
             }, 2600);
         }
+
+        // ============================================================
+        //  교육 평가 시스템 JS
+        // ============================================================
+
+        const EVAL_STORAGE_KEY = 'seahcm_eval_sessions_v1';
+
+        // 세션 데이터 저장소: localStorage에 영구 저장되어 새로고침/재접속 시에도 유지됩니다.
+        // 단, 같은 브라우저(같은 기기) 내에서만 공유됩니다. 다른 사람의 기기에서
+        // 참여/관리 링크를 열려면 서버 연동이 필요합니다.
+        let evalSessions = {}; // { sessionId: { info, material, questions, results:[] } }
+        let currentSessionId = null;
+        let currentParticipantAnswers = {};
+
+        function evalLoadFromStorage() {
+            try {
+                const raw = localStorage.getItem(EVAL_STORAGE_KEY);
+                evalSessions = raw ? JSON.parse(raw) : {};
+            } catch (e) {
+                console.error('교육 평가 데이터 로드 실패', e);
+                evalSessions = {};
+            }
+        }
+
+        function evalSaveToStorage() {
+            try {
+                localStorage.setItem(EVAL_STORAGE_KEY, JSON.stringify(evalSessions));
+            } catch (e) {
+                console.error('교육 평가 데이터 저장 실패', e);
+                showToast('⚠️ 데이터 저장에 실패했습니다. 브라우저 저장공간을 확인해 주세요.', 'warn');
+            }
+        }
+
+        // 페이지 최초 로드 시 저장된 세션 불러오기
+        evalLoadFromStorage();
+
+        // --- 날짜 기간 포맷 (예: "6월 30일 ~ 7월 3일" 또는 단일일자) ---
+        function evalFormatDateRange(start, end) {
+            if (!start) return '—';
+            const fmt = (d) => {
+                const dt = new Date(d + 'T00:00:00');
+                if (isNaN(dt)) return d;
+                return `${dt.getMonth() + 1}월 ${dt.getDate()}일`;
+            };
+            if (!end || end === start) return fmt(start);
+            return `${fmt(start)} ~ ${fmt(end)}`;
+        }
+
+        // --- URL 해시 라우팅: 참여/관리 링크로 직접 접속했을 때 자동으로 해당 화면 오픈 ---
+        function evalHandleRoute() {
+            const hash = window.location.hash; // 예: #participate/SCMXXXX 또는 #manage/SCMXXXX/MGRXXXXXX
+            if (!hash || hash.length < 2) return false;
+
+            const parts = hash.substring(1).split('/'); // ['participate', 'SCMXXXX']
+            const route = parts[0];
+
+            if (route === 'participate' && parts[1]) {
+                const sid = parts[1];
+                if (!evalSessions[sid]) {
+                    showToast('⚠️ 해당 교육 세션을 찾을 수 없습니다. 링크를 다시 확인해 주세요.', 'warn');
+                    return false;
+                }
+                switchTab('education');
+                evalOpenParticipate(sid);
+                return true;
+            }
+
+            if (route === 'manage' && parts[1] && parts[2]) {
+                const sid = parts[1];
+                const key = parts[2];
+                const session = evalSessions[sid];
+                if (!session) {
+                    showToast('⚠️ 해당 교육 세션을 찾을 수 없습니다. 링크를 다시 확인해 주세요.', 'warn');
+                    return false;
+                }
+                if (session.manageKey !== key) {
+                    showToast('⚠️ 관리 링크가 올바르지 않습니다.', 'warn');
+                    return false;
+                }
+                switchTab('education');
+                evalOpenManage(sid);
+                return true;
+            }
+
+            return false;
+        }
+
+        // 페이지 로드 완료 시 + 해시가 바뀔 때마다 라우팅 처리
+        window.addEventListener('DOMContentLoaded', evalHandleRoute);
+        window.addEventListener('hashchange', evalHandleRoute);
+        // script가 body 최하단에 위치해 DOMContentLoaded가 이미 지나쳤을 수 있으므로 즉시도 실행
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            evalHandleRoute();
+        }
+
+        // --- 뷰 전환 ---
+        function eduShowView(view) {
+            ['menu','eval-admin','eval-participate','eval-manage'].forEach(v => {
+                document.getElementById(`edu-view-${v}`).classList.add('hidden');
+            });
+            document.getElementById(`edu-view-${view}`).classList.remove('hidden');
+            if (view === 'eval-admin') evalLoadSessionList();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- 관리자 탭 전환 (세션 생성 / 목록) ---
+        function switchEvalAdminTab(tab) {
+            ['create','list'].forEach(t => {
+                document.getElementById(`eval-panel-${t}`).classList.add('hidden');
+                const btn = document.getElementById(`eval-tab-${t}`);
+                btn.style.borderColor = 'transparent';
+                btn.style.color = 'var(--scm-subtext)';
+            });
+            document.getElementById(`eval-panel-${tab}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`eval-tab-${tab}`);
+            activeBtn.style.borderColor = 'var(--scm-navy)';
+            activeBtn.style.color = 'var(--scm-navy)';
+            if (tab === 'list') evalLoadSessionList();
+        }
+
+        // --- 문제 추가 ---
+        let questionCount = 0;
+        function evalAddQuestion() {
+            questionCount++;
+            const qId = questionCount;
+            const container = document.getElementById('eval-questions-list');
+            const div = document.createElement('div');
+            div.id = `q-block-${qId}`;
+            div.className = 'border rounded-xl p-5 space-y-3';
+            div.style.borderColor = 'var(--scm-border)';
+            div.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span class="text-[13px] font-black" style="color: var(--scm-navy);">문제 ${qId}</span>
+                    <button onclick="document.getElementById('q-block-${qId}').remove(); questionCount--; evalRedistributeScores();" class="text-[11px] px-2 py-1 rounded border hover:bg-red-50 transition-colors" style="color:#DC2626; border-color:#FECACA;">삭제</button>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold mb-1" style="color:var(--scm-subtext);">문제 내용 *</label>
+                    <input type="text" id="q-${qId}-text" placeholder="예: 밀폐공간 진입 전 산소 농도의 적정 범위는?" class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2" style="border-color:var(--scm-border);">
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    ${[1,2,3,4,5].map(n => `
+                    <div class="flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0" style="background:#F1F5F9; color:var(--scm-subtext);">${n}</span>
+                        <input type="text" id="q-${qId}-opt-${n}" placeholder="보기 ${n}" class="flex-1 border rounded-lg px-2.5 py-2 text-[12.5px] focus:outline-none focus:ring-2" style="border-color:var(--scm-border);">
+                    </div>`).join('')}
+                </div>
+                <div class="flex flex-wrap items-center gap-4 pt-1">
+                    <div class="flex items-center gap-2">
+                        <label class="text-[12px] font-bold shrink-0" style="color:var(--scm-text);">정답 번호:</label>
+                        <select id="q-${qId}-answer" class="border rounded-lg px-3 py-2 text-[13px] focus:outline-none" style="border-color:var(--scm-border);">
+                            ${[1,2,3,4,5].map(n=>`<option value="${n}">${n}번</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label class="text-[12px] font-bold shrink-0" style="color:var(--scm-text);">이 문제 배점:</label>
+                        <input type="number" id="q-${qId}-weight" value="0" min="0" max="100" oninput="evalUpdateScoreSum()" class="w-20 border rounded-lg px-2.5 py-2 text-[13px] focus:outline-none" style="border-color:var(--scm-border);">
+                        <span class="text-[12px] font-bold" style="color:var(--scm-subtext);">%</span>
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+            evalRedistributeScores();
+        }
+
+        // --- 문제 배점 균등 자동분배 (문제 추가/삭제 시 호출) ---
+        function evalRedistributeScores() {
+            const ids = [];
+            for (let i = 1; i <= questionCount + 10; i++) {
+                if (document.getElementById(`q-${i}-weight`)) ids.push(i);
+            }
+            if (ids.length === 0) return;
+            const base = Math.floor(100 / ids.length);
+            const remainder = 100 - base * ids.length;
+            ids.forEach((id, idx) => {
+                const weightEl = document.getElementById(`q-${id}-weight`);
+                weightEl.value = base + (idx < remainder ? 1 : 0);
+            });
+            evalUpdateScoreSum();
+        }
+
+        // --- 배점 합계 표시 갱신 ---
+        function evalUpdateScoreSum() {
+            const ids = [];
+            for (let i = 1; i <= questionCount + 10; i++) {
+                if (document.getElementById(`q-${i}-weight`)) ids.push(i);
+            }
+            const sum = ids.reduce((acc, id) => acc + (parseFloat(document.getElementById(`q-${id}-weight`).value) || 0), 0);
+            const sumEl = document.getElementById('eval-score-sum');
+            if (!sumEl) return;
+            sumEl.textContent = `${sum}%`;
+            sumEl.style.color = sum === 100 ? 'var(--scm-accent)' : '#DC2626';
+        }
+
+        // 첫 문제 자동 추가
+        evalAddQuestion();
+
+        // --- 세션 생성 ---
+        function evalCreateSession() {
+            const title = document.getElementById('eval-title').value.trim();
+            const dateStart = document.getElementById('eval-date-start').value;
+            const dateEnd = document.getElementById('eval-date-end').value;
+            const instructor = document.getElementById('eval-instructor').value.trim();
+            const passScore = parseInt(document.getElementById('eval-pass-score').value) || 60;
+            const matUrl = document.getElementById('eval-material-url').value.trim();
+            const matText = document.getElementById('eval-material-text').value.trim();
+
+            if (!title) { showToast('⚠️ 교육명을 입력해 주세요.', 'warn'); return; }
+            if (!dateStart) { showToast('⚠️ 교육 시작일을 선택해 주세요.', 'warn'); return; }
+            if (dateEnd && dateEnd < dateStart) { showToast('⚠️ 종료일이 시작일보다 빠릅니다.', 'warn'); return; }
+
+            // 문제 수집 (배점 포함)
+            const questions = [];
+            let weightSum = 0;
+            for (let i = 1; i <= questionCount + 10; i++) {
+                const qEl = document.getElementById(`q-${i}-text`);
+                if (!qEl) continue;
+                const text = qEl.value.trim();
+                if (!text) continue;
+                const options = [1,2,3,4,5].map(n => (document.getElementById(`q-${i}-opt-${n}`)?.value.trim() || ''));
+                const filledOptions = options.filter(o => o);
+                if (filledOptions.length < 2) { showToast(`⚠️ 문제 ${i}에 보기를 최소 2개 이상 입력해 주세요.`, 'warn'); return; }
+                const answer = parseInt(document.getElementById(`q-${i}-answer`).value);
+                const weight = parseFloat(document.getElementById(`q-${i}-weight`)?.value) || 0;
+                weightSum += weight;
+                questions.push({ text, options, answer, weight });
+            }
+            if (questions.length === 0) { showToast('⚠️ 시험 문제를 최소 1문제 이상 등록해 주세요.', 'warn'); return; }
+            if (Math.round(weightSum) !== 100) { showToast(`⚠️ 문제 배점 합계가 ${Math.round(weightSum)}%입니다. 100%로 맞춰주세요 (균등분배 버튼 활용).`, 'warn'); return; }
+
+            const sessionId = 'SCM' + Date.now().toString(36).toUpperCase();
+            const manageKey = 'MGR' + Math.random().toString(36).substring(2, 8).toUpperCase();
+
+            evalSessions[sessionId] = {
+                sessionId, manageKey,
+                info: { title, dateStart, dateEnd: dateEnd || dateStart, instructor, passScore },
+                material: { url: matUrl, text: matText },
+                questions,
+                results: [],
+                createdAt: new Date().toISOString()
+            };
+
+            currentSessionId = sessionId;
+            evalSaveToStorage();
+
+            // 링크 생성 (현재 페이지 URL + hash)
+            const baseUrl = window.location.href.split('#')[0];
+            const participateUrl = `${baseUrl}#participate/${sessionId}`;
+            const manageUrl = `${baseUrl}#manage/${sessionId}/${manageKey}`;
+
+            document.getElementById('eval-participate-link').textContent = participateUrl;
+            document.getElementById('eval-manage-link').textContent = manageUrl;
+            document.getElementById('eval-result-box').classList.remove('hidden');
+            document.getElementById('eval-result-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            showToast('✅ 교육 세션이 생성되었습니다!', 'success');
+        }
+
+        // --- 링크 복사 ---
+        function evalCopyLink(type) {
+            const el = document.getElementById(`eval-${type}-link`);
+            navigator.clipboard.writeText(el.textContent).then(() => {
+                showToast(`📋 ${type === 'participate' ? '참여' : '관리'} 링크가 복사되었습니다.`, 'success');
+            }).catch(() => {
+                const ta = document.createElement('textarea');
+                ta.value = el.textContent;
+                document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+                showToast(`📋 링크가 복사되었습니다.`, 'success');
+            });
+        }
+
+        // --- 참여 화면 열기 ---
+        function evalOpenParticipate(sessionId) {
+            const sid = sessionId || currentSessionId;
+            if (!sid || !evalSessions[sid]) { showToast('⚠️ 세션을 찾을 수 없습니다.', 'warn'); return; }
+            currentSessionId = sid;
+            const session = evalSessions[sid];
+
+            // 리셋
+            document.getElementById('part-name').value = '';
+            document.getElementById('part-empno').value = '';
+            document.getElementById('part-title').textContent = session.info.title;
+            document.getElementById('part-pass-label').textContent = `${session.info.passScore}점 이상`;
+            currentParticipantAnswers = {};
+
+            // 자료 설정
+            if (session.material.url) {
+                const urlBox = document.getElementById('part-material-url-box');
+                const urlLink = document.getElementById('part-material-url-link');
+                const urlText = document.getElementById('part-material-url-text');
+                urlBox.classList.remove('hidden');
+                urlLink.href = session.material.url;
+                urlText.textContent = session.material.url.length > 50 ? session.material.url.substring(0, 50) + '...' : session.material.url;
+            } else {
+                document.getElementById('part-material-url-box').classList.add('hidden');
+            }
+            if (session.material.text) {
+                document.getElementById('part-material-text-box').classList.remove('hidden');
+                document.getElementById('part-material-text-content').textContent = session.material.text;
+            } else {
+                document.getElementById('part-material-text-box').classList.add('hidden');
+            }
+
+            // 단계 바 렌더링
+            const steps = ['본인 확인', '자료 열람', '시험 응시', '결과 확인'];
+            const stepBar = document.getElementById('step-bar');
+            stepBar.innerHTML = steps.map((s, i) => `
+                <div class="flex items-center">
+                    <div class="flex flex-col items-center">
+                        <div class="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-black ${i === 0 ? 'text-white' : 'text-slate-400'}" style="background: ${i === 0 ? 'var(--scm-navy)' : '#E2E8F0'};">${i+1}</div>
+                        <span class="text-[10px] mt-1 font-bold ${i === 0 ? '' : 'text-slate-400'}" style="${i === 0 ? 'color:var(--scm-navy)' : ''}">${s}</span>
+                    </div>
+                    ${i < steps.length - 1 ? '<div class="w-8 h-px mb-4 mx-1" style="background:#E2E8F0;"></div>' : ''}
+                </div>
+            `).join('');
+
+            // 각 단계 표시
+            [1,2,3,4].forEach(n => {
+                document.getElementById(`part-step-${n}`).classList.toggle('hidden', n !== 1);
+            });
+
+            switchTab('education');
+            eduShowView('eval-participate');
+        }
+
+        // --- 단계 바 업데이트 ---
+        function partUpdateStepBar(activeStep) {
+            const steps = ['본인 확인', '자료 열람', '시험 응시', '결과 확인'];
+            const stepBar = document.getElementById('step-bar');
+            stepBar.innerHTML = steps.map((s, i) => `
+                <div class="flex items-center">
+                    <div class="flex flex-col items-center">
+                        <div class="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-black" style="background: ${i < activeStep ? 'var(--scm-accent)' : i === activeStep ? 'var(--scm-navy)' : '#E2E8F0'}; color: ${i <= activeStep ? 'white' : '#94A3B8'};">
+                            ${i < activeStep ? '✓' : i+1}
+                        </div>
+                        <span class="text-[10px] mt-1 font-bold" style="color: ${i === activeStep ? 'var(--scm-navy)' : i < activeStep ? 'var(--scm-accent)' : '#94A3B8'}">${s}</span>
+                    </div>
+                    ${i < steps.length - 1 ? '<div class="w-8 h-px mb-4 mx-1" style="background:#E2E8F0;"></div>' : ''}
+                </div>
+            `).join('');
+        }
+
+        // --- Step 1 → 2 (본인 확인) ---
+        function partStep1Next() {
+            const name = document.getElementById('part-name').value.trim();
+            const empno = document.getElementById('part-empno').value.trim();
+            if (!name) { showToast('⚠️ 성명을 입력해 주세요.', 'warn'); return; }
+            if (!empno) { showToast('⚠️ 사번을 입력해 주세요.', 'warn'); return; }
+            document.getElementById('part-step-1').classList.add('hidden');
+            document.getElementById('part-step-2').classList.remove('hidden');
+            partUpdateStepBar(1);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- Step 2 → 3 (자료 열람 완료) ---
+        function partStep2Next() {
+            const session = evalSessions[currentSessionId];
+            if (!session) return;
+
+            // 시험 문제 렌더링
+            const quizList = document.getElementById('part-quiz-list');
+            quizList.innerHTML = session.questions.map((q, qi) => `
+                <div class="scm-card p-5 space-y-3">
+                    <div class="flex items-start justify-between gap-3">
+                        <p class="text-[13.5px] font-bold" style="color:var(--scm-text);">Q${qi+1}. ${q.text}</p>
+                        <span class="shrink-0 text-[11px] font-bold px-2 py-0.5 rounded" style="background:#F1F5F9; color:var(--scm-subtext);">${q.weight}점</span>
+                    </div>
+                    <div class="space-y-2">
+                        ${q.options.map((opt, oi) => opt ? `
+                        <label class="flex items-center gap-3 p-3 rounded-lg border cursor-pointer hover:border-blue-300 transition-colors has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50" style="border-color:var(--scm-border);">
+                            <input type="radio" name="q-${qi}" value="${oi+1}" onchange="currentParticipantAnswers[${qi}] = ${oi+1}" class="accent-blue-600">
+                            <span class="text-[13px]" style="color:var(--scm-text);"><strong style="color:var(--scm-subtext);">${oi+1}.</strong> ${opt}</span>
+                        </label>` : '').join('')}
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('part-step-2').classList.add('hidden');
+            document.getElementById('part-step-3').classList.remove('hidden');
+            partUpdateStepBar(2);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- 시험 제출 ---
+        function partSubmitExam() {
+            const session = evalSessions[currentSessionId];
+            if (!session) return;
+
+            // 미답 확인
+            const unanswered = session.questions.filter((_, qi) => !currentParticipantAnswers[qi]);
+            if (unanswered.length > 0) {
+                showToast(`⚠️ ${unanswered.length}문제에 답변하지 않았습니다.`, 'warn'); return;
+            }
+
+            // 채점 (문제별 배점 가중 합산)
+            let correct = 0;
+            let score = 0;
+            session.questions.forEach((q, qi) => {
+                if (currentParticipantAnswers[qi] === q.answer) {
+                    correct++;
+                    score += (q.weight || 0);
+                }
+            });
+            score = Math.round(score);
+            const total = session.questions.length;
+            const passed = score >= session.info.passScore;
+            const now = new Date();
+            const timeStr = now.toLocaleString('ko-KR');
+
+            const name = document.getElementById('part-name').value.trim();
+            const empno = document.getElementById('part-empno').value.trim();
+
+            // 결과 저장
+            const result = { name, empno, score, passed, time: timeStr, correct, total };
+            evalSessions[currentSessionId].results.push(result);
+            evalSaveToStorage();
+
+            // 결과 화면
+            document.getElementById('part-result-icon').textContent = passed ? '🎉' : '😔';
+            document.getElementById('part-result-title').textContent = passed ? '합격하셨습니다!' : '아쉽게 불합격입니다.';
+            document.getElementById('part-result-title').style.color = passed ? 'var(--scm-accent)' : '#DC2626';
+            document.getElementById('part-result-desc').textContent = passed
+                ? `${score}점으로 합격 기준(${session.info.passScore}점)을 통과했습니다.`
+                : `${score}점으로 합격 기준(${session.info.passScore}점)에 미달했습니다. 재응시를 요청하세요.`;
+            document.getElementById('part-result-name').textContent = name;
+            document.getElementById('part-result-empno').textContent = empno;
+            document.getElementById('part-result-edu').textContent = session.info.title;
+            document.getElementById('part-result-score').textContent = `${score}점 (${correct}/${total}문항 정답)`;
+            document.getElementById('part-result-pass').textContent = passed ? '✅ 합격' : '❌ 불합격';
+            document.getElementById('part-result-pass').style.color = passed ? 'var(--scm-accent)' : '#DC2626';
+            document.getElementById('part-result-time').textContent = timeStr;
+
+            document.getElementById('part-step-3').classList.add('hidden');
+            document.getElementById('part-step-4').classList.remove('hidden');
+            partUpdateStepBar(3);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- 수료증 출력 ---
+        function evalPrintResult() {
+            const name = document.getElementById('part-result-name').textContent;
+            const empno = document.getElementById('part-result-empno').textContent;
+            const edu = document.getElementById('part-result-edu').textContent;
+            const score = document.getElementById('part-result-score').textContent;
+            const pass = document.getElementById('part-result-pass').textContent;
+            const time = document.getElementById('part-result-time').textContent;
+            const passed = pass.includes('합격') && !pass.includes('불합격');
+
+            const win = window.open('', '_blank');
+            win.document.write(`<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8">
+<title>수료증 - ${name}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Noto Sans KR',sans-serif; background:#fff; display:flex; justify-content:center; align-items:center; min-height:100vh; }
+  .cert { width:700px; border:3px solid #1B3A6B; border-radius:16px; padding:50px; position:relative; }
+  .cert-header { text-align:center; border-bottom:2px solid #1B3A6B; padding-bottom:24px; margin-bottom:28px; }
+  .cert-brand { font-size:13px; color:#64748B; font-weight:700; letter-spacing:2px; text-transform:uppercase; margin-bottom:12px; }
+  .cert-title { font-size:32px; font-weight:900; color:#1B3A6B; margin-bottom:6px; }
+  .cert-subtitle { font-size:14px; color:#64748B; }
+  .cert-body { text-align:center; margin-bottom:32px; }
+  .cert-name { font-size:26px; font-weight:900; color:#1E293B; margin:8px 0 4px; border-bottom:2px solid #1B3A6B; display:inline-block; padding:0 16px 6px; }
+  .cert-declare { font-size:14px; color:#64748B; margin-bottom:24px; }
+  .cert-table { width:100%; border-collapse:collapse; margin:0 auto 24px; }
+  .cert-table td { padding:10px 16px; border-bottom:1px solid #E1E7EF; font-size:13px; }
+  .cert-table td:first-child { color:#64748B; font-weight:700; width:120px; }
+  .cert-table td:last-child { color:#1E293B; font-weight:700; }
+  .cert-pass { display:inline-block; padding:8px 28px; border-radius:999px; font-size:16px; font-weight:900; margin-bottom:24px; ${passed ? 'background:#DCFCE7; color:#15803D;' : 'background:#FEE2E2; color:#DC2626;'} }
+  .cert-seal { text-align:right; font-size:13px; color:#64748B; margin-top:24px; border-top:1px solid #E1E7EF; padding-top:16px; }
+  @media print { body { -webkit-print-color-adjust:exact; print-color-adjust:exact; } }
+</style>
+</head><body>
+<div class="cert">
+  <div class="cert-header">
+    <div class="cert-brand">SEAH CM · 세아씨엠 안전 AI 플랫폼</div>
+    <div class="cert-title">교 육 이 수 증</div>
+    <div class="cert-subtitle">CERTIFICATE OF COMPLETION</div>
+  </div>
+  <div class="cert-body">
+    <div class="cert-declare">아래 교육대상자는</div>
+    <div class="cert-name">${name}</div>
+    <div class="cert-declare" style="margin-top:8px;">위 성명의 임직원이 교육 평가를 이수하였음을 확인합니다.</div>
+    <table class="cert-table">
+      <tr><td>사번</td><td>${empno}</td></tr>
+      <tr><td>교육명</td><td>${edu}</td></tr>
+      <tr><td>취득 점수</td><td>${score}</td></tr>
+      <tr><td>응시 일시</td><td>${time}</td></tr>
+    </table>
+    <div class="cert-pass">${passed ? '✅ 합격' : '❌ 불합격'}</div>
+  </div>
+  <div class="cert-seal">
+    <p>세아씨엠 안전보건팀</p>
+    <p style="margin-top:4px; font-size:12px;">본 이수증은 세아씨엠 안전 AI 플랫폼에서 자동 발급되었습니다.</p>
+  </div>
+</div>
+<script>window.onload = () => { window.print(); }<\/script>
+</body></html>`);
+            win.document.close();
+        }
+
+        // --- 관리 화면 열기 ---
+        function evalOpenManage(sessionId, manageKey) {
+            const sid = sessionId || currentSessionId;
+            if (!sid || !evalSessions[sid]) { showToast('⚠️ 세션을 찾을 수 없습니다.', 'warn'); return; }
+            currentSessionId = sid;
+            const session = evalSessions[sid];
+
+            document.getElementById('manage-title').textContent = session.info.title;
+            document.getElementById('manage-date').textContent = evalFormatDateRange(session.info.dateStart, session.info.dateEnd);
+            document.getElementById('manage-instructor').textContent = session.info.instructor || '—';
+            document.getElementById('manage-pass-score').textContent = `${session.info.passScore}점 이상`;
+
+            evalRefreshManageTable();
+            switchTab('education');
+            eduShowView('eval-manage');
+        }
+
+        function evalRefreshManageTable() {
+            const session = evalSessions[currentSessionId];
+            if (!session) return;
+            const results = session.results;
+
+            document.getElementById('manage-stat-total').textContent = results.length;
+            document.getElementById('manage-stat-pass').textContent = results.filter(r => r.passed).length;
+            document.getElementById('manage-stat-fail').textContent = results.filter(r => !r.passed).length;
+
+            const tbody = document.getElementById('manage-tbody');
+            if (results.length === 0) {
+                tbody.innerHTML = '<tr id="manage-empty-row"><td colspan="6" class="px-4 py-12 text-center text-[13px]" style="color:var(--scm-subtext);">아직 응시자가 없습니다.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = results.map((r, i) => `
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="px-4 py-3" style="color:var(--scm-subtext);">${i+1}</td>
+                    <td class="px-4 py-3 font-bold" style="color:var(--scm-text);">${r.name}</td>
+                    <td class="px-4 py-3" style="color:var(--scm-text);">${r.empno}</td>
+                    <td class="px-4 py-3 font-bold" style="color:var(--scm-navy);">${r.score}점</td>
+                    <td class="px-4 py-3 font-bold" style="color:${r.passed ? 'var(--scm-accent)' : '#DC2626'};">${r.passed ? '✅ 합격' : '❌ 불합격'}</td>
+                    <td class="px-4 py-3 text-[12px]" style="color:var(--scm-subtext);">${r.time}</td>
+                </tr>
+            `).join('');
+        }
+
+        // --- 세션 목록 로드 ---
+        function evalLoadSessionList() {
+            const sessions = Object.values(evalSessions);
+            const emptyEl = document.getElementById('eval-session-list-empty');
+            const tableEl = document.getElementById('eval-session-list-table');
+            const tbody = document.getElementById('eval-session-list-tbody');
+
+            if (sessions.length === 0) {
+                emptyEl?.classList.remove('hidden');
+                tableEl?.classList.add('hidden');
+                return;
+            }
+            emptyEl?.classList.add('hidden');
+            tableEl?.classList.remove('hidden');
+
+            if (!tbody) return;
+            tbody.innerHTML = sessions.map(s => `
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="px-4 py-3 font-bold" style="color:var(--scm-text);">${s.info.title}</td>
+                    <td class="px-4 py-3" style="color:var(--scm-subtext);">${evalFormatDateRange(s.info.dateStart, s.info.dateEnd)}</td>
+                    <td class="px-4 py-3 font-bold" style="color:var(--scm-navy);">${s.results.length}명</td>
+                    <td class="px-4 py-3">
+                        <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold" style="background:#EFF6FF; color:#1D4ED8;">진행중</span>
+                    </td>
+                    <td class="px-4 py-3">
+                        <div class="flex items-center gap-2">
+                            <button onclick="evalOpenParticipate('${s.sessionId}')" class="text-[11px] font-bold px-2.5 py-1.5 rounded-lg border hover:bg-blue-50 transition-colors" style="border-color:#93C5FD; color:#1D4ED8;">참여 미리보기</button>
+                            <button onclick="evalOpenManage('${s.sessionId}')" class="text-[11px] font-bold px-2.5 py-1.5 rounded-lg border hover:bg-slate-50 transition-colors" style="border-color:var(--scm-border); color:var(--scm-text);">이수 현황</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // --- PDF 내보내기 (이수 현황) ---
+        function evalExportPDF() {
+            const session = evalSessions[currentSessionId];
+            if (!session) return;
+            const results = session.results;
+
+            const win = window.open('', '_blank');
+            win.document.write(`<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8">
+<title>교육 이수 현황 - ${session.info.title}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Noto Sans KR',sans-serif; padding:40px; color:#1E293B; }
+  h1 { font-size:20px; font-weight:900; color:#1B3A6B; margin-bottom:4px; }
+  .meta { font-size:12px; color:#64748B; margin-bottom:24px; }
+  .stats { display:flex; gap:16px; margin-bottom:24px; }
+  .stat { flex:1; border:1px solid #E1E7EF; border-radius:8px; padding:12px; text-align:center; }
+  .stat-label { font-size:10px; color:#64748B; font-weight:700; margin-bottom:4px; }
+  .stat-val { font-size:20px; font-weight:900; }
+  table { width:100%; border-collapse:collapse; font-size:12px; }
+  th { background:#F8FAFC; border-bottom:2px solid #E1E7EF; padding:8px 12px; text-align:left; font-weight:700; color:#64748B; }
+  td { border-bottom:1px solid #E1E7EF; padding:8px 12px; }
+  .pass { color:#15803D; font-weight:700; }
+  .fail { color:#DC2626; font-weight:700; }
+  .footer { margin-top:24px; font-size:11px; color:#94A3B8; text-align:right; }
+  @media print { body { -webkit-print-color-adjust:exact; print-color-adjust:exact; } }
+</style></head><body>
+<h1>교육 이수 현황</h1>
+<div class="meta">교육명: ${session.info.title} | 기간: ${evalFormatDateRange(session.info.dateStart, session.info.dateEnd)} | 강사: ${session.info.instructor || '—'} | 합격기준: ${session.info.passScore}점</div>
+<div class="stats">
+  <div class="stat"><div class="stat-label">전체 응시</div><div class="stat-val">${results.length}명</div></div>
+  <div class="stat"><div class="stat-label">합격</div><div class="stat-val" style="color:#15803D;">${results.filter(r=>r.passed).length}명</div></div>
+  <div class="stat"><div class="stat-label">불합격</div><div class="stat-val" style="color:#DC2626;">${results.filter(r=>!r.passed).length}명</div></div>
+  <div class="stat"><div class="stat-label">합격률</div><div class="stat-val" style="color:#1B3A6B;">${results.length ? Math.round(results.filter(r=>r.passed).length/results.length*100) : 0}%</div></div>
+</div>
+<table>
+  <thead><tr><th>#</th><th>성명</th><th>사번</th><th>점수</th><th>합격 여부</th><th>응시 일시</th></tr></thead>
+  <tbody>
+    ${results.length === 0
+      ? '<tr><td colspan="6" style="text-align:center; padding:24px; color:#94A3B8;">응시자가 없습니다.</td></tr>'
+      : results.map((r, i) => `<tr>
+          <td>${i+1}</td><td>${r.name}</td><td>${r.empno}</td>
+          <td><strong>${r.score}점</strong></td>
+          <td class="${r.passed ? 'pass' : 'fail'}">${r.passed ? '합격' : '불합격'}</td>
+          <td>${r.time}</td>
+        </tr>`).join('')
+    }
+  </tbody>
+</table>
+<div class="footer">세아씨엠 안전 AI 플랫폼 · 출력일: ${new Date().toLocaleString('ko-KR')}</div>
+<script>window.onload = () => { window.print(); }<\/script>
+</body></html>`);
+            win.document.close();
+        }
+
+        // --- education menuData 업데이트 (클릭 시 evalAdmin 열기) ---
+        // education 카드는 HTML에 직접 구현했으므로 menuData에서는 제거
+        delete menuData.education;
     </script>
 </body>
 </html>
