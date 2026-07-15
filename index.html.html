@@ -477,13 +477,17 @@
                         <!-- 키 입력 -->
                         <div class="space-y-1.5">
                             <p class="font-bold" style="color:var(--scm-text);">발급받은 일반 인증키(Encoding) 붙여넣기</p>
+                            <div style="background:#FEF9C3;border:1px solid #FDE047;border-radius:8px;padding:8px 12px;font-size:11.5px;color:#713F12;margin-bottom:8px;">
+                                💡 <strong>저장</strong>을 누르면 키가 포함된 새 파일이 자동 다운로드됩니다.<br>
+                                다운로드된 <code>index.html</code>로 교체하면 <strong>다른 사용자도 날씨를 볼 수 있습니다.</strong>
+                            </div>
                             <div class="flex gap-2">
                                 <input id="weather-api-key-input" type="text"
                                     placeholder="jXxBjM3%2FYvZ8Hk..."
                                     class="flex-1 border rounded-lg px-3 py-2 text-[12px] focus:outline-none focus:ring-2"
                                     style="border-color:var(--scm-border);"
                                     oninput="weatherValidateKeyInput(this)">
-                                <button onclick="weatherSaveKey()" class="px-4 py-2 rounded-lg text-white text-[12px] font-bold hover:opacity-90 transition-opacity whitespace-nowrap" style="background:var(--scm-navy);">저장</button>
+                                <button onclick="weatherSaveKey()" class="px-4 py-2 rounded-lg text-white text-[12px] font-bold hover:opacity-90 transition-opacity whitespace-nowrap" style="background:var(--scm-navy);">저장 + 파일 생성</button>
                             </div>
                             <p id="weather-key-hint" class="text-[11px]" style="color:var(--scm-subtext);">키를 붙여넣으면 형식을 자동으로 확인합니다.</p>
                         </div>
@@ -2389,10 +2393,18 @@
         const WEATHER_KEY_STORAGE = 'seahcm_weather_api_key';
         const WEATHER_NX = 56;   // 군산시 소룡동 격자 X (위도 35.989°N)
         const WEATHER_NY = 93;   // 군산시 소룡동 격자 Y (경도 126.696°E)
+
+        // ★ 관리자가 저장하면 아래 값이 업데이트됩니다.
+        //   모든 사용자가 키 없이도 날씨를 볼 수 있습니다.
+        let WEATHER_EMBED_KEY = '';
+
         let weatherCountdownTimer = null;
         let weatherNextFetchTime = null;
 
         function weatherGetKey() {
+            // 1순위: 파일에 직접 저장된 키 (모든 사용자 공유)
+            if (WEATHER_EMBED_KEY) return WEATHER_EMBED_KEY;
+            // 2순위: 이 브라우저의 localStorage (관리자 본인 폴백)
             return localStorage.getItem(WEATHER_KEY_STORAGE) || '';
         }
 
@@ -2445,8 +2457,29 @@
                 return;
             }
 
+            // 1) 이 세션에 즉시 적용 (본인 화면 바로 표시)
+            WEATHER_EMBED_KEY = key;
             localStorage.setItem(WEATHER_KEY_STORAGE, key);
-            showToast('✅ API 키가 저장되었습니다. 날씨 데이터를 불러옵니다.', 'success');
+
+            // 2) 파일 내 EMBED_KEY를 업데이트한 새 HTML 다운로드
+            //    → 다운로드된 파일로 교체하면 모든 사용자 공유
+            try {
+                const html = document.documentElement.outerHTML;
+                const updated = html.replace(
+                    /let WEATHER_EMBED_KEY = '[^']*';/,
+                    `let WEATHER_EMBED_KEY = '${key}';`
+                );
+                const blob = new Blob([updated], { type: 'text/html' });
+                const a    = document.createElement('a');
+                a.href     = URL.createObjectURL(blob);
+                a.download = 'index.html';
+                a.click();
+                URL.revokeObjectURL(a.href);
+                showToast('✅ API 키 저장 완료! 다운로드된 index.html 파일로 교체하면 모든 사용자에게 날씨가 표시됩니다.', 'success');
+            } catch(e) {
+                showToast('✅ API 키가 적용되었습니다. (파일 자동저장 실패 — 수동으로 파일을 업데이트해 주세요)', 'info');
+            }
+
             weatherFetch(true);
         }
 
