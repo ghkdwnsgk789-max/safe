@@ -266,10 +266,12 @@
                     <!-- 화학물질 -->
                     <div class="mega-item h-16 flex items-center">
                         <button id="btn-tab-chemical"
+                            onclick="window.open('https://seahmsds.vercel.app/#paint','_blank')"
                             class="tab-btn scm-nav-link h-16 px-4 text-[13px] font-bold flex items-center transition-colors whitespace-nowrap">화학물질</button>
                         <div class="mega-panel-wide">
                             <p class="mega-group-title">화학물질 관리</p>
                             <div class="mega-items-row">
+                                <button class="mega-item-btn" onclick="window.open('https://seahmsds.vercel.app/#paint','_blank')">MSDS 시스템 바로가기 ↗</button>
                                 <button class="mega-item-btn" onclick="showComingSoon('MSDS 검색')">MSDS 검색</button>
                                 <button class="mega-item-btn" onclick="showComingSoon('화학물질 현황')">화학물질 현황</button>
                                 <button class="mega-item-btn" onclick="showComingSoon('취급 안전 정보')">취급 안전 정보</button>
@@ -363,7 +365,7 @@
             <button onclick="switchTab('education')" class="mobile-tab-btn w-full px-3 py-2.5 rounded-lg text-[13px] font-bold text-left text-blue-50 hover:bg-white/10">교육</button>
             <button onclick="switchTab('iso')" class="mobile-tab-btn w-full px-3 py-2.5 rounded-lg text-[13px] font-bold text-left text-blue-50 hover:bg-white/10">ISO</button>
             <button onclick="switchTab('event')" class="mobile-tab-btn w-full px-3 py-2.5 rounded-lg text-[13px] font-bold text-left text-blue-50 hover:bg-white/10">이벤트</button>
-            <button onclick="switchTab('chemical')" class="mobile-tab-btn w-full px-3 py-2.5 rounded-lg text-[13px] font-bold text-left text-blue-50 hover:bg-white/10">화학물질</button>
+            <button onclick="window.open('https://seahmsds.vercel.app/#paint','_blank')" class="mobile-tab-btn w-full px-3 py-2.5 rounded-lg text-[13px] font-bold text-left text-blue-50 hover:bg-white/10">화학물질 ↗</button>
             <button onclick="switchTab('hbreport')" class="mobile-tab-btn w-full px-3 py-2.5 rounded-lg text-[13px] font-bold text-left text-blue-50 hover:bg-white/10 flex items-center gap-2">
                 <span class="text-[9px] font-extrabold px-1.5 py-0.5 rounded" style="background:#E53E3E; color:white;">중대재해</span>반기보고
             </button>
@@ -555,7 +557,7 @@
 
                         <!-- 업데이트 시각 -->
                         <div class="flex items-center justify-between text-[11px]" style="color: var(--scm-subtext);">
-                            <span>기상청 초단기실황 | 군산 (nx 55, ny 73)</span>
+                            <span>기상청 초단기실황 | 소룡동 (nx 56, ny 93)</span>
                             <span id="weather-updated">업데이트 중...</span>
                         </div>
                     </div>
@@ -2380,13 +2382,13 @@
 
         // ============================================================
         //  체감온도 위젯 JS
-        //  - 기상청 초단기실황 API (군산 nx=55, ny=73)
+        //  - 기상청 초단기실황 API (소룡동 nx=56, ny=93)
         //  - 매시 40분 이후 데이터 갱신, 카운트다운으로 다음 갱신 시각 표시
         //  - CORS 이슈 시 corsproxy.io 폴백
         // ============================================================
         const WEATHER_KEY_STORAGE = 'seahcm_weather_api_key';
-        const WEATHER_NX = 55;   // 군산시 격자 X
-        const WEATHER_NY = 73;   // 군산시 격자 Y
+        const WEATHER_NX = 56;   // 군산시 소룡동 격자 X (위도 35.989°N)
+        const WEATHER_NY = 93;   // 군산시 소룡동 격자 Y (경도 126.696°E)
         let weatherCountdownTimer = null;
         let weatherNextFetchTime = null;
 
