@@ -6,6 +6,8 @@
     <title>세아씨엠 안전 AI 플랫폼</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <!-- Google Fonts (Noto Sans KR) -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <style>
@@ -1017,7 +1019,15 @@
             <div id="rtab-patrol" style="display:none;">
                 <div id="patrol-folder-view">
                     <div id="patrol-total-progress" style="margin-bottom:14px;"></div>
-                    <p style="font-size:12.5px;color:var(--scm-subtext);margin-bottom:12px;">월을 선택하면 해당 월의 위험요인 발굴 및 관리 목록이 표시됩니다.</p>
+
+                    <!-- 엑셀 일괄 등록 버튼 -->
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                        <p style="font-size:12.5px;color:var(--scm-subtext);">월을 선택하면 해당 월의 위험요인 발굴 및 관리 목록이 표시됩니다.</p>
+                        <button onclick="xlsxUploadOpen('patrol')"
+                            style="display:flex;align-items:center;gap:6px;background:linear-gradient(135deg,#059669,#047857);color:white;border:none;border-radius:8px;padding:7px 14px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">
+                            📊 엑셀 일괄 등록
+                        </button>
+                    </div>
                     <div id="patrol-month-grid" style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;"></div>
                 </div>
                 <div id="patrol-detail-view" style="display:none;">
@@ -1027,21 +1037,80 @@
                         <div id="patrol-progress-badge" style="margin-left:auto;font-size:12.5px;font-weight:800;padding:5px 14px;border-radius:99px;background:#EFF6FF;color:#1D4ED8;"></div>
                     </div>
                     <div id="patrol-stats" style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px;"></div>
-                    <div class="scm-card p-4 mb-4">
-                        <h4 style="font-size:13px;font-weight:800;color:var(--scm-navy);margin-bottom:10px;">+ 위험요인 등록</h4>
-                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;">
-                            <div><label style="font-size:11px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:3px;">발견 장소 *</label><input id="patrol-loc" placeholder="예: 3공장 프레스" style="width:100%;border:1.5px solid var(--scm-border);border-radius:7px;padding:6px 9px;font-size:12px;outline:none;"></div>
-                            <div><label style="font-size:11px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:3px;">위험요인 내용 *</label><input id="patrol-content" placeholder="예: 방호장치 미설치" style="width:100%;border:1.5px solid var(--scm-border);border-radius:7px;padding:6px 9px;font-size:12px;outline:none;"></div>
-                            <div><label style="font-size:11px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:3px;">위험등급</label><select id="patrol-level" style="width:100%;border:1.5px solid var(--scm-border);border-radius:7px;padding:6px 9px;font-size:12px;outline:none;background:white;"><option value="상">상 (즉시)</option><option value="중" selected>중 (7일)</option><option value="하">하 (30일)</option></select></div>
+
+                    <!-- ① 마스터 전용 섹션 (등록폼 + 엑셀AI) -->
+                    <div id="patrol-master-section" style="display:none;">
+
+                    <div class="scm-card mb-4 overflow-hidden">
+                        <div style="background:#059669;color:white;padding:10px 16px;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:space-between;">
+                            <span>📊 엑셀 파일로 자동 기입</span>
+                            <span style="font-size:11px;opacity:0.85;">파일 첨부 → AI 자동기입 클릭</span>
                         </div>
-                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;">
-                            <div><label style="font-size:11px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:3px;">발견일 *</label><input type="date" id="patrol-found" style="width:100%;border:1.5px solid var(--scm-border);border-radius:7px;padding:6px 9px;font-size:12px;outline:none;"></div>
-                            <div><label style="font-size:11px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:3px;">개선 기한 *</label><input type="date" id="patrol-due" style="width:100%;border:1.5px solid var(--scm-border);border-radius:7px;padding:6px 9px;font-size:12px;outline:none;"></div>
-                            <div><label style="font-size:11px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:3px;">담당자 *</label><input id="patrol-owner" placeholder="이름 또는 부서" style="width:100%;border:1.5px solid var(--scm-border);border-radius:7px;padding:6px 9px;font-size:12px;outline:none;"></div>
+                        <div style="padding:14px 16px;">
+                            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                                <label style="display:flex;align-items:center;gap:6px;background:#F0FDF4;border:1.5px dashed #86EFAC;border-radius:8px;padding:8px 14px;cursor:pointer;font-size:12.5px;font-weight:600;color:#166534;">
+                                    📁 엑셀 파일 선택 (.xlsx/.xls)
+                                    <input type="file" id="patrol-xlsx-input" accept=".xlsx,.xls" style="display:none;" onchange="patrolXlsxAttach(this.files[0])">
+                                </label>
+                                <div id="patrol-xlsx-file-name" style="font-size:12px;color:var(--scm-subtext);"></div>
+                                <button id="patrol-ai-fill-btn" onclick="patrolAiFill()" style="display:none;background:linear-gradient(135deg,#6366F1,#8B5CF6);color:white;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;align-items:center;gap:6px;">✨ AI 자동기입</button>
+                            </div>
+                            <div id="patrol-ai-status" style="display:none;margin-top:10px;padding:8px 12px;background:#EDE9FE;border-radius:8px;font-size:12.5px;color:#6D28D9;font-weight:600;">🔄 AI가 엑셀을 분석하고 있습니다...</div>
                         </div>
-                        <div style="margin-bottom:8px;"><label style="font-size:11px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:3px;">개선 조치 내용</label><textarea id="patrol-action" rows="2" style="width:100%;border:1.5px solid var(--scm-border);border-radius:7px;padding:6px 9px;font-size:12px;outline:none;resize:vertical;font-family:inherit;"></textarea></div>
-                        <div style="display:flex;justify-content:flex-end;"><button onclick="patrolRegister()" style="background:#1B3A6B;color:white;border:none;border-radius:8px;padding:7px 20px;font-size:12.5px;font-weight:700;cursor:pointer;">등록</button></div>
                     </div>
+
+                    <div class="scm-card mb-4 overflow-hidden">
+                        <div style="background:#1B3A6B;color:white;padding:10px 16px;font-size:13px;font-weight:800;">✏️ 직접 입력 등록</div>
+                        <div style="padding:14px 16px;">
+                            <div style="display:grid;grid-template-columns:90px 1fr 90px 1fr;gap:0;border:1.5px solid #CBD5E1;border-radius:8px 8px 0 0;overflow:hidden;">
+                                <div style="background:#1B3A6B;color:white;padding:8px 10px;font-size:12px;font-weight:700;text-align:center;border-right:1px solid #CBD5E1;">위험등급</div>
+                                <div style="padding:4px 8px;border-right:1px solid #CBD5E1;"><select id="patrol-level" style="width:100%;border:none;outline:none;font-size:12.5px;font-weight:700;background:transparent;color:#92400E;padding:4px 0;"><option value="상">상 (즉시조치)</option><option value="중" selected>중 (7일이내)</option><option value="하">하 (30일이내)</option></select></div>
+                                <div style="background:#1B3A6B;color:white;padding:8px 10px;font-size:12px;font-weight:700;text-align:center;border-left:1px solid #CBD5E1;border-right:1px solid #CBD5E1;">상태</div>
+                                <div style="padding:4px 8px;"><select id="patrol-status-input" style="width:100%;border:none;outline:none;font-size:12.5px;font-weight:700;background:transparent;color:#92400E;padding:4px 0;"><option value="미완료">미완료</option><option value="완료">완료</option></select></div>
+                            </div>
+                            <div style="display:grid;grid-template-columns:90px 1fr 90px 120px;gap:0;border:1.5px solid #CBD5E1;border-top:0;overflow:hidden;">
+                                <div style="background:#1B3A6B;color:white;padding:10px;font-size:12px;font-weight:700;text-align:center;border-right:1px solid #CBD5E1;display:flex;align-items:center;justify-content:center;">지적사항</div>
+                                <div style="padding:6px 8px;border-right:1px solid #CBD5E1;"><input id="patrol-content" placeholder="발견 장소 및 위험요인 내용" style="width:100%;border:none;outline:none;font-size:12.5px;background:transparent;padding:4px 0;"></div>
+                                <div style="background:#253D6B;color:white;padding:8px 6px;font-size:11.5px;font-weight:700;text-align:center;border-right:1px solid #CBD5E1;display:flex;align-items:center;justify-content:center;">점검날짜</div>
+                                <div style="padding:4px 8px;display:flex;align-items:center;"><input type="date" id="patrol-found" style="width:100%;border:none;outline:none;font-size:12px;color:#1B3A6B;font-weight:700;background:transparent;padding:4px 0;"></div>
+                            </div>
+                            <div style="display:grid;grid-template-columns:90px 1fr;gap:0;border:1.5px solid #CBD5E1;border-top:0;overflow:hidden;">
+                                <div style="background:#2D4A7A;color:white;padding:8px 10px;font-size:11.5px;font-weight:700;text-align:center;border-right:1px solid #CBD5E1;display:flex;align-items:center;justify-content:center;">발견 장소</div>
+                                <div style="padding:5px 8px;"><input id="patrol-loc" placeholder="예: 3공장 프레스 구역" style="width:100%;border:none;outline:none;font-size:12.5px;background:transparent;padding:3px 0;"></div>
+                            </div>
+                            <div style="display:grid;grid-template-columns:90px 1fr 80px 120px 80px 120px;gap:0;border:1.5px solid #CBD5E1;border-top:0;border-radius:0 0 8px 8px;overflow:hidden;">
+                                <div style="background:#1B3A6B;color:white;padding:10px;font-size:12px;font-weight:700;text-align:center;border-right:1px solid #CBD5E1;display:flex;align-items:center;justify-content:center;">조치사항</div>
+                                <div style="padding:6px 8px;border-right:1px solid #CBD5E1;"><input id="patrol-action" placeholder="개선 조치 내용" style="width:100%;border:none;outline:none;font-size:12.5px;background:transparent;padding:4px 0;"></div>
+                                <div style="background:#253D6B;color:white;padding:8px 6px;font-size:11.5px;font-weight:700;text-align:center;border-right:1px solid #CBD5E1;display:flex;align-items:center;justify-content:center;">조치부서</div>
+                                <div style="padding:4px 8px;border-right:1px solid #CBD5E1;display:flex;align-items:center;"><input id="patrol-owner" placeholder="부서명 또는 담당자" style="width:100%;border:none;outline:none;font-size:12.5px;color:#1B3A6B;font-weight:700;background:transparent;padding:4px 0;"></div>
+                                <div style="background:#253D6B;color:white;padding:8px 6px;font-size:11.5px;font-weight:700;text-align:center;border-right:1px solid #CBD5E1;display:flex;align-items:center;justify-content:center;">개선기한</div>
+                                <div style="padding:4px 8px;display:flex;align-items:center;"><input type="date" id="patrol-due" style="width:100%;border:none;outline:none;font-size:12px;color:#1B3A6B;font-weight:700;background:transparent;padding:4px 0;"></div>
+                            </div>
+                            <!-- 개선 전 사진 (마스터) -->
+                            <div style="margin-top:10px;border:1.5px solid #FECACA;border-radius:8px;overflow:hidden;">
+                                <div style="background:#FEF2F2;color:#991B1B;padding:6px 12px;font-size:12px;font-weight:700;border-bottom:1px solid #FECACA;display:flex;align-items:center;justify-content:space-between;">
+                                    <span>▶ 개선 전 사진</span>
+                                    <label style="display:inline-flex;align-items:center;gap:5px;background:white;border:1px solid #FECACA;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:11.5px;font-weight:600;color:#991B1B;">
+                                        📷 사진 첨부
+                                        <input type="file" id="patrol-before-photo" accept="image/*" multiple style="display:none;" onchange="patrolPreviewPhoto('before',this)">
+                                    </label>
+                                </div>
+                                <div id="patrol-before-preview" style="min-height:160px;"></div>
+                            </div>
+                            <div style="display:flex;justify-content:flex-end;margin-top:12px;">
+                                <button onclick="patrolRegister()" style="background:#1B3A6B;color:white;border:none;border-radius:8px;padding:8px 22px;font-size:13px;font-weight:700;cursor:pointer;">등록</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    </div><!-- /patrol-master-section -->
+
+                    <!-- 일반 관리자 안내 -->
+                    <div id="patrol-user-notice" style="display:none;background:#EFF6FF;border:1.5px solid #BFDBFE;border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:12.5px;color:#1D4ED8;">
+                        💡 아래 목록에서 담당 위험요인의 <strong>📷 개선 후 사진 등록</strong> 버튼을 클릭하여 개선 완료 사진을 첨부하세요.
+                    </div>
+
+                    <!-- 필터 -->
                     <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
                         <span style="font-size:12px;color:var(--scm-subtext);font-weight:600;line-height:28px;">필터:</span>
                         <button onclick="patrolSetFilter('all')"     id="pf-all"     style="font-size:12px;font-weight:700;padding:3px 11px;border-radius:99px;border:1.5px solid #1B3A6B;background:#1B3A6B;color:white;cursor:pointer;">전체</button>
@@ -1059,7 +1128,13 @@
             <div id="rtab-joint" style="display:none;">
                 <div id="joint-folder-view">
                     <div id="joint-total-progress" style="margin-bottom:14px;"></div>
-                    <p style="font-size:12.5px;color:var(--scm-subtext);margin-bottom:12px;">분기를 선택하면 해당 분기의 합동점검 위험요인 목록이 표시됩니다.</p>
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                        <p style="font-size:12.5px;color:var(--scm-subtext);">분기를 선택하면 해당 분기의 합동점검 위험요인 목록이 표시됩니다.</p>
+                        <button onclick="xlsxUploadOpen('joint')"
+                            style="display:flex;align-items:center;gap:6px;background:linear-gradient(135deg,#059669,#047857);color:white;border:none;border-radius:8px;padding:7px 14px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">
+                            📊 엑셀 일괄 등록
+                        </button>
+                    </div>
                     <div id="joint-quarter-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;"></div>
                 </div>
                 <div id="joint-detail-view" style="display:none;">
@@ -1146,6 +1221,92 @@
             </div>
 
         </section>
+
+        <!-- ══════════════════════════════════════════
+             엑셀 일괄 등록 모달
+             ══════════════════════════════════════════ -->
+        <div id="xlsx-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.55);align-items:center;justify-content:center;padding:16px;">
+            <div style="background:white;border-radius:16px;width:min(900px,96vw);max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(0,0,0,0.25);">
+                <div style="background:linear-gradient(135deg,#059669,#047857);color:white;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+                    <div>
+                        <p id="xlsx-modal-title" style="font-size:15px;font-weight:800;margin:0;">📊 엑셀 일괄 등록</p>
+                        <p id="xlsx-modal-subtitle" style="font-size:12px;opacity:0.85;margin:4px 0 0;">엑셀 파일을 업로드하면 AI가 컬럼을 자동 인식합니다.</p>
+                    </div>
+                    <button onclick="xlsxModalClose()" style="background:rgba(255,255,255,0.2);border:none;color:white;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:20px;line-height:32px;text-align:center;padding:0;">×</button>
+                </div>
+                <div style="flex:1;overflow-y:auto;padding:20px;">
+
+                    <!-- STEP 1: 파일 선택 -->
+                    <div id="xlsx-step1">
+                        <div style="background:#F0FDF4;border:1px solid #86EFAC;border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+                            <div>
+                                <div style="font-size:13px;font-weight:700;color:#166534;margin-bottom:3px;">📥 표준 양식 다운로드 (선택)</div>
+                                <div style="font-size:12px;color:#15803D;">기존 자체 양식을 그대로 사용하셔도 됩니다. AI가 컬럼을 자동으로 인식합니다.</div>
+                            </div>
+                            <button onclick="xlsxDownloadTemplate()" style="background:#166534;color:white;border:none;border-radius:8px;padding:7px 14px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">양식 다운로드</button>
+                        </div>
+                        <label id="xlsx-dropzone" style="display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px dashed #86EFAC;border-radius:12px;padding:40px 20px;cursor:pointer;text-align:center;background:#F0FDF4;transition:all 0.2s;"
+                            ondragover="event.preventDefault();this.style.background='#DCFCE7';this.style.borderColor='#22C55E'"
+                            ondragleave="this.style.background='#F0FDF4';this.style.borderColor='#86EFAC'"
+                            ondrop="xlsxHandleDrop(event)">
+                            <span style="font-size:48px;margin-bottom:12px;">📊</span>
+                            <span style="font-size:14px;font-weight:700;color:#166534;margin-bottom:6px;">엑셀 파일을 드래그하거나 클릭하여 선택</span>
+                            <span style="font-size:12px;color:#4B5563;">.xlsx / .xls · 기존 자체 양식 그대로 사용 가능</span>
+                            <input type="file" id="xlsx-file-input" accept=".xlsx,.xls" style="display:none;" onchange="xlsxHandleFile(this.files[0])">
+                        </label>
+                    </div>
+
+                    <!-- STEP 2: AI 분석 중 -->
+                    <div id="xlsx-step2" style="display:none;text-align:center;padding:48px 20px;">
+                        <div style="width:52px;height:52px;border:4px solid #D1FAE5;border-top-color:#059669;border-radius:50%;animation:spin 0.9s linear infinite;margin:0 auto 18px;"></div>
+                        <p id="xlsx-analyze-msg" style="font-size:14px;font-weight:700;color:#166534;">AI가 엑셀 컬럼을 분석 중...</p>
+                        <p style="font-size:12px;color:#6B7280;margin-top:6px;">발견 장소, 위험요인, 담당자, 기한 등을 자동으로 매핑합니다.</p>
+                    </div>
+
+                    <!-- STEP 3: 미리보기 + 확인 -->
+                    <div id="xlsx-step3" style="display:none;">
+                        <div id="xlsx-mapping-info" style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12.5px;color:#1D4ED8;line-height:1.6;"></div>
+
+                        <!-- 등록 대상 월/분기 선택 -->
+                        <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                            <span style="font-size:12.5px;font-weight:700;color:#92400E;">📅 등록할 대상:</span>
+                            <select id="xlsx-target-month" style="border:1.5px solid #FDE68A;border-radius:7px;padding:5px 10px;font-size:12.5px;outline:none;background:white;display:none;">
+                                <option value="">월 선택 *</option>
+                                <option value="01">1월</option><option value="02">2월</option><option value="03">3월</option>
+                                <option value="04">4월</option><option value="05">5월</option><option value="06">6월</option>
+                                <option value="07">7월</option><option value="08">8월</option><option value="09">9월</option>
+                                <option value="10">10월</option><option value="11">11월</option><option value="12">12월</option>
+                            </select>
+                            <select id="xlsx-target-quarter" style="border:1.5px solid #FDE68A;border-radius:7px;padding:5px 10px;font-size:12.5px;outline:none;background:white;display:none;">
+                                <option value="">분기 선택 *</option>
+                                <option value="Q1">1분기 (1~3월)</option><option value="Q2">2분기 (4~6월)</option>
+                                <option value="Q3">3분기 (7~9월)</option><option value="Q4">4분기 (10~12월)</option>
+                            </select>
+                            <span style="font-size:12px;color:#92400E;">에 등록됩니다</span>
+                        </div>
+
+                        <!-- 미리보기 -->
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                            <span id="xlsx-preview-title" style="font-size:12.5px;font-weight:700;color:var(--scm-navy);"></span>
+                            <span style="font-size:11.5px;color:var(--scm-subtext);">✏️ 셀 클릭으로 직접 수정 가능</span>
+                        </div>
+                        <div style="overflow:auto;border:1.5px solid var(--scm-border);border-radius:10px;max-height:320px;">
+                            <table id="xlsx-preview-table" style="width:100%;border-collapse:collapse;font-size:12px;min-width:700px;">
+                                <thead id="xlsx-preview-head" style="background:#F1F5F9;position:sticky;top:0;"></thead>
+                                <tbody id="xlsx-preview-body"></tbody>
+                            </table>
+                        </div>
+                        <div id="xlsx-errors" style="display:none;margin-top:10px;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:10px 14px;font-size:12px;color:#991B1B;"></div>
+                    </div>
+                </div>
+
+                <!-- 푸터 -->
+                <div style="border-top:1px solid var(--scm-border);padding:14px 20px;display:flex;justify-content:flex-end;gap:10px;flex-shrink:0;background:#FAFAFA;">
+                    <button onclick="xlsxModalClose()" style="font-size:13px;font-weight:700;padding:8px 18px;background:white;color:var(--scm-subtext);border:1.5px solid var(--scm-border);border-radius:9px;cursor:pointer;">취소</button>
+                    <button id="xlsx-confirm-btn" onclick="xlsxConfirmImport()" style="display:none;font-size:13px;font-weight:700;padding:8px 20px;background:#059669;color:white;border:none;border-radius:9px;cursor:pointer;">✅ 일괄 등록</button>
+                </div>
+            </div>
+        </div>
 
         <!-- ==============================================
              3. 작업 탭
@@ -5750,8 +5911,311 @@ ${extraText}
 
         // ── 서브탭 전환 ──────────────────────────────────────────────
         // ══════════════════════════════════════════════════════════════
-        //  홈 대시보드 — 위험요인 관리 진행률 3종
+        //  📊 엑셀 일괄 등록 시스템
+        //  SheetJS → 파싱 → Claude AI 컬럼 매핑 → 미리보기 → 등록
         // ══════════════════════════════════════════════════════════════
+
+        let _xlsxMode    = '';      // 'patrol' | 'joint'
+        let _xlsxRows    = [];      // AI 매핑 후 정제된 행 데이터
+        let _xlsxHeaders = [];      // 미리보기 헤더
+
+        // 모달 열기
+        function xlsxUploadOpen(mode) {
+            _xlsxMode = mode;
+            _xlsxRows = [];
+            const modal = document.getElementById('xlsx-modal');
+            modal.style.display = 'flex';
+            document.getElementById('xlsx-modal-title').textContent =
+                mode === 'patrol' ? '📊 매월 패트롤 — 엑셀 일괄 등록' : '📊 합동점검 — 엑셀 일괄 등록';
+            document.getElementById('xlsx-modal-subtitle').textContent =
+                mode === 'patrol' ? '기존 패트롤 점검 엑셀 파일을 업로드하면 월별로 자동 등록됩니다.'
+                                  : '합동점검 결과 엑셀 파일을 업로드하면 분기별로 자동 등록됩니다.';
+            xlsxGoStep(1);
+        }
+
+        function xlsxModalClose() {
+            document.getElementById('xlsx-modal').style.display = 'none';
+            document.getElementById('xlsx-file-input').value = '';
+        }
+
+        function xlsxGoStep(n) {
+            [1,2,3].forEach(i => {
+                const el = document.getElementById('xlsx-step'+i);
+                if (el) el.style.display = (i===n) ? '' : 'none';
+            });
+            const confirmBtn = document.getElementById('xlsx-confirm-btn');
+            if (confirmBtn) confirmBtn.style.display = n===3 ? '' : 'none';
+        }
+
+        function xlsxHandleDrop(event) {
+            event.preventDefault();
+            const el = document.getElementById('xlsx-dropzone');
+            if (el) { el.style.background='#F0FDF4'; el.style.borderColor='#86EFAC'; }
+            const file = event.dataTransfer.files[0];
+            if (file) xlsxHandleFile(file);
+        }
+
+        async function xlsxHandleFile(file) {
+            if (!file) return;
+            if (!file.name.match(/\.(xlsx|xls)$/i)) {
+                showToast('⚠️ .xlsx 또는 .xls 파일만 지원합니다.', 'warn'); return;
+            }
+
+            xlsxGoStep(2);
+            document.getElementById('xlsx-analyze-msg').textContent = `"${file.name}" 읽는 중...`;
+
+            try {
+                // 1) SheetJS로 파싱
+                const data = await file.arrayBuffer();
+                const wb   = XLSX.read(data, { type:'array', cellDates:true });
+                const ws   = wb.Sheets[wb.SheetNames[0]];
+                const raw  = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
+
+                if (raw.length < 2) throw new Error('데이터가 없거나 헤더만 있는 파일입니다.');
+
+                // 헤더 행 + 데이터 행 분리
+                const headerRow  = raw[0].map(h => String(h).trim());
+                const dataRows   = raw.slice(1).filter(r => r.some(c => String(c).trim()));
+
+                if (dataRows.length === 0) throw new Error('데이터 행이 없습니다.');
+                if (dataRows.length > 200) throw new Error('한 번에 최대 200행까지 등록할 수 있습니다.');
+
+                document.getElementById('xlsx-analyze-msg').textContent = '컬럼 자동 분석 중...';
+
+                // ── 헤더 키워드 기반 로컬 매핑 (우선순위 + 중복 방지) ────
+                const FIELD_RULES2 = [
+                    { field:'loc',       kws:['발견 장소','발생위치','점검장소','장소','위치','구역','공장','라인'] },
+                    { field:'content',   kws:['위험요인 내용','지적사항','불안전상태','위험요인','지적','내용'] },
+                    { field:'level',     kws:['위험등급','위험도','등급'] },
+                    { field:'foundDate', kws:['발견일','점검날짜','점검일','발생일','날짜','일자'] },
+                    { field:'dueDate',   kws:['개선기한','조치기한','완료예정일','기한'] },
+                    { field:'owner',     kws:['담당자','조치부서','담당부서','책임자','담당'] },
+                    { field:'action',    kws:['개선조치 내용','조치내용','개선내용','조치사항','대책'] },
+                    { field:'status',    kws:['완료여부','처리상태','상태'] },
+                ];
+                const usedIdx2 = new Set();
+                const mapping = {};
+                for (const {field, kws} of FIELD_RULES2) {
+                    mapping[field] = null;
+                    for (const kw of kws) {
+                        for (let i = 0; i < headerRow.length; i++) {
+                            if (usedIdx2.has(i)) continue;
+                            const h = headerRow[i].replace(/[*\s\(\)（）]/g,'');
+                            if (h.includes(kw.replace(/\s/g,''))) {
+                                mapping[field] = i;
+                                usedIdx2.add(i);
+                                break;
+                            }
+                        }
+                        if (mapping[field] !== null) break;
+                    }
+                }
+
+                // 3) 데이터 정제
+                document.getElementById('xlsx-analyze-msg').textContent = '데이터 정제 중...';
+                const today = new Date().toISOString().slice(0,10);
+
+                function cellToStr(val) {
+                    if (val instanceof Date) return val.toISOString().slice(0,10);
+                    const s = String(val||'').trim();
+                    if (/^\d{5}$/.test(s)) {
+                        try {
+                            const d = XLSX.SSF.parse_date_code(parseInt(s));
+                            return `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`;
+                        } catch(e) { return s; }
+                    }
+                    const ko = s.match(/^(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})$/);
+                    if (ko) return `${ko[1]}-${ko[2].padStart(2,'0')}-${ko[3].padStart(2,'0')}`;
+                    return s;
+                }
+
+                function mapLevel(val) {
+                    const v = String(val||'').trim();
+                    if (/^(상|A|1|긴급|즉시)/i.test(v)) return '상';
+                    if (/^(하|C|3|경미|낮)/i.test(v)) return '하';
+                    return '중';
+                }
+
+                function mapStatus(val) {
+                    const v = String(val||'').trim();
+                    if (/완료/i.test(v) && !/미완료/i.test(v)) return '완료';
+                    return '미완료';
+                }
+
+                _xlsxRows = dataRows.map((r, ri) => ({
+                    _rowIdx  : ri,
+                    loc      : mapping.loc      !== null ? cellToStr(r[mapping.loc])      : '',
+                    content  : mapping.content  !== null ? cellToStr(r[mapping.content])  : '',
+                    level    : mapping.level    !== null ? mapLevel(r[mapping.level])     : '중',
+                    foundDate: mapping.foundDate!== null ? cellToStr(r[mapping.foundDate]): today,
+                    dueDate  : mapping.dueDate  !== null ? cellToStr(r[mapping.dueDate])  : '',
+                    owner    : mapping.owner    !== null ? cellToStr(r[mapping.owner])    : '',
+                    action   : mapping.action   !== null ? cellToStr(r[mapping.action])   : '',
+                    status   : mapping.status   !== null ? mapStatus(r[mapping.status])   : '미완료',
+                }));
+
+                // 4) 매핑 요약 정보
+                const mappedFields = Object.entries(mapping)
+                    .filter(([,v])=>v!==null)
+                    .map(([k,v])=>`<strong>${{loc:'장소',content:'위험요인',level:'등급',foundDate:'발견일',dueDate:'기한',owner:'담당자',action:'조치내용',status:'상태'}[k]}</strong>→${headerRow[v]}`)
+                    .join(' · ');
+                const unmapped = Object.entries(mapping).filter(([,v])=>v===null).map(([k])=>({loc:'장소',content:'위험요인',level:'등급',foundDate:'발견일',dueDate:'기한',owner:'담당자',action:'조치내용',status:'상태'}[k]));
+
+                document.getElementById('xlsx-mapping-info').innerHTML =
+                    `📌 컬럼 자동 매핑: ${mappedFields || '(표준 양식 권장)'}` +
+                    (unmapped.length ? `<br><span style="color:#92400E;">⚠️ 미인식 컬럼: ${unmapped.join(', ')} — 기본값 적용</span>` : '<br>✅ 모든 필드 매핑 완료');
+
+                // 5) 미리보기 렌더
+                xlsxRenderPreview();
+
+                // 6) 월/분기 선택 표시
+                const monthSel   = document.getElementById('xlsx-target-month');
+                const quarterSel = document.getElementById('xlsx-target-quarter');
+                monthSel.style.display   = _xlsxMode==='patrol'  ? '' : 'none';
+                quarterSel.style.display = _xlsxMode==='joint'   ? '' : 'none';
+
+                // 현재 월/분기 기본 선택
+                const cm = String(new Date().getMonth()+1).padStart(2,'0');
+                const cq = ['Q1','Q1','Q1','Q2','Q2','Q2','Q3','Q3','Q3','Q4','Q4','Q4'][new Date().getMonth()];
+                if (_xlsxMode==='patrol')  monthSel.value   = cm;
+                if (_xlsxMode==='joint')   quarterSel.value = cq;
+
+                xlsxGoStep(3);
+
+            } catch(err) {
+                xlsxGoStep(1);
+                showToast(`⚠️ 오류: ${err.message}`, 'warn');
+                console.error('[엑셀 업로드]', err);
+            }
+        }
+
+        function xlsxRenderPreview() {
+            const cols = [
+                {key:'loc',      label:'발견 장소', editable:true},
+                {key:'content',  label:'위험요인',  editable:true},
+                {key:'level',    label:'등급',      editable:true, type:'select', opts:['상','중','하']},
+                {key:'foundDate',label:'발견일',    editable:true, type:'date'},
+                {key:'dueDate',  label:'개선기한',  editable:true, type:'date'},
+                {key:'owner',    label:'담당자',    editable:true},
+                {key:'action',   label:'조치내용',  editable:true},
+                {key:'status',   label:'상태',      editable:true, type:'select', opts:['미완료','완료']},
+            ];
+            _xlsxHeaders = cols;
+
+            const head = document.getElementById('xlsx-preview-head');
+            head.innerHTML = `<tr>${cols.map(c=>`<th style="padding:8px 10px;font-size:12px;font-weight:700;color:var(--scm-navy);text-align:left;white-space:nowrap;border-bottom:1px solid var(--scm-border);">${c.label}</th>`).join('')}<th style="padding:8px 10px;font-size:12px;font-weight:700;color:var(--scm-subtext);">삭제</th></tr>`;
+
+            const body = document.getElementById('xlsx-preview-body');
+            const lc={'상':'#991B1B','중':'#92400E','하':'#166534'};
+            const lb={'상':'#FEF2F2','중':'#FFFBEB','하':'#F0FDF4'};
+
+            const errors = [];
+            body.innerHTML = _xlsxRows.map((row, ri) => {
+                const missing = !row.loc || !row.content;
+                if (missing) errors.push(ri+1);
+                const bg = missing ? '#FFF5F5' : 'white';
+                const cells = cols.map(c => {
+                    const v = row[c.key] || '';
+                    if (c.type === 'select') {
+                        const bg2 = c.key==='level' ? (lb[v]||'white') : 'white';
+                        const col = c.key==='level' ? (lc[v]||'inherit') : 'inherit';
+                        return `<td style="padding:5px 8px;border-bottom:1px solid #F1F5F9;background:${bg};"><select onchange="xlsxCellEdit(${ri},'${c.key}',this.value)" style="border:none;background:${bg2};color:${col};font-size:12px;font-weight:${c.key==='level'?'700':'400'};outline:none;width:100%;">${c.opts.map(o=>`<option ${o===v?'selected':''}>${o}</option>`).join('')}</select></td>`;
+                    }
+                    return `<td style="padding:5px 8px;border-bottom:1px solid #F1F5F9;background:${bg};max-width:160px;"><input value="${v.replace(/"/g,'&quot;')}" onchange="xlsxCellEdit(${ri},'${c.key}',this.value)" type="${c.type||'text'}" style="border:none;background:transparent;font-size:12px;outline:none;width:100%;min-width:80px;"></td>`;
+                }).join('');
+                return `<tr id="xlsx-row-${ri}">${cells}<td style="padding:5px 8px;border-bottom:1px solid #F1F5F9;background:${bg};text-align:center;"><button onclick="xlsxDeleteRow(${ri})" style="background:#FEF2F2;color:#DC2626;border:none;border-radius:5px;padding:2px 8px;cursor:pointer;font-size:11px;">✕</button></td></tr>`;
+            }).join('');
+
+            document.getElementById('xlsx-preview-title').textContent =
+                `📋 총 ${_xlsxRows.length}행 인식됨 (미리보기 — 셀 클릭하여 수정 가능)`;
+
+            const errEl = document.getElementById('xlsx-errors');
+            if (errors.length) {
+                errEl.style.display = '';
+                errEl.innerHTML = `⚠️ ${errors.length}개 행에 장소 또는 위험요인 데이터가 없습니다 (${errors.join(', ')}행). 직접 입력하거나 삭제해 주세요.`;
+            } else {
+                errEl.style.display = 'none';
+            }
+        }
+
+        function xlsxCellEdit(ri, key, val) {
+            if (_xlsxRows[ri]) _xlsxRows[ri][key] = val;
+        }
+
+        function xlsxDeleteRow(ri) {
+            _xlsxRows.splice(ri, 1);
+            xlsxRenderPreview();
+        }
+
+        function xlsxConfirmImport() {
+            const mode = _xlsxMode;
+            const monthVal   = document.getElementById('xlsx-target-month').value;
+            const quarterVal = document.getElementById('xlsx-target-quarter').value;
+
+            if (mode==='patrol' && !monthVal) { showToast('⚠️ 등록할 월을 선택해 주세요.','warn'); return; }
+            if (mode==='joint'  && !quarterVal){ showToast('⚠️ 등록할 분기를 선택해 주세요.','warn'); return; }
+
+            // 유효성 검사
+            const invalid = _xlsxRows.filter(r=>!r.loc||!r.content);
+            if (invalid.length) { showToast(`⚠️ ${invalid.length}개 행에 장소 또는 위험요인이 없습니다. 수정 후 다시 시도해 주세요.`,'warn'); return; }
+
+            if (_xlsxRows.length===0) { showToast('⚠️ 등록할 데이터가 없습니다.','warn'); return; }
+
+            const today = new Date().toISOString().slice(0,10);
+
+            if (mode==='patrol') {
+                const data = patrolLoad();
+                if (!data[monthVal]) data[monthVal] = [];
+                const newItems = _xlsxRows.map(r=>({
+                    id:Date.now()+Math.random(),
+                    loc:r.loc, content:r.content, owner:r.owner||'',
+                    level:r.level||'중', foundDate:r.foundDate||today,
+                    dueDate:r.dueDate||'', action:r.action||'',
+                    status:r.status||'미완료', doneDate:'', createdAt:new Date().toISOString()
+                }));
+                data[monthVal].unshift(...newItems);
+                patrolSave(data);
+                showToast(`✅ ${_xlsxRows.length}건이 ${monthVal.replace(/^0/,'')}월에 등록되었습니다!`, 'success');
+                xlsxModalClose();
+                patrolRenderFolders();
+
+            } else {
+                const data = jointLoad();
+                if (!data[quarterVal]) data[quarterVal] = [];
+                const newItems = _xlsxRows.map(r=>({
+                    id:Date.now()+Math.random(),
+                    loc:r.loc, content:r.content, owner:r.owner||'',
+                    level:r.level||'중', foundDate:r.foundDate||today,
+                    dueDate:r.dueDate||'', jtype:'정기 합동점검',
+                    action:r.action||'', status:r.status||'미완료',
+                    doneDate:'', createdAt:new Date().toISOString()
+                }));
+                data[quarterVal].unshift(...newItems);
+                jointSave(data);
+                showToast(`✅ ${_xlsxRows.length}건이 ${quarterVal}에 등록되었습니다!`, 'success');
+                xlsxModalClose();
+                jointRenderFolders();
+            }
+        }
+
+        // 표준 양식 다운로드
+        function xlsxDownloadTemplate() {
+            if (typeof XLSX === 'undefined') { showToast('⚠️ 잠시 후 다시 시도해 주세요.','warn'); return; }
+            const wb = XLSX.utils.book_new();
+            const headers = ['발견 장소','위험요인 내용','위험등급(상/중/하)','발견일(YYYY-MM-DD)','개선기한(YYYY-MM-DD)','담당자','개선조치 내용','완료여부(완료/미완료)'];
+            const sample  = [
+                ['3공장 프레스 구역','방호장치 미설치','상','2026-07-15','2026-07-20','김안전','방호장치 즉시 설치','미완료'],
+                ['야적장','낙하물 방지망 훼손','중','2026-07-15','2026-07-30','이담당','방지망 교체','미완료'],
+                ['1공장 통로','안전선 미표시','하','2026-07-15','2026-08-15','박부장','안전선 도색','완료'],
+            ];
+            const ws = XLSX.utils.aoa_to_sheet([headers, ...sample]);
+            ws['!cols'] = headers.map(()=>({wch:20}));
+            XLSX.utils.book_append_sheet(wb, ws, '위험요인 발굴 목록');
+            XLSX.writeFile(wb, `위험요인_발굴_표준양식_${new Date().toISOString().slice(0,10)}.xlsx`);
+            showToast('📥 표준 양식이 다운로드되었습니다.', 'success');
+        }
+
+        // ── homeRenderRiskProgress 이전 ──
         function homeRenderRiskProgress() {
             const el = document.getElementById('home-risk-progress');
             if (!el) return;
@@ -5938,6 +6402,13 @@ ${extraText}
             document.getElementById('patrol-folder-view').style.display  = 'none';
             document.getElementById('patrol-detail-view').style.display  = '';
             document.getElementById('patrol-detail-title').textContent   = `📋 ${MONTH_NAMES[parseInt(m)-1]} 위험요인 발굴 및 관리`;
+
+            // 권한별 UI 표시
+            const masterSec  = document.getElementById('patrol-master-section');
+            const userNotice = document.getElementById('patrol-user-notice');
+            if (masterSec)  masterSec.style.display  = IS_MASTER ? '' : 'none';
+            if (userNotice) userNotice.style.display  = IS_MASTER ? 'none' : '';
+
             patrolSetFilter('all');
         }
 
@@ -5960,25 +6431,421 @@ ${extraText}
             patrolRenderDetail();
         }
 
+        // ── 패트롤 사진 미리보기 임시 저장 ─────────────────────────
+        let _patrolBeforePhotos = [];
+        let _patrolAfterPhotos  = [];
+        let _patrolXlsxFile     = null;
+
+        function patrolPreviewPhoto(type, input) {
+            const arr    = type === 'before' ? _patrolBeforePhotos : _patrolAfterPhotos;
+            const prevEl = document.getElementById(`patrol-before-preview`); // 개선 전만 입력폼에 있음
+            if (!prevEl) return;
+            arr.length = 0;
+            const files = Array.from(input.files);
+            files.forEach((file, i) => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    arr[i] = { name: file.name, dataUrl: e.target.result };
+                    prevEl.innerHTML = arr.filter(Boolean).map(p =>
+                        `<div style="position:relative;line-height:0;">
+                            <img src="${p.dataUrl}" style="width:100%;display:block;object-fit:cover;max-height:240px;">
+                            <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(153,27,27,0.6);color:white;font-size:10px;padding:4px 8px;text-align:center;">${p.name}</div>
+                        </div>`
+                    ).join('');
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // 카드에서 개선 후 사진 추가 (일반관리자+마스터)
+        function patrolAddAfterPhoto(id, input) {
+            const data  = patrolLoad();
+            const month = patrolCurMonth;
+            const arr   = data[month] || [];
+            const idx   = arr.findIndex(i => i.id === id);
+            if (idx < 0) return;
+            if (!arr[idx].afterPhotos) arr[idx].afterPhotos = [];
+            const files = Array.from(input.files);
+            let loaded = 0;
+            files.forEach((file, fi) => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    arr[idx].afterPhotos.push({ name: file.name, dataUrl: e.target.result });
+                    loaded++;
+                    if (loaded === files.length) {
+                        data[month] = arr;
+                        patrolSave(data);
+                        showToast(`📷 개선 후 사진 ${files.length}장 등록 완료.`, 'success');
+                        patrolRenderDetail();
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // ── 엑셀 파일 첨부 → AI 자동기입 버튼 표시 ───────────────
+        function patrolXlsxAttach(file) {
+            if (!file) return;
+            _patrolXlsxFile = file;
+            document.getElementById('patrol-xlsx-file-name').textContent = `📄 ${file.name}`;
+            const btn = document.getElementById('patrol-ai-fill-btn');
+            if (btn) { btn.style.display = 'inline-flex'; }
+        }
+
+        // ── AI 자동기입 ───────────────────────────────────────────
+        async function patrolAiFill() {
+            if (!_patrolXlsxFile) return;
+            const statusEl = document.getElementById('patrol-ai-status');
+            const btn      = document.getElementById('patrol-ai-fill-btn');
+            statusEl.style.display = ''; btn.disabled = true; btn.style.opacity = '0.6';
+            statusEl.textContent = '🔄 엑셀 파일을 읽는 중...';
+
+            try {
+                // SheetJS 로드 대기 (최대 8초)
+                let waitCount = 0;
+                while (typeof XLSX === 'undefined' && waitCount < 80) {
+                    await new Promise(r => setTimeout(r, 100));
+                    waitCount++;
+                }
+                if (typeof XLSX === 'undefined') throw new Error('엑셀 라이브러리 로딩 실패. 페이지를 새로고침해 주세요.');
+
+                const data = await _patrolXlsxFile.arrayBuffer();
+                const wb   = XLSX.read(data, { type:'array', cellDates:true });
+                const ws   = wb.Sheets[wb.SheetNames[0]];
+                const raw  = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
+
+                if (!raw.length) throw new Error('파일에 데이터가 없습니다.');
+
+                statusEl.textContent = '🤖 파일 형식 분석 중...';
+
+                // ── 형식 감지: 점검서식(라벨-값 구조) vs 목록 양식(헤더-데이터 구조) ──
+                const firstRow  = raw[0].map(c => String(c||'').trim());
+                const isFormFormat = firstRow.some(c => ['현장 패트롤','현장패트롤'].some(k => c.includes(k)))
+                    || raw.slice(0,5).some(row => row.some(c => c === '지적사항' || c === '조치사항'));
+
+                let extracted = {};
+
+                if (isFormFormat) {
+                    // ── 점검서식 형식 파싱 ─────────────────────────────
+                    // 라벨 셀 찾아서 옆 값 읽기
+                    const allCells = [];
+                    for (let r = 0; r < Math.min(raw.length, 20); r++) {
+                        for (let c = 0; c < raw[r].length; c++) {
+                            const v = String(raw[r][c]||'').trim();
+                            if (v) allCells.push({ row:r, col:c, val:v });
+                        }
+                    }
+
+                    function findNext(labelKw) {
+                        for (const cell of allCells) {
+                            if (labelKw.some(kw => cell.val.includes(kw))) {
+                                // 같은 행에서 오른쪽 값 찾기
+                                const row = raw[cell.row];
+                                for (let c2 = cell.col+1; c2 < row.length; c2++) {
+                                    const v2 = String(row[c2]||'').trim();
+                                    if (v2 && !['None','null'].includes(v2)) return v2;
+                                }
+                            }
+                        }
+                        return '';
+                    }
+
+                    const levelRaw = findNext(['위험등급']);
+                    const locAndContent = findNext(['지적사항']);
+                    const action = findNext(['조치사항']);
+                    const owner  = findNext(['조치부서']);
+                    const status = findNext(['상태']);
+                    const found  = findNext(['점검날짜','점검일']);
+                    const due    = findNext(['개선기한']);
+
+                    // 지적사항에서 장소와 내용 분리 (공백2개로 구분되어 있는 경우)
+                    const parts = locAndContent.split(/\s{2,}/);
+                    extracted = {
+                        loc      : parts.length >= 2 ? parts[0] : '',
+                        content  : parts.length >= 2 ? parts.slice(1).join(' ') : locAndContent,
+                        level    : levelRaw.replace(/[()（）]/g,'').split(/[^가-힣A-Za-z]/)[0],
+                        foundDate: found.replace(/(\d+)월(\d+)일/, (_, m, d) => `${new Date().getFullYear()}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`),
+                        dueDate  : due.replace(/(\d+)월(\d+)일/, (_, m, d) => `${new Date().getFullYear()}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`),
+                        owner, action,
+                        status   : /완료/i.test(status) && !/미완료/i.test(status) ? '완료' : '미완료',
+                    };
+
+                } else {
+                    // ── 목록 양식 형식 파싱 ────────────────────────────
+                    if (raw.length < 2) throw new Error('데이터가 없습니다. (헤더 + 1행 이상 필요)');
+
+                    const headerRow = firstRow;
+                    const dataRows  = raw.slice(1).filter(r => r.some(c => String(c).trim()));
+                    if (!dataRows.length) throw new Error('데이터 행이 없습니다.');
+
+                    // 컬럼 우선순위: 더 구체적인 키워드를 먼저 매칭
+                    const FIELD_RULES = [
+                        { field:'loc',       kws:['발견 장소','발생위치','점검장소','장소','위치','구역','공장','라인'] },
+                        { field:'content',   kws:['위험요인 내용','지적사항','불안전상태','위험요인','지적','내용'] },
+                        { field:'level',     kws:['위험등급','위험도','등급'] },
+                        { field:'foundDate', kws:['발견일','점검날짜','점검일','발생일','날짜','일자'] },
+                        { field:'dueDate',   kws:['개선기한','조치기한','완료예정일','기한'] },
+                        { field:'owner',     kws:['담당자','조치부서','담당부서','책임자','담당'] },
+                        { field:'action',    kws:['개선조치 내용','조치내용','개선내용','조치사항','대책'] },
+                        { field:'status',    kws:['완료여부','처리상태','상태'] },
+                    ];
+
+                    const usedIdx = new Set();
+                    const mapping = {};
+                    for (const {field, kws} of FIELD_RULES) {
+                        mapping[field] = null;
+                        for (const kw of kws) {
+                            for (let i = 0; i < headerRow.length; i++) {
+                                if (usedIdx.has(i)) continue;
+                                const h = headerRow[i].replace(/[*\s\(\)（）]/g,'');
+                                if (h.includes(kw.replace(/\s/g,''))) {
+                                    mapping[field] = i;
+                                    usedIdx.add(i);
+                                    break;
+                                }
+                            }
+                            if (mapping[field] !== null) break;
+                        }
+                    }
+
+                    function cellToStr(val) {
+                        if (val instanceof Date) return val.toISOString().slice(0,10);
+                        const s = String(val||'').trim();
+                        const ko = s.match(/^(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})$/);
+                        if (ko) return `${ko[1]}-${ko[2].padStart(2,'0')}-${ko[3].padStart(2,'0')}`;
+                        if (/^\d{5}$/.test(s)) {
+                            try { const d=XLSX.SSF.parse_date_code(parseInt(s)); return `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`; } catch(e){}
+                        }
+                        return s;
+                    }
+
+                    const row0 = dataRows[0];
+                    const get  = (f) => mapping[f] !== null ? row0[mapping[f]] : '';
+
+                    const lvRaw = String(get('level')||'').trim();
+                    const stRaw = String(get('status')||'').trim();
+                    extracted = {
+                        loc      : cellToStr(get('loc')),
+                        content  : cellToStr(get('content')),
+                        level    : /^(상|A|1|긴급|즉시)/i.test(lvRaw) ? '상' : /^(하|C|3|경미|낮)/i.test(lvRaw) ? '하' : '중',
+                        foundDate: cellToStr(get('foundDate')),
+                        dueDate  : cellToStr(get('dueDate')),
+                        owner    : cellToStr(get('owner')),
+                        action   : cellToStr(get('action')),
+                        status   : /완료/i.test(stRaw) && !/미완료/i.test(stRaw) ? '완료' : '미완료',
+                    };
+
+                    if (dataRows.length > 1) {
+                        setTimeout(() => showToast(`📋 엑셀에 ${dataRows.length}행이 있습니다. 전체 일괄 등록은 📊 엑셀 일괄 등록 버튼을 이용해 주세요.`, 'info'), 1500);
+                    }
+                }
+
+                // ── 폼에 자동 채우기 ──────────────────────────────────
+                const fieldMap = {
+                    'patrol-loc'         : extracted.loc,
+                    'patrol-content'     : extracted.content,
+                    'patrol-action'      : extracted.action,
+                    'patrol-owner'       : extracted.owner,
+                    'patrol-found'       : extracted.foundDate,
+                    'patrol-due'         : extracted.dueDate,
+                    'patrol-level'       : extracted.level,
+                    'patrol-status-input': extracted.status,
+                };
+
+                const filled = [];
+                for (const [id, val] of Object.entries(fieldMap)) {
+                    if (!val) continue;
+                    const el = document.getElementById(id);
+                    if (!el) continue;
+                    if (el.tagName === 'SELECT') {
+                        const opt = [...el.options].find(o => o.value === val || o.value.startsWith(val));
+                        if (opt) { el.value = opt.value; filled.push(id); }
+                    } else {
+                        el.value = val;
+                        el.style.background = '#FEFCE8';
+                        setTimeout(() => { el.style.background = ''; }, 3000);
+                        filled.push(id);
+                    }
+                }
+
+                statusEl.style.display = 'none';
+                const formatType = isFormFormat ? '점검서식' : '목록 양식';
+                showToast(`✨ [${formatType}] ${filled.length}개 항목 자동 입력 완료. 확인 후 등록해 주세요.`, 'success');
+
+                // ── 엑셀 내 이미지 자동 추출 ──────────────────────────
+                // 규칙: 1장 → 개선 전 / 2장 → 첫번째 개선 전, 두번째 개선 후
+                try {
+                    statusEl.style.display = '';
+                    statusEl.textContent   = '📷 사진 추출 중...';
+
+                    // JSZip 로드 대기
+                    let zipWait = 0;
+                    while (typeof JSZip === 'undefined' && zipWait < 30) {
+                        await new Promise(r => setTimeout(r, 100)); zipWait++;
+                    }
+
+                    if (typeof JSZip !== 'undefined') {
+                        const zip      = await JSZip.loadAsync(await _patrolXlsxFile.arrayBuffer());
+                        const mediaDir = zip.folder('xl/media');
+                        const imgFiles = [];
+
+                        if (mediaDir) {
+                            zip.folder('xl/media').forEach((relPath, file) => {
+                                if (/\.(png|jpg|jpeg|gif|bmp|webp)$/i.test(relPath)) {
+                                    imgFiles.push({ relPath, file });
+                                }
+                            });
+                        }
+
+                        if (imgFiles.length > 0) {
+                            // 파일명 순서 정렬
+                            imgFiles.sort((a, b) => a.relPath.localeCompare(b.relPath));
+
+                            const toDataUrl = async (fileEntry) => {
+                                const blob = await fileEntry.file.async('blob');
+                                return new Promise(res => {
+                                    const reader = new FileReader();
+                                    reader.onload = e => res(e.target.result);
+                                    reader.readAsDataURL(blob);
+                                });
+                            };
+
+                            const beforePrev = document.getElementById('patrol-before-preview');
+                            const afterPrev  = document.getElementById('patrol-after-preview');
+
+                            if (imgFiles.length >= 1) {
+                                const dataUrl = await toDataUrl(imgFiles[0]);
+                                _patrolBeforePhotos = [{ name: imgFiles[0].relPath, dataUrl }];
+                                if (beforePrev) {
+                                    beforePrev.innerHTML =
+                                        `<div style="position:relative;line-height:0;">
+                                            <img src="${dataUrl}" style="width:100%;display:block;object-fit:cover;max-height:240px;">
+                                            <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(153,27,27,0.6);color:white;font-size:10px;padding:4px 8px;text-align:center;">📷 개선 전 사진 (자동 추출)</div>
+                                        </div>`;
+                                }
+                            }
+
+                            if (imgFiles.length >= 2) {
+                                const dataUrl = await toDataUrl(imgFiles[1]);
+                                _patrolAfterPhotos = [{ name: imgFiles[1].relPath, dataUrl }];
+                                // 개선 후는 등록 후 카드에서 관리하므로 별도 미리보기 없음
+                            }
+
+                            const photoMsg = imgFiles.length === 1
+                                ? '📷 개선 전 사진 1장 자동 첨부됨'
+                                : imgFiles.length >= 2
+                                    ? `📷 개선 전·후 사진 각 1장 자동 첨부됨`
+                                    : '';
+                            if (photoMsg) showToast(photoMsg, 'success');
+
+                        } else {
+                            showToast('📷 엑셀에 삽입된 사진이 없습니다. 사진은 직접 첨부해 주세요.', 'info');
+                        }
+                    }
+                    statusEl.style.display = 'none';
+                } catch(imgErr) {
+                    statusEl.style.display = 'none';
+                    console.warn('[이미지 추출]', imgErr);
+                    showToast('📷 사진 자동 추출 실패 — 사진은 직접 첨부해 주세요.', 'info');
+                }
+
+            } catch(err) {
+                statusEl.style.display = 'none';
+                showToast(`⚠️ 자동기입 실패: ${err.message}`, 'warn');
+                console.error('[patrolAiFill]', err);
+            } finally {
+                btn.disabled = false; btn.style.opacity = '1';
+            }
+        }
+
         function patrolRegister() {
-            const loc=document.getElementById('patrol-loc').value.trim();
-            const content=document.getElementById('patrol-content').value.trim();
-            const owner=document.getElementById('patrol-owner').value.trim();
-            const dueDate=document.getElementById('patrol-due').value;
-            if (!loc||!content||!owner||!dueDate){showToast('⚠️ 장소, 위험요인, 담당자, 기한은 필수입니다.','warn');return;}
-            const data=patrolLoad(); if(!data[patrolCurMonth])data[patrolCurMonth]=[];
+            const loc     = document.getElementById('patrol-loc').value.trim();
+            const content = document.getElementById('patrol-content').value.trim();
+            const owner   = document.getElementById('patrol-owner').value.trim();
+            const dueDate = document.getElementById('patrol-due').value;
+            if (!loc || !content || !owner || !dueDate) {
+                showToast('⚠️ 발견 장소, 위험요인, 담당자, 개선기한은 필수입니다.', 'warn'); return;
+            }
+            const data = patrolLoad();
+            if (!data[patrolCurMonth]) data[patrolCurMonth] = [];
             data[patrolCurMonth].unshift({
-                id:Date.now(),loc,content,owner,dueDate,
-                foundDate:document.getElementById('patrol-found').value,
-                level:document.getElementById('patrol-level').value,
-                action:document.getElementById('patrol-action').value.trim(),
-                status:'미완료', doneDate:'', createdAt:new Date().toISOString()
+                id          : Date.now(),
+                loc, content, owner, dueDate,
+                foundDate   : document.getElementById('patrol-found').value,
+                level       : document.getElementById('patrol-level').value,
+                action      : document.getElementById('patrol-action').value.trim(),
+                status      : document.getElementById('patrol-status-input')?.value || '미완료',
+                beforePhotos: _patrolBeforePhotos.filter(p=>p&&p.dataUrl).map(p=>({name:p.name,dataUrl:p.dataUrl})),
+                afterPhotos : _patrolAfterPhotos.filter(p=>p&&p.dataUrl).map(p=>({name:p.name,dataUrl:p.dataUrl})),
+                doneDate    : '',
+                createdAt   : new Date().toISOString()
             });
             patrolSave(data);
-            ['patrol-loc','patrol-content','patrol-owner','patrol-action'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-            document.getElementById('patrol-found').value='';
-            document.getElementById('patrol-due').value='';
-            showToast('✅ 등록되었습니다.','success');
+            ['patrol-loc','patrol-content','patrol-owner','patrol-action'].forEach(id=>{
+                const el=document.getElementById(id); if(el) el.value='';
+            });
+            ['patrol-found','patrol-due'].forEach(id=>{
+                const el=document.getElementById(id); if(el) el.value='';
+            });
+            ['patrol-before-preview','patrol-after-preview'].forEach(id=>{
+                const el=document.getElementById(id); if(el) el.innerHTML='';
+            });
+            _patrolBeforePhotos=[]; _patrolAfterPhotos=[];
+            _patrolXlsxFile = null;
+            const fn = document.getElementById('patrol-xlsx-file-name');
+            if(fn) fn.textContent='';
+            const ai = document.getElementById('patrol-ai-fill-btn');
+            if(ai) ai.style.display='none';
+            showToast('✅ 위험요인이 등록되었습니다.', 'success');
+            patrolRenderDetail();
+        }
+
+        function patrolToggleEdit(id) {
+            const panel = document.getElementById('patrol-edit-' + id);
+            if (!panel) return;
+            panel.style.display = panel.style.display === 'none' ? '' : 'none';
+        }
+
+        function patrolSaveEdit(id) {
+            const data  = patrolLoad();
+            const month = patrolCurMonth;
+            const arr   = data[month] || [];
+            const idx   = arr.findIndex(i => i.id === id);
+            if (idx < 0) return;
+            const g = (f) => document.getElementById(`pe-${f}-${id}`)?.value?.trim() ?? '';
+            const content = g('content'), owner = g('owner'), dueDate = g('due');
+            if (!content || !owner || !dueDate) {
+                showToast('⚠️ 위험요인 내용, 조치부서, 개선기한은 필수입니다.', 'warn'); return;
+            }
+            arr[idx] = { ...arr[idx],
+                loc      : g('loc'),
+                content,
+                level    : document.getElementById(`pe-level-${id}`)?.value  || arr[idx].level,
+                foundDate: g('found'),
+                dueDate,
+                owner,
+                action   : g('action'),
+                status   : document.getElementById(`pe-status-${id}`)?.value || arr[idx].status,
+            };
+            data[month] = arr;
+            patrolSave(data);
+            showToast('✅ 수정되었습니다.', 'success');
+            patrolRenderDetail();
+        }
+
+        function patrolDeletePhoto(id, type, photoIdx) {
+            const typeLabel = type === 'before' ? '개선 전' : '개선 후';
+            if (!confirm(`📷 사진을 삭제하시겠습니까?\n[${typeLabel} 사진]\n삭제 후 복구할 수 없습니다.`)) return;
+            const data  = patrolLoad();
+            const arr   = data[patrolCurMonth] || [];
+            const idx   = arr.findIndex(i => i.id === id);
+            if (idx < 0) return;
+            const key = type === 'before' ? 'beforePhotos' : 'afterPhotos';
+            if (!arr[idx][key]) return;
+            arr[idx][key].splice(photoIdx, 1);
+            data[patrolCurMonth] = arr;
+            patrolSave(data);
+            showToast(`🗑 ${typeLabel} 사진이 삭제되었습니다.`, 'success');
             patrolRenderDetail();
         }
 
@@ -5994,6 +6861,16 @@ ${extraText}
             if(!confirm('삭제하시겠습니까?'))return;
             const data=patrolLoad(); data[patrolCurMonth]=(data[patrolCurMonth]||[]).filter(i=>i.id!==id);
             patrolSave(data); patrolRenderDetail();
+        }
+
+        function patrolOpenPhoto(id, idx, type) {
+            const data  = patrolLoad();
+            const item  = (data[patrolCurMonth]||[]).find(i=>i.id===id);
+            if (!item) return;
+            const photos = type==='before' ? (item.beforePhotos||[]) : (item.afterPhotos||[]);
+            if (!photos[idx]) return;
+            const win = window.open('','_blank');
+            win.document.write(`<html><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="${photos[idx].dataUrl}" style="max-width:100%;max-height:100vh;object-fit:contain;"></body></html>`);
         }
 
         function patrolRenderDetail() {
@@ -6025,31 +6902,141 @@ ${extraText}
             if(!items.length){listEl.innerHTML='<div style="text-align:center;padding:28px;color:var(--scm-subtext);font-size:13px;">등록된 항목이 없습니다.</div>';return;}
             const lc={'상':'#991B1B','중':'#92400E','하':'#166534'};
             const lb={'상':'#FEF2F2','중':'#FFFBEB','하':'#F0FDF4'};
+            const lt={'상':'즉시조치','중':'7일이내','하':'30일이내'};
             listEl.innerHTML=items.map(item=>{
                 const ov=item.status!=='완료'&&item.dueDate<today;
                 const dl=Math.ceil((new Date(item.dueDate)-new Date(today))/86400000);
-                const dl2=item.status==='완료'?`완료:${item.doneDate}`:ov?`⚠️${Math.abs(dl)}일 초과`:dl===0?'오늘 마감':`D-${dl}`;
-                const bg=ov?'#FFF5F5':item.status==='완료'?'#F0FDF4':'white';
-                const bd=ov?'#FECACA':item.status==='완료'?'#86EFAC':'var(--scm-border)';
-                return `<div style="background:${bg};border:1.5px solid ${bd};border-radius:10px;padding:12px 14px;margin-bottom:7px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
-                    <div style="flex:1;min-width:0;">
-                        <div style="display:flex;gap:6px;align-items:center;margin-bottom:4px;flex-wrap:wrap;">
-                            <span style="background:${lb[item.level]};color:${lc[item.level]};font-size:11px;font-weight:800;padding:2px 7px;border-radius:99px;">${item.level}급</span>
-                            <strong style="font-size:13px;color:var(--scm-text);">${item.loc}</strong>
-                            ${item.status==='완료'?'<span style="background:#DCFCE7;color:#166534;font-size:11px;font-weight:700;padding:2px 7px;border-radius:99px;">✓ 완료</span>':''}
-                            ${ov?'<span style="background:#FEE2E2;color:#991B1B;font-size:11px;font-weight:800;padding:2px 7px;border-radius:99px;">⚠️ 기한초과</span>':''}
-                        </div>
-                        <div style="font-size:12.5px;color:var(--scm-text);font-weight:600;margin-bottom:3px;">${item.content}</div>
-                        ${item.action?`<div style="font-size:12px;color:var(--scm-subtext);margin-bottom:3px;">조치: ${item.action}</div>`:''}
-                        <div style="display:flex;gap:12px;font-size:11.5px;color:var(--scm-subtext);flex-wrap:wrap;">
-                            <span>담당: <strong>${item.owner}</strong></span>
-                            ${item.foundDate?`<span>발견일: ${item.foundDate}</span>`:''}
-                            <span style="font-weight:700;color:${ov?'#991B1B':item.status==='완료'?'#166534':'#1B3A6B'};">기한: ${item.dueDate} (${dl2})</span>
+                const lv=item.level||'중';
+                const st=item.status||'미완료';
+                const fd=item.foundDate||'';
+                const dd=item.dueDate||'';
+                const fdStr=fd?`${parseInt(fd.slice(5,7))}월${parseInt(fd.slice(8,10))}일`:'-';
+                const ddStr=dd?`${parseInt(dd.slice(5,7))}월${parseInt(dd.slice(8,10))}일`:'-';
+                const stFg=st==='완료'?'#166534':'#C0392B';
+                const stBg=st==='완료'?'#DCFCE7':'#FDECEA';
+                const borderCol=ov?'#FECACA':st==='완료'?'#86EFAC':'#CBD5E1';
+                const cardBg=ov?'#FFF5F5':st==='완료'?'#F0FDF4':'white';
+                const bphotos=(item.beforePhotos||[]);
+                const aphotos=(item.afterPhotos||[]);
+
+                // ── 개선 전 사진 ─────────────────────────────────────
+                const beforeHtml = bphotos.length
+                    ? bphotos.map((p,i) =>
+                        `<div style="position:relative;line-height:0;">
+                            <img src="${p.dataUrl}" style="width:100%;display:block;object-fit:cover;height:340px;cursor:pointer;" onclick="patrolOpenPhoto(${item.id},${i},'before')" title="클릭하면 크게 보기">
+                            <div style="position:absolute;top:6px;right:6px;display:flex;gap:4px;">
+                                ${IS_MASTER ? `<button onclick="patrolDeletePhoto(${item.id},'before',${i})" style="background:rgba(220,38,38,0.85);color:white;border:none;border-radius:6px;padding:4px 9px;font-size:11px;font-weight:700;cursor:pointer;" title="사진 삭제">🗑 삭제</button>` : ''}
+                            </div>
+                            <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.4);color:white;font-size:10px;padding:4px 8px;text-align:center;">🔍 클릭하면 크게 보기</div>
+                        </div>`
+                    ).join('<div style="height:3px;background:#FECACA;"></div>')
+                    : `<div style="display:flex;align-items:center;justify-content:center;height:200px;color:#CBD5E1;font-size:12px;">사진 없음</div>`;
+
+                // ── 개선 후 사진 ─────────────────────────────────────
+                const hasAfterPhoto = aphotos.length > 0;
+                const afterHtml = hasAfterPhoto
+                    ? aphotos.map((p,i) =>
+                        `<div style="position:relative;line-height:0;">
+                            <img src="${p.dataUrl}" style="width:100%;display:block;object-fit:cover;height:340px;cursor:pointer;" onclick="patrolOpenPhoto(${item.id},${i},'after')" title="클릭하면 크게 보기">
+                            <div style="position:absolute;top:6px;right:6px;">
+                                ${IS_ADMIN ? `<button onclick="patrolDeletePhoto(${item.id},'after',${i})" style="background:rgba(220,38,38,0.85);color:white;border:none;border-radius:6px;padding:4px 9px;font-size:11px;font-weight:700;cursor:pointer;" title="사진 삭제">🗑 삭제</button>` : ''}
+                            </div>
+                            <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(22,101,52,0.45);color:white;font-size:10px;padding:4px 8px;text-align:center;">🔍 클릭하면 크게 보기</div>
+                        </div>`
+                    ).join('<div style="height:3px;background:#86EFAC;"></div>')
+                    : `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:200px;gap:10px;">
+                        <span style="color:#CBD5E1;font-size:12px;">개선 후 사진 없음</span>
+                        ${IS_ADMIN ? `<label style="display:inline-flex;align-items:center;gap:5px;background:#F0FDF4;border:1.5px solid #86EFAC;border-radius:8px;padding:7px 14px;cursor:pointer;font-size:12.5px;font-weight:700;color:#166534;">
+                            📷 개선 후 사진 등록
+                            <input type="file" accept="image/*" multiple style="display:none;" onchange="patrolAddAfterPhoto(${item.id},this)">
+                        </label>` : ''}
+                    </div>`;
+
+                const afterAddBtn = (IS_ADMIN && hasAfterPhoto)
+                    ? `<div style="padding:6px 8px;border-top:1px solid #86EFAC;text-align:center;">
+                        <label style="display:inline-flex;align-items:center;gap:5px;background:#F0FDF4;border:1.5px solid #86EFAC;border-radius:6px;padding:5px 12px;cursor:pointer;font-size:11.5px;font-weight:700;color:#166534;">
+                            📷 사진 추가
+                            <input type="file" accept="image/*" multiple style="display:none;" onchange="patrolAddAfterPhoto(${item.id},this)">
+                        </label>
+                    </div>` : '';
+
+                return `<div id="patrol-card-${item.id}" style="background:${cardBg};border:1.5px solid ${borderCol};border-radius:10px;margin-bottom:12px;overflow:hidden;">
+                    <!-- 헤더 -->
+                    <div style="background:#F8FAFC;padding:7px 12px;font-size:12px;font-weight:800;color:#1B3A6B;border-bottom:1px solid ${borderCol};display:flex;align-items:center;justify-content:space-between;">
+                        <span>현장 패트롤 점검 사항</span>
+                        <div style="display:flex;gap:6px;">
+                            ${st!=='완료'?`<button onclick="patrolComplete(${item.id})" style="font-size:11.5px;font-weight:700;padding:4px 10px;background:#166534;color:white;border:none;border-radius:6px;cursor:pointer;">✓ 완료</button>`:''}
+                            ${IS_MASTER?`<button onclick="patrolToggleEdit(${item.id})" style="font-size:11.5px;font-weight:700;padding:4px 10px;background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE;border-radius:6px;cursor:pointer;">✏️ 수정</button>`:''}
+                            ${IS_MASTER?`<button onclick="patrolDelete(${item.id})" style="font-size:11.5px;font-weight:700;padding:4px 10px;background:#FEF2F2;color:#DC2626;border:1px solid #FECACA;border-radius:6px;cursor:pointer;">🗑 삭제</button>`:''}
                         </div>
                     </div>
-                    <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0;">
-                        ${item.status!=='완료'?`<button onclick="patrolComplete(${item.id})" style="font-size:12px;font-weight:700;padding:5px 11px;background:#166534;color:white;border:none;border-radius:7px;cursor:pointer;">✓ 완료</button>`:''}
-                        <button onclick="patrolDelete(${item.id})" style="font-size:12px;font-weight:700;padding:5px 11px;background:#FEF2F2;color:#991B1B;border:1px solid #FECACA;border-radius:7px;cursor:pointer;">삭제</button>
+                    <!-- 내용 테이블 -->
+                    <div style="display:grid;grid-template-columns:80px 1fr 70px 1fr;border-bottom:1px solid ${borderCol};">
+                        <div style="background:#1B3A6B;color:white;padding:7px 8px;font-size:11px;font-weight:700;text-align:center;display:flex;align-items:center;justify-content:center;">위험등급</div>
+                        <div style="background:${lb[lv]};color:${lc[lv]};padding:7px 10px;font-size:12px;font-weight:700;display:flex;align-items:center;border-right:1px solid ${borderCol};">${lv}(${lt[lv]})</div>
+                        <div style="background:#1B3A6B;color:white;padding:7px 8px;font-size:11px;font-weight:700;text-align:center;display:flex;align-items:center;justify-content:center;border-right:1px solid ${borderCol};">상태</div>
+                        <div style="background:${stBg};color:${stFg};padding:7px 10px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px;">${st}${ov?`<span style="font-size:11px;background:#FEE2E2;color:#991B1B;padding:1px 6px;border-radius:99px;">⚠️${Math.abs(dl)}일 초과</span>`:''}</div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:80px 1fr 70px 80px;border-bottom:1px solid ${borderCol};">
+                        <div style="background:#1B3A6B;color:white;padding:9px 8px;font-size:11px;font-weight:700;text-align:center;display:flex;align-items:center;justify-content:center;border-right:1px solid ${borderCol};">지적사항</div>
+                        <div style="padding:9px 10px;font-size:12.5px;font-weight:600;color:#1E293B;border-right:1px solid ${borderCol};">${item.loc?`<span style="font-size:11px;color:#64748B;">${item.loc}</span><br>`:''}${item.content}</div>
+                        <div style="background:#253D6B;color:white;padding:7px 6px;font-size:11px;font-weight:700;text-align:center;display:flex;align-items:center;justify-content:center;border-right:1px solid ${borderCol};">점검날짜</div>
+                        <div style="padding:7px 8px;font-size:12px;font-weight:700;color:#1B3A6B;display:flex;align-items:center;">${fdStr}</div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:80px 1fr 70px 80px 70px 80px;border-bottom:1px solid ${borderCol};">
+                        <div style="background:#1B3A6B;color:white;padding:8px 8px;font-size:11px;font-weight:700;text-align:center;display:flex;align-items:center;justify-content:center;border-right:1px solid ${borderCol};">조치사항</div>
+                        <div style="padding:8px 10px;font-size:12.5px;color:#1E293B;border-right:1px solid ${borderCol};">${item.action||'—'}</div>
+                        <div style="background:#253D6B;color:white;padding:7px 6px;font-size:11px;font-weight:700;text-align:center;display:flex;align-items:center;justify-content:center;border-right:1px solid ${borderCol};">조치부서</div>
+                        <div style="padding:7px 8px;font-size:12px;font-weight:700;color:#1B3A6B;border-right:1px solid ${borderCol};display:flex;align-items:center;">${item.owner}</div>
+                        <div style="background:#253D6B;color:white;padding:7px 6px;font-size:11px;font-weight:700;text-align:center;display:flex;align-items:center;justify-content:center;border-right:1px solid ${borderCol};">개선기한</div>
+                        <div style="padding:7px 8px;font-size:12px;font-weight:700;color:${ov?'#991B1B':'#1B3A6B'};display:flex;align-items:center;">${ddStr}</div>
+                    </div>
+                    <!-- 사진 영역 -->
+                    <div style="display:grid;grid-template-columns:1fr 1fr;">
+                        <div style="border-right:1px solid ${borderCol};overflow:hidden;">
+                            <div style="background:#FEF2F2;color:#991B1B;padding:6px 10px;font-size:11.5px;font-weight:700;border-bottom:1px solid #FECACA;">▶ 개선 전 사진</div>
+                            <div>${beforeHtml}</div>
+                        </div>
+                        <div style="overflow:hidden;">
+                            <div style="background:#F0FDF4;color:#166534;padding:6px 10px;font-size:11.5px;font-weight:700;border-bottom:1px solid #86EFAC;">▶ 개선 후 사진</div>
+                            <div>${afterHtml}</div>
+                            ${afterAddBtn}
+                        </div>
+                    </div>
+                    <!-- 수정 패널 (토글) -->
+                    <div id="patrol-edit-${item.id}" style="display:none;padding:14px;background:#F8FAFC;border-top:2px solid #BFDBFE;">
+                        <div style="font-size:12.5px;font-weight:800;color:#1D4ED8;margin-bottom:12px;">✏️ 내용 수정</div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;">
+                            <div><label style="font-size:11px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:3px;">발견 장소</label>
+                                <input id="pe-loc-${item.id}" value="${(item.loc||'').replace(/"/g,'&quot;')}" style="width:100%;border:1.5px solid #CBD5E1;border-radius:7px;padding:6px 9px;font-size:12px;outline:none;"></div>
+                            <div><label style="font-size:11px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:3px;">위험요인 내용(지적사항)</label>
+                                <input id="pe-content-${item.id}" value="${(item.content||'').replace(/"/g,'&quot;')}" style="width:100%;border:1.5px solid #CBD5E1;border-radius:7px;padding:6px 9px;font-size:12px;outline:none;"></div>
+                            <div><label style="font-size:11px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:3px;">위험등급</label>
+                                <select id="pe-level-${item.id}" style="width:100%;border:1.5px solid #CBD5E1;border-radius:7px;padding:6px 9px;font-size:12px;outline:none;background:white;">
+                                    <option value="상" ${lv==='상'?'selected':''}>상 (즉시조치)</option>
+                                    <option value="중" ${lv==='중'?'selected':''}>중 (7일이내)</option>
+                                    <option value="하" ${lv==='하'?'selected':''}>하 (30일이내)</option>
+                                </select></div>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:8px;">
+                            <div><label style="font-size:11px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:3px;">점검날짜</label>
+                                <input type="date" id="pe-found-${item.id}" value="${item.foundDate||''}" style="width:100%;border:1.5px solid #CBD5E1;border-radius:7px;padding:6px 9px;font-size:12px;outline:none;"></div>
+                            <div><label style="font-size:11px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:3px;">개선기한</label>
+                                <input type="date" id="pe-due-${item.id}" value="${item.dueDate||''}" style="width:100%;border:1.5px solid #CBD5E1;border-radius:7px;padding:6px 9px;font-size:12px;outline:none;"></div>
+                            <div><label style="font-size:11px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:3px;">조치부서</label>
+                                <input id="pe-owner-${item.id}" value="${(item.owner||'').replace(/"/g,'&quot;')}" style="width:100%;border:1.5px solid #CBD5E1;border-radius:7px;padding:6px 9px;font-size:12px;outline:none;"></div>
+                            <div><label style="font-size:11px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:3px;">상태</label>
+                                <select id="pe-status-${item.id}" style="width:100%;border:1.5px solid #CBD5E1;border-radius:7px;padding:6px 9px;font-size:12px;outline:none;background:white;">
+                                    <option value="미완료" ${st==='미완료'?'selected':''}>미완료</option>
+                                    <option value="완료" ${st==='완료'?'selected':''}>완료</option>
+                                </select></div>
+                        </div>
+                        <div style="margin-bottom:12px;"><label style="font-size:11px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:3px;">조치사항</label>
+                            <textarea id="pe-action-${item.id}" rows="2" style="width:100%;border:1.5px solid #CBD5E1;border-radius:7px;padding:6px 9px;font-size:12px;outline:none;resize:vertical;font-family:inherit;">${item.action||''}</textarea></div>
+                        <div style="display:flex;justify-content:flex-end;gap:8px;">
+                            <button onclick="patrolToggleEdit(${item.id})" style="font-size:12px;font-weight:700;padding:6px 14px;background:white;color:var(--scm-subtext);border:1.5px solid var(--scm-border);border-radius:8px;cursor:pointer;">취소</button>
+                            <button onclick="patrolSaveEdit(${item.id})" style="font-size:12px;font-weight:700;padding:6px 14px;background:#1B3A6B;color:white;border:none;border-radius:8px;cursor:pointer;">저장</button>
+                        </div>
                     </div>
                 </div>`;
             }).join('');
@@ -8483,7 +9470,9 @@ ${extraText}
 
         // 관리자 여부 (헤더에 "황준하(관리자)"가 표시되면 관리자)
         // 추후 로그인 시스템 연동 시 이 값을 동적으로 교체
-        const IS_ADMIN = true;
+        const IS_ADMIN  = true;   // 일반 관리자 이상 (개선 후 사진 등록 가능)
+        const IS_MASTER = true;   // 마스터(=안전팀장) — 위험요인 등록 + 개선 전 사진 등록 가능
+                                  // 실제 운영 시: 일반 관리자 계정은 IS_MASTER = false 로 설정
 
         const MGMT_STORAGE = { policy: 'seahcm_policy_file', goal: 'seahcm_goal_file' };
         const MGMT_MAX_SIZE = 5 * 1024 * 1024; // 5MB
