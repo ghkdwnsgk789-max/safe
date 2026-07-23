@@ -15,29 +15,68 @@
             --scm-navy: #1B3A6B;
             --scm-navy-dark: #122B52;
             --scm-navy-darker: #0E1F3D;
-            --scm-blue: #2563EB;
-            --scm-bg: #FFFFFF;
+            --scm-blue: #3B82F6;
+            --scm-bg: #F0F4FA;
             --scm-card: #FFFFFF;
-            --scm-border: #E1E7EF;
+            --scm-border: #DDE4EF;
             --scm-text: #1E293B;
             --scm-subtext: #64748B;
             --scm-danger-bg: #FDECEC;
             --scm-danger-border: #F6C6C6;
             --scm-danger-text: #C0392B;
-            --scm-accent: #2E7D5B;
+            --scm-accent: #059669;
+            /* 신규 디자인 토큰 */
+            --scm-surface: rgba(255,255,255,0.72);
+            --scm-glass: rgba(255,255,255,0.55);
+            --scm-shadow: 0 4px 24px rgba(27,58,107,0.10);
+            --scm-shadow-lg: 0 8px 40px rgba(27,58,107,0.16);
+            --scm-radius: 16px;
+            --scm-radius-sm: 10px;
+            --accent-green: #10B981;
+            --accent-amber: #F59E0B;
+            --accent-red: #EF4444;
+            --accent-purple: #8B5CF6;
+            --accent-blue: #3B82F6;
         }
         body {
             font-family: 'Noto Sans KR', sans-serif;
             background: var(--scm-bg);
+            background-image:
+                radial-gradient(ellipse 900px 500px at 0% 0%, rgba(27,58,107,0.07) 0%, transparent 70%),
+                radial-gradient(ellipse 600px 400px at 100% 100%, rgba(59,130,246,0.05) 0%, transparent 70%);
+            min-height: 100vh;
         }
-        .scm-navy { background-color: var(--scm-navy); }
-        .scm-navy-dark { background-color: var(--scm-navy-dark); }
+
+        /* ─── 카드 ──────────────────────────────────────────── */
         .scm-card {
             background: var(--scm-card);
             border: 1px solid var(--scm-border);
-            border-radius: 14px;
-            box-shadow: 0 1px 3px 0 rgba(15, 31, 61, 0.06);
+            border-radius: var(--scm-radius);
+            box-shadow: var(--scm-shadow);
+            transition: box-shadow 0.2s ease, transform 0.2s ease;
         }
+        .scm-card:hover { box-shadow: var(--scm-shadow-lg); }
+
+        /* 좌측 컬러 액센트 보더 카드 */
+        .dash-card {
+            background: var(--scm-card);
+            border: 1px solid var(--scm-border);
+            border-radius: var(--scm-radius);
+            box-shadow: var(--scm-shadow);
+            border-left: 4px solid transparent;
+            transition: box-shadow 0.2s, transform 0.15s;
+        }
+        .dash-card:hover { box-shadow: var(--scm-shadow-lg); transform: translateY(-1px); }
+        .dash-card.blue   { border-left-color: var(--accent-blue); }
+        .dash-card.green  { border-left-color: var(--accent-green); }
+        .dash-card.amber  { border-left-color: var(--accent-amber); }
+        .dash-card.red    { border-left-color: var(--accent-red); }
+        .dash-card.purple { border-left-color: var(--accent-purple); }
+        .dash-card.navy   { border-left-color: var(--scm-navy); }
+
+        /* ─── 네비게이션 ─────────────────────────────────────── */
+        .scm-navy { background-color: var(--scm-navy); }
+        .scm-navy-dark { background-color: var(--scm-navy-dark); }
         .scm-nav-link {
             position: relative;
             color: #C9D6E8;
@@ -52,6 +91,63 @@
             background: #ffffff;
             border-radius: 2px 2px 0 0;
         }
+
+        /* ─── 진행률 바 애니메이션 ──────────────────────────── */
+        @keyframes fillBar {
+            from { width: 0; }
+        }
+        .progress-bar {
+            animation: fillBar 1.2s cubic-bezier(0.4,0,0.2,1) forwards;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ─── SVG 원형 게이지 ───────────────────────────────── */
+        @keyframes dashIn {
+            from { stroke-dashoffset: 314; }
+        }
+        .gauge-arc { animation: dashIn 1.4s cubic-bezier(0.4,0,0.2,1) forwards; }
+
+        /* ─── 숫자 카운트업 느낌의 큰 숫자 ────────────────── */
+        .stat-num {
+            font-size: 2.4rem;
+            font-weight: 900;
+            letter-spacing: -0.04em;
+            line-height: 1;
+        }
+        .stat-num-md {
+            font-size: 1.7rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1;
+        }
+
+        /* ─── 섹션 헤더 ────────────────────────────────────── */
+        .section-eyebrow {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--scm-subtext);
+        }
+
+        /* ─── 배지 ─────────────────────────────────────────── */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: 99px;
+            font-size: 11.5px;
+            font-weight: 700;
+        }
+        .badge-green  { background:#D1FAE5; color:#065F46; }
+        .badge-red    { background:#FEE2E2; color:#991B1B; }
+        .badge-amber  { background:#FEF3C7; color:#92400E; }
+        .badge-blue   { background:#DBEAFE; color:#1D4ED8; }
+        .badge-navy   { background:#E0E9F8; color:#1B3A6B; }
+
+        /* ─── 탭 콘텐츠 영역 패딩 통일 ─────────────────────── */
+        .tab-content { padding: 4px 0; }
 
         /* ── 메가 드롭다운 ── */
         .mega-item { position: relative; }
@@ -265,21 +361,11 @@
                         </div>
                     </div>
 
-                    <!-- 화학물질 -->
+                    <!-- 화학물질 — 클릭 시 바로 외부 사이트 이동 -->
                     <div class="mega-item h-16 flex items-center">
                         <button id="btn-tab-chemical"
-                            onclick="window.open('https://seahmsds.vercel.app/#paint','_blank')"
-                            class="tab-btn scm-nav-link h-16 px-4 text-[13px] font-bold flex items-center transition-colors whitespace-nowrap">화학물질</button>
-                        <div class="mega-panel-wide">
-                            <p class="mega-group-title">화학물질 관리</p>
-                            <div class="mega-items-row">
-                                <button class="mega-item-btn" onclick="window.open('https://seahmsds.vercel.app/#paint','_blank')">MSDS 시스템 바로가기 ↗</button>
-                                <button class="mega-item-btn" onclick="showComingSoon('MSDS 검색')">MSDS 검색</button>
-                                <button class="mega-item-btn" onclick="showComingSoon('화학물질 현황')">화학물질 현황</button>
-                                <button class="mega-item-btn" onclick="showComingSoon('취급 안전 정보')">취급 안전 정보</button>
-                                <button class="mega-item-btn" onclick="showComingSoon('재고 관리')">재고 관리</button>
-                            </div>
-                        </div>
+                            onclick="window.open('https://seahmsds.vercel.app/','_blank')"
+                            class="tab-btn scm-nav-link h-16 px-4 text-[13px] font-bold flex items-center transition-colors whitespace-nowrap">화학물질 ↗</button>
                     </div>
 
                     <!-- 중대재해 반기보고 -->
@@ -395,288 +481,195 @@
              ============================================== -->
         <section id="tab-home" class="tab-content block space-y-5">
 
-            <!-- 1행: 공지사항 + 체감온도 위젯 -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
-
-                <!-- 공지사항 -->
-                <div class="scm-card p-5 h-full">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-center gap-2">
-                            <span style="color: var(--scm-blue);">📣</span>
-                            <h3 class="font-extrabold text-[15px]" style="color: var(--scm-text);">공지사항</h3>
-                        </div>
-                        <button onclick="noticeGoPage()" class="text-[12px] font-bold px-3 py-1.5 rounded-lg border hover:bg-slate-50 transition-colors flex items-center gap-1" style="border-color: var(--scm-border); color: var(--scm-navy);">
-                            바로가기 →
-                        </button>
-                    </div>
-                    <div id="notice-home-list" class="divide-y" style="border-color: var(--scm-border);">
-                        <!-- JS로 렌더링 -->
-                        <div class="py-6 text-center text-[13px]" style="color: var(--scm-subtext);">공지사항을 불러오는 중...</div>
-                    </div>
+            <!-- ▶ 0행: KPI 수치 카드 4개 -->
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
+                <div class="dash-card green p-5">
+                    <div class="section-eyebrow mb-3">무재해 일수</div>
+                    <div class="stat-num" style="color:#059669;" id="kpi-safe-days">—</div>
+                    <div style="font-size:12px;color:var(--scm-subtext);margin-top:5px;">연속 무재해 달성 중</div>
+                    <div style="margin-top:12px;height:5px;background:#D1FAE5;border-radius:99px;overflow:hidden;"><div class="progress-bar" style="height:100%;background:linear-gradient(90deg,#10B981,#059669);border-radius:99px;width:100%;"></div></div>
                 </div>
+                <div class="dash-card blue p-5">
+                    <div class="section-eyebrow mb-3">행동관찰 달성률</div>
+                    <div class="stat-num" style="color:#2563EB;">56%</div>
+                    <div style="font-size:12px;color:var(--scm-subtext);margin-top:5px;">790건 / 목표 1,420건</div>
+                    <div style="margin-top:12px;height:5px;background:#DBEAFE;border-radius:99px;overflow:hidden;"><div class="progress-bar" style="height:100%;background:linear-gradient(90deg,#3B82F6,#2563EB);border-radius:99px;width:56%;"></div></div>
+                </div>
+                <div class="dash-card purple p-5">
+                    <div class="section-eyebrow mb-3">아차사고·안전제안</div>
+                    <div class="stat-num" style="color:#7C3AED;">85%</div>
+                    <div style="font-size:12px;color:var(--scm-subtext);margin-top:5px;">1,132건 / 목표 1,330건</div>
+                    <div style="margin-top:12px;height:5px;background:#EDE9FE;border-radius:99px;overflow:hidden;"><div class="progress-bar" style="height:100%;background:linear-gradient(90deg,#8B5CF6,#7C3AED);border-radius:99px;width:85%;"></div></div>
+                </div>
+                <div class="dash-card red p-5">
+                    <div class="section-eyebrow mb-3">안전사고 발생</div>
+                    <div class="stat-num" style="color:#DC2626;">6건</div>
+                    <div style="font-size:12px;color:var(--scm-subtext);margin-top:5px;">목표 0건 — 주의 필요</div>
+                    <div style="margin-top:12px;height:5px;background:#FEE2E2;border-radius:99px;overflow:hidden;"><div class="progress-bar" style="height:100%;background:linear-gradient(90deg,#F87171,#DC2626);border-radius:99px;width:100%;"></div></div>
+                </div>
+            </div>
 
-                <!-- 체감온도 위젯 -->
+            <!-- ▶ 1행: 체감온도 + 공지사항 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
                 <div class="scm-card p-5 h-full">
-                    <!-- 헤더 -->
                     <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-center gap-2">
-                            <span class="text-base">🌡️</span>
-                            <h3 class="font-extrabold text-[15px]" style="color: var(--scm-text);">현재 체감온도</h3>
-                        </div>
+                        <div class="flex items-center gap-2"><span class="text-base">🌡️</span><h3 class="font-extrabold text-[15px]" style="color: var(--scm-text);">현재 체감온도</h3></div>
                         <div class="flex items-center gap-2">
                             <span class="text-[11px]" style="color: var(--scm-subtext);">군산시 소룡동 · 세아씨엠</span>
                             <button onclick="weatherFetch(true)" title="새로고침" class="p-1.5 rounded hover:bg-slate-100 transition-colors" style="color: var(--scm-subtext);" id="weather-refresh-btn">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                                </svg>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                             </button>
                         </div>
                     </div>
-
-                    <!-- 체감온도 API 키 안내 배너 (키 미입력 시 표시) -->
                     <div id="weather-key-banner" class="hidden space-y-3 text-[12px]">
-                        <!-- 단계별 안내 -->
                         <div class="rounded-lg p-4 space-y-3" style="background:#F0F9FF; border:1px solid #BAE6FD;">
                             <p class="font-black text-[13px]" style="color:#0369A1;">🔑 기상청 API 키 발급 방법</p>
-
                             <div class="space-y-2">
-                                <div class="flex gap-2.5 items-start">
-                                    <span class="shrink-0 w-5 h-5 rounded-full text-white text-[10px] font-black flex items-center justify-center mt-0.5" style="background:#0369A1;">1</span>
-                                    <div style="color:#0C4A6E;">
-                                        <a href="https://www.data.go.kr" target="_blank" rel="noopener" class="font-bold underline">data.go.kr</a>
-                                        에 로그인 후 검색창에
-                                        <strong>"기상청_단기예보 조회서비스"</strong> 검색
-                                    </div>
-                                </div>
-                                <div class="flex gap-2.5 items-start">
-                                    <span class="shrink-0 w-5 h-5 rounded-full text-white text-[10px] font-black flex items-center justify-center mt-0.5" style="background:#0369A1;">2</span>
-                                    <div style="color:#0C4A6E;"><strong>활용신청</strong> 클릭 → 신청 (자동 승인, 즉시 사용 가능)</div>
-                                </div>
-                                <div class="flex gap-2.5 items-start">
-                                    <span class="shrink-0 w-5 h-5 rounded-full text-white text-[10px] font-black flex items-center justify-center mt-0.5" style="background:#0369A1;">3</span>
-                                    <div style="color:#0C4A6E;">
-                                        오른쪽 상단 <strong>마이페이지</strong> → <strong>데이터활용</strong> → <strong>Open API</strong>
-                                        → 승인된 항목 클릭 →
-                                        <strong class="underline" style="color:#DC2626;">"일반 인증키(Encoding)"</strong> 복사
-                                    </div>
-                                </div>
-                                <div class="flex gap-2.5 items-start">
-                                    <span class="shrink-0 w-5 h-5 rounded-full text-white text-[10px] font-black flex items-center justify-center mt-0.5" style="background:#0369A1;">4</span>
-                                    <div style="color:#0C4A6E;">아래 입력창에 붙여넣기 → <strong>저장</strong></div>
-                                </div>
-                            </div>
-
-                            <!-- 키 형식 예시 -->
-                            <div class="rounded p-2.5" style="background:white; border:1px solid #BAE6FD;">
-                                <p class="font-bold mb-1" style="color:#0369A1;">✅ 올바른 키 형태 (둘 다 정상)</p>
-                                <p class="text-[11px] mb-1" style="color:#475569;"><strong>형태 1 (개인 API 인증키):</strong></p>
-                                <code class="text-[11px] break-all" style="color:#475569;">210416df60ffc822b1baa2d6f2582b66... (64자리 16진수)</code>
-                                <p class="text-[11px] mt-1.5 mb-1" style="color:#475569;"><strong>형태 2 (Encoding 키):</strong></p>
-                                <code class="text-[11px] break-all" style="color:#475569;">jXxBjM3%2FYvZ8Hk...%2B...%3D%3D (100자 이상, %2F 포함)</code>
+                                <div class="flex gap-2.5 items-start"><span class="shrink-0 w-5 h-5 rounded-full text-white text-[10px] font-black flex items-center justify-center mt-0.5" style="background:#0369A1;">1</span><div style="color:#0C4A6E;"><a href="https://www.data.go.kr" target="_blank" rel="noopener" class="font-bold underline">data.go.kr</a>에 로그인 후 <strong>"기상청_단기예보 조회서비스"</strong> 검색</div></div>
+                                <div class="flex gap-2.5 items-start"><span class="shrink-0 w-5 h-5 rounded-full text-white text-[10px] font-black flex items-center justify-center mt-0.5" style="background:#0369A1;">2</span><div style="color:#0C4A6E;"><strong>활용신청</strong> 클릭 → 신청 (자동 승인)</div></div>
+                                <div class="flex gap-2.5 items-start"><span class="shrink-0 w-5 h-5 rounded-full text-white text-[10px] font-black flex items-center justify-center mt-0.5" style="background:#0369A1;">3</span><div style="color:#0C4A6E;">마이페이지 → Open API → <strong class="underline" style="color:#DC2626;">"일반 인증키(Encoding)"</strong> 복사</div></div>
+                                <div class="flex gap-2.5 items-start"><span class="shrink-0 w-5 h-5 rounded-full text-white text-[10px] font-black flex items-center justify-center mt-0.5" style="background:#0369A1;">4</span><div style="color:#0C4A6E;">아래 입력창에 붙여넣기 → <strong>저장</strong></div></div>
                             </div>
                         </div>
-
-                        <!-- 키 입력 -->
                         <div class="space-y-1.5">
                             <p class="font-bold" style="color:var(--scm-text);">발급받은 일반 인증키(Encoding) 붙여넣기</p>
-                            <div style="background:#FEF9C3;border:1px solid #FDE047;border-radius:8px;padding:8px 12px;font-size:11.5px;color:#713F12;margin-bottom:8px;">
-                                💡 <strong>저장</strong>을 누르면 키가 포함된 새 파일이 자동 다운로드됩니다.<br>
-                                다운로드된 <code>index.html</code>로 교체하면 <strong>다른 사용자도 날씨를 볼 수 있습니다.</strong>
-                            </div>
+                            <div style="background:#FEF9C3;border:1px solid #FDE047;border-radius:8px;padding:8px 12px;font-size:11.5px;color:#713F12;margin-bottom:8px;">💡 <strong>저장</strong>을 누르면 키가 포함된 새 파일이 자동 다운로드됩니다.<br>다운로드된 <code>index.html</code>로 교체하면 <strong>다른 사용자도 날씨를 볼 수 있습니다.</strong></div>
                             <div class="flex gap-2">
-                                <input id="weather-api-key-input" type="text"
-                                    placeholder="jXxBjM3%2FYvZ8Hk..."
-                                    class="flex-1 border rounded-lg px-3 py-2 text-[12px] focus:outline-none focus:ring-2"
-                                    style="border-color:var(--scm-border);"
-                                    oninput="weatherValidateKeyInput(this)">
+                                <input id="weather-api-key-input" type="text" placeholder="jXxBjM3%2FYvZ8Hk..." class="flex-1 border rounded-lg px-3 py-2 text-[12px] focus:outline-none focus:ring-2" style="border-color:var(--scm-border);" oninput="weatherValidateKeyInput(this)">
                                 <button onclick="weatherSaveKey()" class="px-4 py-2 rounded-lg text-white text-[12px] font-bold hover:opacity-90 transition-opacity whitespace-nowrap" style="background:var(--scm-navy);">저장 + 파일 생성</button>
                             </div>
                             <p id="weather-key-hint" class="text-[11px]" style="color:var(--scm-subtext);">키를 붙여넣으면 형식을 자동으로 확인합니다.</p>
                         </div>
                     </div>
-
-                    <!-- 로딩 상태 -->
                     <div id="weather-loading" class="flex flex-col items-center justify-center py-8 gap-3">
                         <div class="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style="border-color:var(--scm-border); border-top-color:var(--scm-navy);"></div>
                         <p class="text-[12.5px]" style="color: var(--scm-subtext);">기상 데이터 불러오는 중...</p>
                     </div>
-
-                    <!-- 오류 상태 -->
                     <div id="weather-error" class="hidden space-y-3">
                         <div class="rounded-lg p-4 text-[12.5px] space-y-1" style="background: var(--scm-danger-bg); border: 1px solid var(--scm-danger-border);">
                             <p class="font-bold" style="color: var(--scm-danger-text);">⚠️ 날씨 데이터 오류</p>
-                            <p id="weather-error-msg" style="color: var(--scm-danger-text); white-space: pre-line;">API 키를 확인하거나 잠시 후 다시 시도하세요.</p>
-                        </div>
-                        <div class="rounded-lg p-3 text-[11.5px] space-y-1" style="background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E;">
-                            <p class="font-bold">🔑 체크리스트</p>
-                            <p>① data.go.kr 마이페이지 → 데이터활용 → 활용신청현황에서 <strong>승인</strong> 상태인지 확인</p>
-                            <p>② <strong>"일반 인증키(Encoding)"</strong> 값을 복사했는지 확인 (Decoding 아님)</p>
-                            <p>③ 신청 후 최대 1~2시간 소요 → 재시도</p>
+                            <p id="weather-error-msg" style="color: var(--scm-danger-text);"></p>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="weatherFetch(true)" class="flex-1 text-[12px] font-bold px-3 py-2 rounded-lg border hover:bg-slate-50" style="border-color: var(--scm-border); color: var(--scm-text);">🔄 다시 시도</button>
                             <button onclick="document.getElementById('weather-key-banner').classList.remove('hidden'); document.getElementById('weather-error').classList.add('hidden');" class="flex-1 text-[12px] font-bold px-3 py-2 rounded-lg" style="background: var(--scm-navy); color: white;">🔑 키 재입력</button>
+                            <button onclick="weatherFetch(true)" class="flex-1 text-[12px] font-bold px-3 py-2 rounded-lg border hover:bg-slate-50" style="border-color: var(--scm-border); color: var(--scm-text);">🔄 다시 시도</button>
                         </div>
                     </div>
-
-                    <!-- 날씨 데이터 표시 -->
+                    <!-- 날씨 데이터 — 원형 게이지 + 수치 그리드 -->
                     <div id="weather-data" class="hidden">
-                        <!-- 메인 체감온도 표시 -->
-                        <div class="flex items-center gap-6 py-3 px-2 mb-4 rounded-xl" style="background: linear-gradient(135deg, #EFF6FF 0%, #F0FDF4 100%); border: 1px solid #E1E7EF;">
-                            <div class="text-center">
-                                <div id="weather-icon" class="text-5xl leading-none mb-1">🌤️</div>
-                                <p class="text-[11px] font-bold" id="weather-sky-label" style="color: var(--scm-subtext);">맑음</p>
-                            </div>
-                            <div class="flex-1">
-                                <div class="flex items-end gap-2 mb-1">
-                                    <span id="weather-feels-like" class="text-4xl font-black" style="color: var(--scm-navy);">—</span>
-                                    <span class="text-xl font-black mb-0.5" style="color: var(--scm-navy);">°C</span>
-                                    <span class="text-[12px] font-bold mb-1" style="color: var(--scm-subtext);">체감</span>
-                                </div>
-                                <div class="flex items-center gap-3 text-[12px]">
-                                    <span style="color: var(--scm-subtext);">실제기온</span>
-                                    <span class="font-extrabold" id="weather-temp" style="color: var(--scm-text);">— °C</span>
+                        <div style="display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;margin-bottom:14px;">
+                            <div style="position:relative;width:116px;height:116px;flex-shrink:0;">
+                                <svg width="116" height="116" viewBox="0 0 116 116">
+                                    <circle cx="58" cy="58" r="48" fill="none" stroke="#EEF2FF" stroke-width="11"/>
+                                    <circle id="weather-gauge-arc" cx="58" cy="58" r="48" fill="none" stroke="#3B82F6" stroke-width="11"
+                                        stroke-dasharray="302" stroke-dashoffset="302" stroke-linecap="round"
+                                        transform="rotate(-90 58 58)" style="transition:stroke-dashoffset 1.3s cubic-bezier(0.4,0,0.2,1);"/>
+                                </svg>
+                                <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;">
+                                    <span id="weather-icon" style="font-size:22px;line-height:1;">☀️</span>
+                                    <span id="weather-feels-like" style="font-size:24px;font-weight:900;color:var(--scm-navy);letter-spacing:-0.04em;line-height:1.1;">—</span>
+                                    <span style="font-size:9.5px;color:var(--scm-subtext);font-weight:700;">체감°C</span>
                                 </div>
                             </div>
-                        </div>
-
-                        <!-- 상세 기상 정보 -->
-                        <div class="grid grid-cols-3 gap-2 mb-4">
-                            <div class="text-center p-2.5 rounded-lg" style="background: #F8FAFC;">
-                                <p class="text-[11px] mb-1" style="color: var(--scm-subtext);">💧 습도</p>
-                                <p class="text-[15px] font-black" id="weather-humidity" style="color: var(--scm-text);">—</p>
-                            </div>
-                            <div class="text-center p-2.5 rounded-lg" style="background: #F8FAFC;">
-                                <p class="text-[11px] mb-1" style="color: var(--scm-subtext);">💨 풍속</p>
-                                <p class="text-[15px] font-black" id="weather-wind" style="color: var(--scm-text);">—</p>
-                            </div>
-                            <div class="text-center p-2.5 rounded-lg" style="background: #F8FAFC;">
-                                <p class="text-[11px] mb-1" style="color: var(--scm-subtext);">🌧 강수</p>
-                                <p class="text-[15px] font-black" id="weather-rain" style="color: var(--scm-text);">—</p>
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                                <div style="background:#F8FAFF;border-radius:10px;padding:10px 12px;"><div style="font-size:10px;color:var(--scm-subtext);font-weight:700;margin-bottom:3px;">기온</div><div id="weather-temp" style="font-size:20px;font-weight:800;color:var(--scm-navy);">—</div></div>
+                                <div style="background:#F8FAFF;border-radius:10px;padding:10px 12px;"><div style="font-size:10px;color:var(--scm-subtext);font-weight:700;margin-bottom:3px;">습도</div><div id="weather-humidity" style="font-size:20px;font-weight:800;color:var(--scm-navy);">—</div></div>
+                                <div style="background:#F8FAFF;border-radius:10px;padding:10px 12px;"><div style="font-size:10px;color:var(--scm-subtext);font-weight:700;margin-bottom:3px;">풍속</div><div id="weather-wind" style="font-size:20px;font-weight:800;color:var(--scm-navy);">—</div></div>
+                                <div style="background:#F8FAFF;border-radius:10px;padding:10px 12px;"><div style="font-size:10px;color:var(--scm-subtext);font-weight:700;margin-bottom:3px;">날씨</div><div id="weather-sky-label" style="font-size:16px;font-weight:800;color:var(--scm-navy);">—</div></div>
                             </div>
                         </div>
-
-                        <!-- 안전 경보 -->
-                        <div id="weather-alert-box" class="hidden rounded-lg px-3 py-2.5 text-[12.5px] font-bold mb-3" style="background: var(--scm-danger-bg); border: 1px solid var(--scm-danger-border); color: var(--scm-danger-text);">
-                            <span id="weather-alert-text"></span>
-                        </div>
-
-                        <!-- 업데이트 시각 -->
-                        <div class="flex items-center justify-between text-[11px]" style="color: var(--scm-subtext);">
+                        <div id="weather-alert-box" class="hidden rounded-lg p-3 text-[12px] mb-3" style="background:#FEF9C3;border:1px solid #FDE047;"><div id="weather-alert-list"></div></div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--scm-subtext);">
                             <span>기상청 초단기실황 | 소룡동 (nx 57, ny 93)</span>
-                            <span id="weather-updated">업데이트 중...</span>
+                            <span id="weather-updated"></span>
                         </div>
+                        <div id="weather-countdown" class="hidden mt-1 text-[11px] text-center" style="color:var(--scm-subtext);">다음 갱신: <span id="weather-next-update">—</span></div>
                     </div>
+                </div>
 
-                    <!-- 다음 업데이트까지 카운트다운 -->
-                    <div id="weather-countdown" class="hidden mt-2 text-[11px] text-right" style="color: var(--scm-subtext);">
-                        다음 업데이트: <span id="weather-next-update" class="font-bold" style="color: var(--scm-blue);">—</span>
+                <!-- 공지사항 -->
+                <div class="scm-card p-5 h-full">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2"><span style="color: var(--scm-blue);">📣</span><h3 class="font-extrabold text-[15px]" style="color: var(--scm-text);">공지사항</h3></div>
+                        <button onclick="noticeGoPage()" class="text-[12px] font-bold px-3 py-1.5 rounded-lg border hover:bg-slate-50 transition-colors flex items-center gap-1" style="border-color: var(--scm-border); color: var(--scm-navy);">바로가기 →</button>
                     </div>
-
-                    <!-- 시간별 예보 바 -->
-                    <div id="weather-hourly-section" class="hidden mt-3 pt-3 border-t" style="border-color: var(--scm-border);">
-                        <!-- 탭: 날씨/강수/바람/습도 -->
-                        <div class="flex gap-0 mb-3">
-                            <button id="hourly-tab-weather" onclick="hourlySetTab('weather')" class="hourly-tab text-[12px] font-bold px-3 py-1.5 rounded-full transition-colors" style="background:var(--scm-navy); color:white;">날씨</button>
-                            <button id="hourly-tab-rain" onclick="hourlySetTab('rain')" class="hourly-tab text-[12px] font-bold px-3 py-1.5 rounded-full transition-colors ml-1" style="color:var(--scm-subtext);">강수</button>
-                            <button id="hourly-tab-wind" onclick="hourlySetTab('wind')" class="hourly-tab text-[12px] font-bold px-3 py-1.5 rounded-full transition-colors ml-1" style="color:var(--scm-subtext);">바람</button>
-                            <button id="hourly-tab-hum" onclick="hourlySetTab('hum')" class="hourly-tab text-[12px] font-bold px-3 py-1.5 rounded-full transition-colors ml-1" style="color:var(--scm-subtext);">습도</button>
-                        </div>
-                        <!-- 스크롤 가능한 시간별 바 -->
-                        <div class="overflow-x-auto pb-1" style="-webkit-overflow-scrolling:touch;">
-                            <div id="weather-hourly-bar" class="flex gap-0 min-w-max">
-                                <!-- JS로 렌더링 -->
-                                <div class="flex items-center justify-center text-[12px] py-6 px-4" style="color:var(--scm-subtext);">예보 데이터 불러오는 중...</div>
-                            </div>
-                        </div>
+                    <div id="notice-home-list" class="divide-y" style="border-color: var(--scm-border);">
+                        <div class="py-6 text-center text-[13px]" style="color: var(--scm-subtext);">공지사항을 불러오는 중...</div>
                     </div>
                 </div>
             </div>
 
-            <!-- 2행: 안전 Dash Board + 업무 알리미 -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                <!-- 안전 Dash Board -->
-                <div class="lg:col-span-2 scm-card p-5">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="font-extrabold text-[15px]" style="color: var(--scm-text);">안전 Dash Board</h3>
-                        <button onclick="showComingSoon('안전 Dash Board 편집')" class="p-1.5 rounded hover:bg-slate-100 transition-colors" style="color: var(--scm-subtext);" aria-label="대시보드 편집">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                            </svg>
-                        </button>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full min-w-[560px] text-left border-collapse text-[13px]">
-                            <thead>
-                                <tr class="font-bold whitespace-nowrap" style="color: var(--scm-subtext);">
-                                    <th class="py-2 pr-3 font-bold">경영 목표</th>
-                                    <th class="py-2 pr-3 font-bold">행동관찰</th>
-                                    <th class="py-2 pr-3 font-bold">아차사고/안전제안</th>
-                                    <th class="py-2 pr-3 font-bold">안전사고</th>
-                                    <th class="py-2 pr-3 font-bold">화재/폭발/누출</th>
-                                    <th class="py-2 pr-3 font-bold">법규 준수</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y" style="color: var(--scm-text); border-color: var(--scm-border);">
-                                <tr>
-                                    <td class="py-2.5 pr-3 font-semibold" style="color: var(--scm-subtext);">목표</td>
-                                    <td class="py-2.5 pr-3 font-bold" style="color: var(--scm-blue);">1,420건 이상</td>
-                                    <td class="py-2.5 pr-3 font-bold" style="color: var(--scm-blue);">1,330건 이상</td>
-                                    <td class="py-2.5 pr-3">0건</td>
-                                    <td class="py-2.5 pr-3">0건</td>
-                                    <td class="py-2.5 pr-3">0건</td>
-                                </tr>
-                                <tr>
-                                    <td class="py-2.5 pr-3 font-semibold" style="color: var(--scm-subtext);">누계/평균</td>
-                                    <td class="py-2.5 pr-3">790건</td>
-                                    <td class="py-2.5 pr-3">1,132건</td>
-                                    <td class="py-2.5 pr-3">6건</td>
-                                    <td class="py-2.5 pr-3">0건</td>
-                                    <td class="py-2.5 pr-3">0건</td>
-                                </tr>
-                                <tr>
-                                    <td class="py-2.5 pr-3 font-semibold" style="color: var(--scm-subtext);">달성률</td>
-                                    <td class="py-2.5 pr-3 font-bold">56%</td>
-                                    <td class="py-2.5 pr-3 font-bold">85%</td>
-                                    <td class="py-2.5 pr-3 font-bold" style="color: var(--scm-danger-text);">6건 발생</td>
-                                    <td class="py-2.5 pr-3 font-bold" style="color: var(--scm-accent);">달성</td>
-                                    <td class="py-2.5 pr-3 font-bold" style="color: var(--scm-accent);">달성</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+            <!-- ▶ 2행: 경영목표 달성 현황 (SVG 게이지) + 위험요인 관리 진행률 -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
 
-                    <!-- 위험요인 관리 진행률 3종 -->
-                    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--scm-border);">
-                        <div style="font-size:12.5px;font-weight:800;color:var(--scm-navy);margin-bottom:10px;">📊 위험요인 관리 진행률</div>
-                        <div id="home-risk-progress" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;"></div>
-                    </div>
-                </div>
-
-                <!-- 업무 알리미 -->
+                <!-- 경영목표 달성 현황 -->
                 <div class="scm-card p-5">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="font-extrabold text-[15px]" style="color: var(--scm-text);">업무 알리미</h3>
-                        <button onclick="showComingSoon('알림 관리')" class="text-xs font-bold px-3 py-1.5 rounded-lg border flex items-center gap-1.5 hover:bg-slate-50 transition-colors" style="border-color: var(--scm-border); color: var(--scm-text);">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-                            </svg>
-                            알림 관리
-                        </button>
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                        <div><div class="section-eyebrow">2026 안전경영</div><h3 style="font-size:15px;font-weight:800;color:var(--scm-text);margin-top:2px;">경영목표 달성 현황</h3></div>
+                        <span class="badge badge-navy">상반기</span>
                     </div>
-                    <div class="flex gap-2 mb-4">
-                        <select class="flex-1 text-[12.5px] border rounded-lg px-2.5 py-1.5 bg-white" style="border-color: var(--scm-border); color: var(--scm-text);">
-                            <option>전체 사업소</option>
-                        </select>
-                        <select class="flex-1 text-[12.5px] border rounded-lg px-2.5 py-1.5 bg-white" style="border-color: var(--scm-border); color: var(--scm-text);">
-                            <option>전체 부서</option>
-                        </select>
+                    <!-- SVG 게이지 3개 -->
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">
+                        <div style="text-align:center;">
+                            <div style="position:relative;width:78px;height:78px;margin:0 auto 8px;">
+                                <svg width="78" height="78" viewBox="0 0 78 78"><circle cx="39" cy="39" r="31" fill="none" stroke="#DBEAFE" stroke-width="8"/><circle cx="39" cy="39" r="31" fill="none" stroke="#3B82F6" stroke-width="8" stroke-dasharray="195" stroke-dashoffset="86" stroke-linecap="round" transform="rotate(-90 39 39)" style="transition:stroke-dashoffset 1.4s cubic-bezier(0.4,0,0.2,1);"/></svg>
+                                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;color:#2563EB;">56%</div>
+                            </div>
+                            <div style="font-size:11.5px;font-weight:700;color:var(--scm-text);">행동관찰</div>
+                            <div style="font-size:10.5px;color:var(--scm-subtext);">790 / 1,420건</div>
+                        </div>
+                        <div style="text-align:center;">
+                            <div style="position:relative;width:78px;height:78px;margin:0 auto 8px;">
+                                <svg width="78" height="78" viewBox="0 0 78 78"><circle cx="39" cy="39" r="31" fill="none" stroke="#EDE9FE" stroke-width="8"/><circle cx="39" cy="39" r="31" fill="none" stroke="#8B5CF6" stroke-width="8" stroke-dasharray="195" stroke-dashoffset="29" stroke-linecap="round" transform="rotate(-90 39 39)" style="transition:stroke-dashoffset 1.4s cubic-bezier(0.4,0,0.2,1);"/></svg>
+                                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;color:#7C3AED;">85%</div>
+                            </div>
+                            <div style="font-size:11.5px;font-weight:700;color:var(--scm-text);">아차사고·제안</div>
+                            <div style="font-size:10.5px;color:var(--scm-subtext);">1,132 / 1,330건</div>
+                        </div>
+                        <div style="text-align:center;">
+                            <div style="position:relative;width:78px;height:78px;margin:0 auto 8px;">
+                                <svg width="78" height="78" viewBox="0 0 78 78"><circle cx="39" cy="39" r="31" fill="none" stroke="#D1FAE5" stroke-width="8"/><circle cx="39" cy="39" r="31" fill="none" stroke="#10B981" stroke-width="8" stroke-dasharray="195" stroke-dashoffset="0" stroke-linecap="round" transform="rotate(-90 39 39)"/></svg>
+                                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#059669;">달성</div>
+                            </div>
+                            <div style="font-size:11.5px;font-weight:700;color:var(--scm-text);">화재·폭발·누출</div>
+                            <div style="font-size:10.5px;color:var(--scm-subtext);">0건 발생</div>
+                        </div>
                     </div>
-                    <div class="flex items-center justify-center py-10 text-[13px]" style="color: var(--scm-subtext);">
-                        등록된 업무 알림이 없습니다
+                    <!-- 법규준수 + 안전사고 -->
+                    <div style="display:flex;flex-direction:column;gap:8px;">
+                        <div style="display:flex;align-items:center;gap:10px;background:#F0FDF4;border-radius:10px;padding:10px 14px;">
+                            <span style="font-size:13px;font-weight:700;color:#059669;flex:1;">✅ 법규 준수</span>
+                            <span class="badge badge-green">달성</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:10px;background:#FFF5F5;border-radius:10px;padding:10px 14px;">
+                            <div style="flex:1;">
+                                <div style="font-size:12.5px;font-weight:700;color:#991B1B;">⚠️ 안전사고 6건 발생</div>
+                                <div style="font-size:11px;color:#B91C1C;margin-top:2px;">목표 0건 — 즉각 원인 분석 필요</div>
+                            </div>
+                            <span class="badge badge-red">주의</span>
+                        </div>
                     </div>
                 </div>
+
+                <!-- 위험요인 관리 진행률 -->
+                <div class="scm-card p-5">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                        <div><div class="section-eyebrow">위험요인 발굴 및 관리</div><h3 style="font-size:15px;font-weight:800;color:var(--scm-text);margin-top:2px;">관리 항목 진행률</h3></div>
+                        <span class="badge badge-blue">연간</span>
+                    </div>
+                    <div id="home-risk-progress" style="display:flex;flex-direction:column;gap:14px;"></div>
+                </div>
             </div>
+
+            <!-- ▶ 3행: 업무 알리미 -->
+            <div class="scm-card p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2"><span>🔔</span><h3 class="font-extrabold text-[15px]" style="color: var(--scm-text);">업무 알리미</h3></div>
+                    <button onclick="showComingSoon('알림 관리')" class="text-xs font-bold px-3 py-1.5 rounded-lg border flex items-center gap-1.5 hover:bg-slate-50 transition-colors" style="border-color: var(--scm-border); color: var(--scm-text);">알림 관리</button>
+                </div>
+                <div class="flex items-center justify-center py-6 text-[13px]" style="color: var(--scm-subtext);">등록된 업무 알림이 없습니다</div>
+            </div>
+
         </section>
 
         <!-- ==============================================
@@ -2162,17 +2155,6 @@
         </section>
 
         <!-- ==============================================
-             7. 화학물질 탭
-             ============================================== -->
-        <section id="tab-chemical" class="tab-content hidden space-y-6">
-            <div class="pb-1">
-                <h2 class="text-xl font-black" style="color: var(--scm-text);">🧪 화학물질 관리</h2>
-                <p class="text-[13px] mt-1.5" style="color: var(--scm-subtext);">MSDS 검색 등 화학물질 안전 정보를 통합 관리합니다.</p>
-            </div>
-            <div id="chemical-menu-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"></div>
-        </section>
-
-        <!-- ==============================================
              반기보고 탭 (중대재해처벌법 경영책임자 보고)
              ============================================== -->
         <section id="tab-hbreport" class="tab-content hidden space-y-5">
@@ -2418,11 +2400,6 @@
                 icon: '🎉',
                 color: '#DB2777',
                 items: ['안전퀴즈', '공모전 제출']
-            },
-            chemical: {
-                icon: '🧪',
-                color: '#16A34A',
-                items: ['MSDS 검색']
             }
         };
 
@@ -2760,34 +2737,40 @@
 
         function weatherShowData(d) {
             const { T1H, REH, WSD, PTY, RN1 } = d;
-            // 키배너 숨기기 (직접 호출 시에도 처리)
             document.getElementById('weather-key-banner').classList.add('hidden');
-            const fl = weatherCalcFeelsLike(T1H, WSD, REH);
+            const fl  = weatherCalcFeelsLike(T1H, WSD, REH);
             const sky = weatherGetSkyInfo(PTY);
 
-            document.getElementById('weather-icon').textContent = sky.icon;
-            document.getElementById('weather-sky-label').textContent = sky.label;
+            document.getElementById('weather-icon').textContent       = sky.icon;
+            document.getElementById('weather-sky-label').textContent  = sky.label;
             const flEl = document.getElementById('weather-feels-like');
-            flEl.textContent = fl > 0 ? `+${fl}` : fl;
-            // 색상
-            if (fl >= 35) flEl.style.color = '#DC2626';
-            else if (fl >= 28) flEl.style.color = '#D97706';
-            else if (fl <= -10) flEl.style.color = '#2563EB';
-            else if (fl <= 0) flEl.style.color = '#0891B2';
-            else flEl.style.color = 'var(--scm-navy)';
+            flEl.textContent = fl > 0 ? `+${fl}` : `${fl}`;
+            // 체감온도 색상
+            const flColor = fl>=35?'#DC2626':fl>=28?'#D97706':fl<=-10?'#2563EB':fl<=0?'#0891B2':'var(--scm-navy)';
+            flEl.style.color = flColor;
 
-            document.getElementById('weather-temp').textContent = `${T1H} °C`;
+            // SVG 게이지 업데이트 (−20°C~50°C 범위를 0~100%로 매핑)
+            const gaugeArc = document.getElementById('weather-gauge-arc');
+            if (gaugeArc) {
+                const pct    = Math.max(0, Math.min(100, (fl + 20) / 70 * 100));
+                const circum = 302;
+                const offset = circum * (1 - pct/100);
+                const gaugeColor = fl>=35?'#DC2626':fl>=28?'#F59E0B':fl<=0?'#3B82F6':'#10B981';
+                gaugeArc.style.strokeDashoffset = offset;
+                gaugeArc.setAttribute('stroke', gaugeColor);
+            }
+
+            document.getElementById('weather-temp').textContent     = `${T1H} °C`;
             document.getElementById('weather-humidity').textContent = `${REH}%`;
-            document.getElementById('weather-wind').textContent = `${WSD} m/s`;
-            document.getElementById('weather-rain').textContent =
-                (RN1 === 0 || RN1 === '강수없음') ? '없음' : `${RN1}mm`;
+            document.getElementById('weather-wind').textContent     = `${WSD} m/s`;
 
-            const alerts = weatherGetAlerts(fl, WSD, PTY);
+            const alerts   = weatherGetAlerts(fl, WSD, PTY);
             const alertBox = document.getElementById('weather-alert-box');
-            if (alerts.length) {
+            const alertList= document.getElementById('weather-alert-list');
+            if (alerts.length && alertBox && alertList) {
                 alertBox.classList.remove('hidden');
-                document.getElementById('weather-alert-text').innerHTML = alerts.join('<br>');
-            } else {
+                alertList.innerHTML = alerts.map(a=>`<div style="margin-bottom:3px;">${a}</div>`).join('');
+            } else if (alertBox) {
                 alertBox.classList.add('hidden');
             }
 
@@ -6250,86 +6233,65 @@ ${extraText}
         function homeRenderRiskProgress() {
             const el = document.getElementById('home-risk-progress');
             if (!el) return;
-
             const year  = new Date().getFullYear();
             const today = new Date().toISOString().slice(0,10);
 
-            // ── 1) 매월 패트롤 ────────────────────────────────────────
-            let pTotal=0, pDone=0, pOver=0;
-            for(let i=1;i<=12;i++){
-                const m=String(i).padStart(2,'0');
-                const items=patrolItems(m);
-                pTotal+=items.length;
-                pDone +=items.filter(x=>x.status==='완료').length;
-                pOver +=items.filter(x=>x.status!=='완료'&&x.dueDate<today).length;
-            }
-            const pPct = pTotal>0?Math.round(pDone/pTotal*100):0;
+            let pTotal=0,pDone=0,pOver=0;
+            for(let i=1;i<=12;i++){const m=String(i).padStart(2,'0');const items=patrolItems(m);pTotal+=items.length;pDone+=items.filter(x=>x.status==='완료').length;pOver+=items.filter(x=>x.status!=='완료'&&x.dueDate<today).length;}
+            const pPct=pTotal>0?Math.round(pDone/pTotal*100):0;
 
-            // ── 2) 합동점검 ───────────────────────────────────────────
-            let jTotal=0, jDone=0, jOver=0;
-            QUARTERS.forEach(q=>{
-                const items=jointItems(q.key);
-                jTotal+=items.length;
-                jDone +=items.filter(x=>x.status==='완료').length;
-                jOver +=items.filter(x=>x.status!=='완료'&&x.dueDate<today).length;
-            });
-            const jPct = jTotal>0?Math.round(jDone/jTotal*100):0;
+            let jTotal=0,jDone=0,jOver=0;
+            QUARTERS.forEach(q=>{const items=jointItems(q.key);jTotal+=items.length;jDone+=items.filter(x=>x.status==='완료').length;jOver+=items.filter(x=>x.status!=='완료'&&x.dueDate<today).length;});
+            const jPct=jTotal>0?Math.round(jDone/jTotal*100):0;
 
-            // ── 3) 온열/한랭질환 — 이번 달 점검률 ─────────────────────────
-            const curMonth = new Date().getMonth()+1;
-            const isHeatMonth = curMonth>=5 && curMonth<=9;
-            let clChecked=0, clTotal=0;
-            if(isHeatMonth){
-                CL_LINES.forEach(line=>{
-                    const s=clMonthPct(line, curMonth, year);
-                    clChecked+=s.checked; clTotal+=s.total;
-                });
-            }
-            const clPct = clTotal>0?Math.round(clChecked/clTotal*100):0;
+            const curMonth=new Date().getMonth()+1;
+            const isHeatMonth=curMonth>=5&&curMonth<=9;
+            let clChecked=0,clTotal=0;
+            if(isHeatMonth){CL_LINES.forEach(line=>{const s=clMonthPct(line,curMonth,year);clChecked+=s.checked;clTotal+=s.total;});}
+            const clPct=clTotal>0?Math.round(clChecked/clTotal*100):0;
 
-            // ── 카드 렌더링 ──────────────────────────────────────────
-            function card(icon, label, pct, total, done, over, onclick, subLabel) {
-                const barColor = pct===100?'#166534':pct>=50?'#1B3A6B':'#92400E';
-                const bgBadge  = pct===100?'#DCFCE7':pct>=50?'#EFF6FF':'#FFFBEB';
-                const noData   = total===0;
-                return `<div onclick="${onclick}" style="background:white;border:1.5px solid var(--scm-border);border-radius:10px;padding:12px 14px;cursor:pointer;transition:box-shadow 0.15s;" onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow=''">
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-                        <div style="display:flex;align-items:center;gap:6px;">
-                            <span style="font-size:16px;">${icon}</span>
-                            <span style="font-size:12px;font-weight:800;color:var(--scm-navy);">${label}</span>
+            function bar(icon,label,pct,total,done,over,onclick,subLabel,color){
+                const noData=total===0;
+                const c=pct===100?'#059669':pct>=50?color:'#F59E0B';
+                return `<div onclick="${onclick}" style="cursor:pointer;" onmouseover="this.style.opacity=0.85" onmouseout="this.style.opacity=1">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">
+                        <div style="display:flex;align-items:center;gap:7px;">
+                            <span style="font-size:15px;">${icon}</span>
+                            <span style="font-size:13px;font-weight:700;color:var(--scm-text);">${label}</span>
+                            ${over>0?`<span style="font-size:10.5px;font-weight:700;background:#FEE2E2;color:#991B1B;padding:2px 7px;border-radius:99px;">⚠️${over}건 초과</span>`:''}
                         </div>
-                        <span style="font-size:18px;font-weight:900;color:${noData?'#9CA3AF':barColor};">${noData?'-':pct+'%'}</span>
-                    </div>
-                    <div style="height:7px;background:#E2E8F0;border-radius:99px;overflow:hidden;margin-bottom:8px;">
-                        <div style="height:100%;width:${pct}%;background:${barColor};border-radius:99px;transition:width 0.5s;"></div>
-                    </div>
-                    <div style="display:flex;justify-content:space-between;align-items:center;">
-                        <div style="font-size:11px;color:var(--scm-subtext);">
-                            ${noData
-                                ? '등록된 항목 없음'
-                                : `완료 ${done}/${total}건${over>0?` · <span style="color:#991B1B">⚠️${over}초과</span>`:''}`
-                            }
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span style="font-size:11px;color:var(--scm-subtext);">${noData?'등록 없음':`${done}/${total}건`}</span>
+                            <span style="font-size:15px;font-weight:900;color:${noData?'#CBD5E1':c};min-width:40px;text-align:right;">${noData?'—':pct+'%'}</span>
                         </div>
-                        <span style="font-size:11px;color:var(--scm-subtext);">${subLabel}</span>
                     </div>
+                    <div style="height:9px;background:#F1F5F9;border-radius:99px;overflow:hidden;">
+                        <div style="height:100%;width:${noData?0:pct}%;background:linear-gradient(90deg,${c}99,${c});border-radius:99px;transition:width 1.2s cubic-bezier(0.4,0,0.2,1);"></div>
+                    </div>
+                    <div style="font-size:11px;color:var(--scm-subtext);margin-top:5px;padding-bottom:12px;border-bottom:1px solid var(--scm-border);">${subLabel}</div>
                 </div>`;
             }
 
-            const monthLabel = `${new Date().getMonth()+1}월 기준`;
-
             el.innerHTML =
-                card('📋','매월 패트롤', pPct, pTotal, pDone, pOver,
-                    "switchTab('risk');setTimeout(()=>riskShowTab('patrol'),80)",
-                    '연간 누계') +
-                card('🤝','합동점검', jPct, jTotal, jDone, jOver,
-                    "switchTab('risk');setTimeout(()=>riskShowTab('joint'),80)",
-                    '연간 누계') +
-                card('🌡️','온열/한랭질환', clPct,
-                    isHeatMonth ? CL_LINES.length*new Date(year,curMonth,0).getDate() : 0,
-                    clChecked, 0,
-                    "switchTab('risk');setTimeout(()=>riskShowTab('climate'),80)",
-                    isHeatMonth ? monthLabel : '비측정 기간');
+                bar('📋','매월 패트롤',pPct,pTotal,pDone,pOver,"switchTab('risk');setTimeout(()=>riskShowTab('patrol'),80)",'연간 누계','#3B82F6') +
+                bar('🤝','합동점검',jPct,jTotal,jDone,jOver,"switchTab('risk');setTimeout(()=>riskShowTab('joint'),80)",'연간 누계','#8B5CF6') +
+                `<div onclick="switchTab('risk');setTimeout(()=>riskShowTab('climate'),80)" style="cursor:pointer;" onmouseover="this.style.opacity=0.85" onmouseout="this.style.opacity=1">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">
+                        <div style="display:flex;align-items:center;gap:7px;"><span style="font-size:15px;">🌡️</span><span style="font-size:13px;font-weight:700;color:var(--scm-text);">온열/한랭질환</span></div>
+                        <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;color:var(--scm-subtext);">${isHeatMonth?clChecked+'/'+clTotal+'일':'비측정 기간'}</span><span style="font-size:15px;font-weight:900;color:${isHeatMonth?'#F59E0B':'#CBD5E1'};min-width:40px;text-align:right;">${isHeatMonth?clPct+'%':'—'}</span></div>
+                    </div>
+                    <div style="height:9px;background:#F1F5F9;border-radius:99px;overflow:hidden;">
+                        <div style="height:100%;width:${isHeatMonth?clPct:0}%;background:linear-gradient(90deg,#F59E0B99,#F59E0B);border-radius:99px;transition:width 1.2s cubic-bezier(0.4,0,0.2,1);"></div>
+                    </div>
+                    <div style="font-size:11px;color:var(--scm-subtext);margin-top:5px;">${isHeatMonth?curMonth+'월 일별 점검률':'5~9월만 측정'}</div>
+                </div>`;
+
+            // 무재해 일수
+            const safeDays=Math.floor((new Date()-new Date('2026-01-01'))/86400000);
+            const kdEl=document.getElementById('kpi-safe-days');
+            if(kdEl)kdEl.textContent=safeDays.toLocaleString()+'일';
         }
+
 
         // 페이지 로드 시 홈이 기본 탭이므로 즉시 실행
         document.addEventListener('DOMContentLoaded', () => { homeRenderRiskProgress(); });
