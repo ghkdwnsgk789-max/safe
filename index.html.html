@@ -1169,6 +1169,17 @@
                             <div><label style="font-size:11px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:3px;">점검 유형</label><select id="joint-type" style="width:100%;border:1.5px solid var(--scm-border);border-radius:7px;padding:6px 9px;font-size:12px;outline:none;background:white;"><option>정기 합동점검</option><option>경영책임자 순회</option><option>외부기관 점검</option><option>기타</option></select></div>
                         </div>
                         <div style="margin-bottom:8px;"><label style="font-size:11px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:3px;">개선 조치 내용</label><textarea id="joint-action" rows="2" style="width:100%;border:1.5px solid var(--scm-border);border-radius:7px;padding:6px 9px;font-size:12px;outline:none;resize:vertical;font-family:inherit;"></textarea></div>
+                        <!-- 개선 전 사진 -->
+                        <div style="margin-bottom:10px;border:1.5px solid #FECACA;border-radius:8px;overflow:hidden;">
+                            <div style="background:#FEF2F2;color:#991B1B;padding:6px 12px;font-size:12px;font-weight:700;border-bottom:1px solid #FECACA;display:flex;align-items:center;justify-content:space-between;">
+                                <span>▶ 개선 전 사진</span>
+                                <label style="display:inline-flex;align-items:center;gap:5px;background:white;border:1px solid #FECACA;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:11.5px;font-weight:600;color:#991B1B;">
+                                    📷 사진 첨부
+                                    <input type="file" id="joint-before-photo" accept="image/*" multiple style="display:none;" onchange="jointPreviewPhoto(this)">
+                                </label>
+                            </div>
+                            <div id="joint-before-preview" style="min-height:60px;"></div>
+                        </div>
                         <div style="display:flex;justify-content:flex-end;"><button onclick="jointRegister()" style="background:#1B3A6B;color:white;border:none;border-radius:8px;padding:7px 20px;font-size:12.5px;font-weight:700;cursor:pointer;">등록</button></div>
                     </div>
                     <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
@@ -7164,6 +7175,78 @@ ${extraText}
             jointRenderDetail();
         }
 
+        // ── 합동점검 사진 임시 저장 ─────────────────────────────────
+        let _jointBeforePhotos = [];
+
+        function jointPreviewPhoto(input) {
+            _jointBeforePhotos = [];
+            const prevEl = document.getElementById('joint-before-preview');
+            if (!prevEl) return;
+            Array.from(input.files).forEach((file, i) => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    _jointBeforePhotos[i] = { name: file.name, dataUrl: e.target.result };
+                    prevEl.innerHTML = _jointBeforePhotos.filter(Boolean).map(p =>
+                        `<div style="position:relative;line-height:0;">
+                            <img src="${p.dataUrl}" style="width:100%;display:block;object-fit:cover;max-height:200px;">
+                            <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.5);color:white;font-size:10px;padding:3px 8px;text-align:center;">${p.name}</div>
+                        </div>`
+                    ).join('');
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function jointAddAfterPhoto(id, input) {
+            const data = jointLoad();
+            const arr  = data[jointCurQ] || [];
+            const idx  = arr.findIndex(i => i.id === id);
+            if (idx < 0) return;
+            if (!arr[idx].afterPhotos) arr[idx].afterPhotos = [];
+            const files = Array.from(input.files);
+            let loaded = 0;
+            files.forEach((file, fi) => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    arr[idx].afterPhotos.push({ name: file.name, dataUrl: e.target.result });
+                    loaded++;
+                    if (loaded === files.length) {
+                        data[jointCurQ] = arr;
+                        jointSave(data);
+                        showToast(`📷 개선 후 사진 ${files.length}장 등록 완료.`, 'success');
+                        jointRenderDetail();
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function jointDeletePhoto(id, type, photoIdx) {
+            const typeLabel = type === 'before' ? '개선 전' : '개선 후';
+            if (!confirm(`📷 사진을 삭제하시겠습니까?\n[${typeLabel} 사진]\n삭제 후 복구할 수 없습니다.`)) return;
+            const data = jointLoad();
+            const arr  = data[jointCurQ] || [];
+            const idx  = arr.findIndex(i => i.id === id);
+            if (idx < 0) return;
+            const key = type === 'before' ? 'beforePhotos' : 'afterPhotos';
+            if (!arr[idx][key]) return;
+            arr[idx][key].splice(photoIdx, 1);
+            data[jointCurQ] = arr;
+            jointSave(data);
+            showToast(`🗑 ${typeLabel} 사진이 삭제되었습니다.`, 'success');
+            jointRenderDetail();
+        }
+
+        function jointOpenPhoto(id, idx, type) {
+            const data = jointLoad();
+            const item = (data[jointCurQ]||[]).find(i => i.id === id);
+            if (!item) return;
+            const photos = type === 'before' ? (item.beforePhotos||[]) : (item.afterPhotos||[]);
+            if (!photos[idx]) return;
+            const win = window.open('','_blank');
+            win.document.write(`<html><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="${photos[idx].dataUrl}" style="max-width:100%;max-height:100vh;object-fit:contain;"></body></html>`);
+        }
+
         function jointRegister(){
             const loc=document.getElementById('joint-loc').value.trim();
             const content=document.getElementById('joint-content').value.trim();
@@ -7177,11 +7260,17 @@ ${extraText}
                 level:document.getElementById('joint-level').value,
                 jtype:document.getElementById('joint-type').value,
                 action:document.getElementById('joint-action').value.trim(),
-                status:'미완료', doneDate:'', createdAt:new Date().toISOString()
+                status:'미완료', doneDate:'',
+                beforePhotos: _jointBeforePhotos.filter(p=>p&&p.dataUrl).map(p=>({name:p.name,dataUrl:p.dataUrl})),
+                afterPhotos : [],
+                createdAt:new Date().toISOString()
             });
             jointSave(data);
             ['joint-loc','joint-content','joint-owner','joint-action'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
             document.getElementById('joint-found').value=''; document.getElementById('joint-due').value='';
+            _jointBeforePhotos = [];
+            const prev = document.getElementById('joint-before-preview');
+            if (prev) prev.innerHTML = '';
             showToast('✅ 등록되었습니다.','success'); jointRenderDetail();
         }
 
@@ -7209,31 +7298,102 @@ ${extraText}
             const listEl=document.getElementById('joint-list'); if(!listEl)return;
             if(!items.length){listEl.innerHTML='<div style="text-align:center;padding:28px;color:var(--scm-subtext);font-size:13px;">등록된 항목이 없습니다.</div>';return;}
             const lc={'상':'#991B1B','중':'#92400E','하':'#166534'},lb={'상':'#FEF2F2','중':'#FFFBEB','하':'#F0FDF4'};
+            const lt={'상':'즉시조치','중':'7일이내','하':'30일이내'};
             listEl.innerHTML=items.map(item=>{
                 const ov=item.status!=='완료'&&item.dueDate<today;
                 const dl=Math.ceil((new Date(item.dueDate)-new Date(today))/86400000);
-                const dl2=item.status==='완료'?`완료:${item.doneDate}`:ov?`⚠️${Math.abs(dl)}일 초과`:`D-${dl}`;
-                const bg=ov?'#FFF5F5':item.status==='완료'?'#F0FDF4':'white';
-                return `<div style="background:${bg};border:1.5px solid ${ov?'#FECACA':item.status==='완료'?'#86EFAC':'var(--scm-border)'};border-radius:10px;padding:12px 14px;margin-bottom:7px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
-                    <div style="flex:1;">
-                        <div style="display:flex;gap:6px;align-items:center;margin-bottom:4px;flex-wrap:wrap;">
-                            <span style="background:${lb[item.level]};color:${lc[item.level]};font-size:11px;font-weight:800;padding:2px 7px;border-radius:99px;">${item.level}급</span>
-                            <strong style="font-size:13px;">${item.loc}</strong>
-                            <span style="font-size:11px;color:var(--scm-subtext);">${item.jtype||''}</span>
-                            ${item.status==='완료'?'<span style="background:#DCFCE7;color:#166534;font-size:11px;font-weight:700;padding:2px 7px;border-radius:99px;">✓ 완료</span>':''}
-                            ${ov?'<span style="background:#FEE2E2;color:#991B1B;font-size:11px;font-weight:800;padding:2px 7px;border-radius:99px;">⚠️ 기한초과</span>':''}
-                        </div>
-                        <div style="font-size:12.5px;font-weight:600;margin-bottom:3px;">${item.content}</div>
-                        ${item.action?`<div style="font-size:12px;color:var(--scm-subtext);">조치: ${item.action}</div>`:''}
-                        <div style="display:flex;gap:12px;font-size:11.5px;color:var(--scm-subtext);margin-top:3px;flex-wrap:wrap;">
-                            <span>담당: <strong>${item.owner}</strong></span>
-                            ${item.foundDate?`<span>점검일: ${item.foundDate}</span>`:''}
-                            <span style="font-weight:700;color:${ov?'#991B1B':item.status==='완료'?'#166534':'#1B3A6B'};">기한: ${item.dueDate} (${dl2})</span>
+                const lv=item.level||'중';
+                const st=item.status||'미완료';
+                const fd=item.foundDate||'';
+                const dd=item.dueDate||'';
+                const fdStr=fd?`${parseInt(fd.slice(5,7))}월${parseInt(fd.slice(8,10))}일`:'-';
+                const ddStr=dd?`${parseInt(dd.slice(5,7))}월${parseInt(dd.slice(8,10))}일`:'-';
+                const stFg=st==='완료'?'#166534':'#C0392B';
+                const stBg=st==='완료'?'#DCFCE7':'#FDECEA';
+                const borderCol=ov?'#FECACA':st==='완료'?'#86EFAC':'#CBD5E1';
+                const cardBg=ov?'#FFF5F5':st==='완료'?'#F0FDF4':'white';
+                const bphotos=(item.beforePhotos||[]);
+                const aphotos=(item.afterPhotos||[]);
+
+                const beforeHtml = bphotos.length
+                    ? bphotos.map((p,i) =>
+                        `<div style="position:relative;line-height:0;">
+                            <img src="${p.dataUrl}" style="width:100%;display:block;object-fit:cover;height:340px;cursor:pointer;" onclick="jointOpenPhoto(${item.id},${i},'before')">
+                            ${IS_ADMIN ? `<button onclick="event.stopPropagation();jointDeletePhoto(${item.id},'before',${i})"
+                                style="position:absolute;top:10px;right:10px;background:rgba(220,38,38,0.92);color:white;border:none;border-radius:8px;padding:9px 16px;font-size:13.5px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.35);">
+                                🗑 사진 삭제</button>` : ''}
+                            <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.4);color:white;font-size:10px;padding:4px 8px;text-align:center;">🔍 클릭하면 크게 보기</div>
+                        </div>`
+                    ).join('<div style="height:3px;background:#FECACA;"></div>')
+                    : `<div style="display:flex;align-items:center;justify-content:center;height:200px;color:#CBD5E1;font-size:12px;">사진 없음</div>`;
+
+                const hasAfter = aphotos.length > 0;
+                const afterHtml = hasAfter
+                    ? aphotos.map((p,i) =>
+                        `<div style="position:relative;line-height:0;">
+                            <img src="${p.dataUrl}" style="width:100%;display:block;object-fit:cover;height:340px;cursor:pointer;" onclick="jointOpenPhoto(${item.id},${i},'after')">
+                            ${IS_ADMIN ? `<button onclick="event.stopPropagation();jointDeletePhoto(${item.id},'after',${i})"
+                                style="position:absolute;top:10px;right:10px;background:rgba(220,38,38,0.92);color:white;border:none;border-radius:8px;padding:9px 16px;font-size:13.5px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.35);">
+                                🗑 사진 삭제</button>` : ''}
+                            <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(22,101,52,0.45);color:white;font-size:10px;padding:4px 8px;text-align:center;">🔍 클릭하면 크게 보기</div>
+                        </div>`
+                    ).join('<div style="height:3px;background:#86EFAC;"></div>')
+                    : `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:200px;gap:10px;">
+                        <span style="color:#CBD5E1;font-size:12px;">개선 후 사진 없음</span>
+                        ${IS_ADMIN ? `<label style="display:inline-flex;align-items:center;gap:5px;background:#F0FDF4;border:1.5px solid #86EFAC;border-radius:8px;padding:8px 16px;cursor:pointer;font-size:13px;font-weight:700;color:#166534;">
+                            📷 개선 후 사진 등록
+                            <input type="file" accept="image/*" multiple style="display:none;" onchange="jointAddAfterPhoto(${item.id},this)">
+                        </label>` : ''}
+                    </div>`;
+
+                const afterAddBtn = (IS_ADMIN && hasAfter)
+                    ? `<div style="padding:8px;border-top:1px solid #86EFAC;text-align:center;">
+                        <label style="display:inline-flex;align-items:center;gap:5px;background:#F0FDF4;border:1.5px solid #86EFAC;border-radius:7px;padding:6px 14px;cursor:pointer;font-size:12.5px;font-weight:700;color:#166534;">
+                            📷 사진 추가 <input type="file" accept="image/*" multiple style="display:none;" onchange="jointAddAfterPhoto(${item.id},this)">
+                        </label>
+                    </div>` : '';
+
+                return `<div style="background:${cardBg};border:1.5px solid ${borderCol};border-radius:10px;margin-bottom:12px;overflow:hidden;">
+                    <div style="background:#F8FAFC;padding:7px 12px;font-size:12px;font-weight:800;color:#1B3A6B;border-bottom:1px solid ${borderCol};display:flex;align-items:center;justify-content:space-between;">
+                        <span>작업장 합동점검</span>
+                        <div style="display:flex;gap:6px;">
+                            ${st!=='완료'?`<button onclick="jointComplete(${item.id})" style="font-size:11.5px;font-weight:700;padding:5px 12px;background:#166534;color:white;border:none;border-radius:6px;cursor:pointer;">✓ 완료</button>`:''}
+                            <button onclick="jointDelete(${item.id})" style="font-size:11.5px;font-weight:700;padding:5px 12px;background:#FEF2F2;color:#DC2626;border:1px solid #FECACA;border-radius:6px;cursor:pointer;">🗑 삭제</button>
                         </div>
                     </div>
-                    <div style="display:flex;flex-direction:column;gap:5px;">
-                        ${item.status!=='완료'?`<button onclick="jointComplete(${item.id})" style="font-size:12px;font-weight:700;padding:5px 11px;background:#166534;color:white;border:none;border-radius:7px;cursor:pointer;">✓ 완료</button>`:''}
-                        <button onclick="jointDelete(${item.id})" style="font-size:12px;font-weight:700;padding:5px 11px;background:#FEF2F2;color:#991B1B;border:1px solid #FECACA;border-radius:7px;cursor:pointer;">삭제</button>
+                    <div style="display:grid;grid-template-columns:80px 1fr 60px 1fr;border-bottom:1px solid ${borderCol};">
+                        <div style="background:#1B3A6B;color:white;padding:7px 8px;font-size:11px;font-weight:700;text-align:center;display:flex;align-items:center;justify-content:center;">위험등급</div>
+                        <div style="background:${lb[lv]};color:${lc[lv]};padding:7px 10px;font-size:12px;font-weight:700;display:flex;align-items:center;border-right:1px solid ${borderCol};">${lv}(${lt[lv]})</div>
+                        <div style="background:#1B3A6B;color:white;padding:7px 8px;font-size:11px;font-weight:700;text-align:center;display:flex;align-items:center;justify-content:center;border-right:1px solid ${borderCol};">상태</div>
+                        <div style="background:${stBg};color:${stFg};padding:7px 10px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px;">${st}${ov?`<span style="font-size:11px;background:#FEE2E2;color:#991B1B;padding:1px 6px;border-radius:99px;margin-left:6px;">⚠️${Math.abs(dl)}일 초과</span>`:''}</div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:80px 1fr 80px 140px;border-bottom:1px solid ${borderCol};">
+                        <div style="background:#1B3A6B;color:white;padding:9px 8px;font-size:11px;font-weight:700;text-align:center;display:flex;align-items:center;justify-content:center;border-right:1px solid ${borderCol};">지적사항</div>
+                        <div style="padding:9px 10px;font-size:12.5px;font-weight:600;color:#1E293B;border-right:1px solid ${borderCol};">
+                            ${item.loc?`<span style="font-size:11px;color:#64748B;">${item.loc}</span><br>`:''}${item.content}
+                            ${item.jtype?`<span style="font-size:11px;color:#64748B;margin-left:6px;">[${item.jtype}]</span>`:''}
+                        </div>
+                        <div style="background:#253D6B;color:white;padding:7px 6px;font-size:11px;font-weight:700;text-align:center;display:flex;align-items:center;justify-content:center;border-right:1px solid ${borderCol};">점검날짜</div>
+                        <div style="padding:7px 10px;font-size:12px;font-weight:700;color:#1B3A6B;display:flex;align-items:center;">${fdStr}</div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:80px 1fr 80px 160px 80px 140px;border-bottom:1px solid ${borderCol};">
+                        <div style="background:#1B3A6B;color:white;padding:8px 8px;font-size:11px;font-weight:700;text-align:center;display:flex;align-items:center;justify-content:center;border-right:1px solid ${borderCol};">조치사항</div>
+                        <div style="padding:8px 10px;font-size:12.5px;color:#1E293B;border-right:1px solid ${borderCol};">${item.action||'—'}</div>
+                        <div style="background:#253D6B;color:white;padding:7px 6px;font-size:11px;font-weight:700;text-align:center;display:flex;align-items:center;justify-content:center;border-right:1px solid ${borderCol};">담당자</div>
+                        <div style="padding:7px 10px;font-size:12px;font-weight:700;color:#1B3A6B;border-right:1px solid ${borderCol};display:flex;align-items:center;">${item.owner}</div>
+                        <div style="background:#253D6B;color:white;padding:7px 6px;font-size:11px;font-weight:700;text-align:center;display:flex;align-items:center;justify-content:center;border-right:1px solid ${borderCol};">개선기한</div>
+                        <div style="padding:7px 10px;font-size:12px;font-weight:700;color:${ov?'#991B1B':'#1B3A6B'};display:flex;align-items:center;">${ddStr}</div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;">
+                        <div style="border-right:1px solid ${borderCol};overflow:hidden;">
+                            <div style="background:#FEF2F2;color:#991B1B;padding:6px 10px;font-size:11.5px;font-weight:700;border-bottom:1px solid #FECACA;">▶ 개선 전 사진</div>
+                            <div>${beforeHtml}</div>
+                        </div>
+                        <div style="overflow:hidden;">
+                            <div style="background:#F0FDF4;color:#166534;padding:6px 10px;font-size:11.5px;font-weight:700;border-bottom:1px solid #86EFAC;">▶ 개선 후 사진</div>
+                            <div>${afterHtml}</div>
+                            ${afterAddBtn}
+                        </div>
                     </div>
                 </div>`;
             }).join('');
