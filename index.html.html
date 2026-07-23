@@ -1538,7 +1538,27 @@
                             </div>
                             <div>
                                 <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">사번 <span style="color:#DC2626;">*</span></label>
-                                <input id="part-empno" type="text" placeholder="예: 240510" class="w-full border rounded-lg px-3 py-3 text-[14px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border);">
+                                <div style="display:flex;gap:8px;align-items:center;">
+                                    <input id="part-empno" type="text" placeholder="예: 240510" class="flex-1 border rounded-lg px-3 py-3 text-[14px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border);" oninput="partLookupLine(this.value)">
+                                    <div id="part-line-auto-badge" style="display:none;background:#EFF6FF;border:1px solid #93C5FD;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:700;color:#1D4ED8;white-space:nowrap;">✓ 자동 조회</div>
+                                </div>
+                                <p id="part-empno-hint" style="font-size:11px;color:var(--scm-subtext);margin-top:4px;"></p>
+                            </div>
+                            <!-- 라인 선택 (명부 없거나 미매칭 시 직접 선택) -->
+                            <div id="part-line-row">
+                                <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">소속 라인 <span style="color:#DC2626;">*</span></label>
+                                <select id="part-line" class="w-full border rounded-lg px-3 py-3 text-[14px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); background:white;">
+                                    <option value="">-- 소속 라인 선택 --</option>
+                                    <option>CPL</option>
+                                    <option>CRM</option>
+                                    <option>CGL</option>
+                                    <option>1CCL</option>
+                                    <option>2CCL</option>
+                                    <option>3CCL</option>
+                                    <option>기계정비반</option>
+                                    <option>전기정비반</option>
+                                    <option>시험검사반</option>
+                                </select>
                             </div>
                         </div>
                         <button onclick="partStep1Next()" class="w-full text-white font-bold py-3.5 rounded-xl text-[14px] hover:opacity-90 transition-opacity" style="background: var(--scm-navy);">
@@ -1686,6 +1706,15 @@
                     </div>
                 </div>
 
+                <!-- 라인별 현황 -->
+                <div class="scm-card p-5">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                        <p class="text-[13px] font-bold" style="color: var(--scm-text);">📊 라인별 이수 현황</p>
+                        <button onclick="eduShowLineManage()" class="text-[11.5px] font-bold px-3 py-1.5 rounded-lg border" style="border-color:var(--scm-border);color:var(--scm-navy);">👥 직원 명부 관리</button>
+                    </div>
+                    <div id="manage-line-chart" style="display:flex;flex-direction:column;gap:10px;"></div>
+                </div>
+
                 <!-- 이수자 테이블 -->
                 <div class="scm-card overflow-hidden">
                     <div class="px-5 py-4 border-b flex items-center justify-between" style="border-color: var(--scm-border); background: #F8FAFC;">
@@ -1693,12 +1722,13 @@
                         <p class="text-[12px]" style="color: var(--scm-subtext);">실시간 업데이트</p>
                     </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full min-w-[600px] text-left text-[13px]">
+                        <table class="w-full min-w-[700px] text-left text-[13px]">
                             <thead>
                                 <tr style="background: #F8FAFC; border-bottom: 1px solid var(--scm-border);">
                                     <th class="px-4 py-3 font-bold" style="color: var(--scm-subtext);">#</th>
                                     <th class="px-4 py-3 font-bold" style="color: var(--scm-subtext);">성명</th>
                                     <th class="px-4 py-3 font-bold" style="color: var(--scm-subtext);">사번</th>
+                                    <th class="px-4 py-3 font-bold" style="color: var(--scm-subtext);">소속 라인</th>
                                     <th class="px-4 py-3 font-bold" style="color: var(--scm-subtext);">점수</th>
                                     <th class="px-4 py-3 font-bold" style="color: var(--scm-subtext);">합격 여부</th>
                                     <th class="px-4 py-3 font-bold" style="color: var(--scm-subtext);">응시 일시</th>
@@ -1706,10 +1736,72 @@
                             </thead>
                             <tbody id="manage-tbody" class="divide-y" style="border-color: var(--scm-border);">
                                 <tr id="manage-empty-row">
-                                    <td colspan="6" class="px-4 py-12 text-center text-[13px]" style="color: var(--scm-subtext);">아직 응시자가 없습니다.</td>
+                                    <td colspan="7" class="px-4 py-12 text-center text-[13px]" style="color: var(--scm-subtext);">아직 응시자가 없습니다.</td>
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+                </div>
+
+                <!-- 직원 명부 관리 패널 (토글) -->
+                <div id="manage-line-panel" style="display:none;" class="scm-card p-5 space-y-4">
+                    <div style="display:flex;align-items:center;justify-content:space-between;">
+                        <div>
+                            <p class="text-[14px] font-extrabold" style="color:var(--scm-text);">👥 직원 명부 관리</p>
+                            <p class="text-[12px] mt-0.5" style="color:var(--scm-subtext);">세아웍스 직원 명부를 등록하면 사번 입력 시 라인이 자동으로 조회됩니다.</p>
+                        </div>
+                        <button onclick="document.getElementById('manage-line-panel').style.display='none'" style="font-size:18px;color:var(--scm-subtext);background:none;border:none;cursor:pointer;">✕</button>
+                    </div>
+
+                    <!-- 엑셀 업로드 -->
+                    <div style="background:#F0FDF4;border:1.5px dashed #86EFAC;border-radius:10px;padding:14px 16px;">
+                        <p class="text-[13px] font-bold mb-2" style="color:#166534;">📁 직원 명부 엑셀 업로드</p>
+                        <p class="text-[12px] mb-3" style="color:#14532D;">헤더: <strong>사번 | 성명 | 소속라인</strong> 순서로 작성된 .xlsx 파일을 업로드하세요.</p>
+                        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                            <label style="display:inline-flex;align-items:center;gap:6px;background:white;border:1.5px solid #86EFAC;border-radius:8px;padding:7px 14px;cursor:pointer;font-size:12.5px;font-weight:700;color:#166534;">
+                                📂 파일 선택
+                                <input type="file" accept=".xlsx,.xls" style="display:none;" onchange="eduImportRoster(this.files[0])">
+                            </label>
+                            <button onclick="eduDownloadRosterTemplate()" style="background:white;border:1.5px solid #93C5FD;border-radius:8px;padding:7px 14px;font-size:12.5px;font-weight:700;color:#1D4ED8;cursor:pointer;">⬇ 양식 다운로드</button>
+                            <span id="roster-file-status" style="font-size:12px;color:var(--scm-subtext);"></span>
+                        </div>
+                    </div>
+
+                    <!-- 직접 입력 -->
+                    <div>
+                        <p class="text-[13px] font-bold mb-2" style="color:var(--scm-text);">✏️ 직접 추가</p>
+                        <div style="display:grid;grid-template-columns:120px 1fr 160px auto;gap:8px;align-items:center;">
+                            <input id="roster-add-empno" placeholder="사번" style="border:1.5px solid var(--scm-border);border-radius:8px;padding:8px 10px;font-size:13px;outline:none;">
+                            <input id="roster-add-name"  placeholder="성명" style="border:1.5px solid var(--scm-border);border-radius:8px;padding:8px 10px;font-size:13px;outline:none;">
+                            <select id="roster-add-line" style="border:1.5px solid var(--scm-border);border-radius:8px;padding:8px 10px;font-size:13px;outline:none;background:white;">
+                                <option value="">-- 라인 선택 --</option>
+                                <option>CPL</option><option>CRM</option><option>CGL</option>
+                                <option>1CCL</option><option>2CCL</option><option>3CCL</option>
+                                <option>기계정비반</option><option>전기정비반</option><option>시험검사반</option>
+                            </select>
+                            <button onclick="eduRosterAddOne()" style="background:var(--scm-navy);color:white;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;">추가</button>
+                        </div>
+                    </div>
+
+                    <!-- 명부 테이블 -->
+                    <div style="max-height:280px;overflow-y:auto;border:1px solid var(--scm-border);border-radius:8px;">
+                        <table style="width:100%;font-size:12.5px;border-collapse:collapse;">
+                            <thead style="background:#F8FAFC;position:sticky;top:0;">
+                                <tr>
+                                    <th style="padding:8px 12px;text-align:left;color:var(--scm-subtext);font-weight:700;">사번</th>
+                                    <th style="padding:8px 12px;text-align:left;color:var(--scm-subtext);font-weight:700;">성명</th>
+                                    <th style="padding:8px 12px;text-align:left;color:var(--scm-subtext);font-weight:700;">소속 라인</th>
+                                    <th style="padding:8px 12px;text-align:right;color:var(--scm-subtext);font-weight:700;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="roster-tbody">
+                                <tr><td colspan="4" style="padding:20px;text-align:center;color:var(--scm-subtext);">등록된 직원이 없습니다.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <span id="roster-count" style="font-size:12px;color:var(--scm-subtext);"></span>
+                        <button onclick="if(confirm('전체 명부를 초기화하시겠습니까?'))eduRosterClear()" style="font-size:12px;color:#DC2626;background:none;border:none;cursor:pointer;font-weight:700;">🗑 명부 초기화</button>
                     </div>
                 </div>
             </div>
@@ -3601,12 +3693,57 @@
             `).join('');
         }
 
+        // ── 직원 명부 (localStorage) ──────────────────────────────
+        const ROSTER_KEY = 'seahcm_edu_roster_v1';
+        const LINES_LIST = ['CPL','CRM','CGL','1CCL','2CCL','3CCL','기계정비반','전기정비반','시험검사반'];
+
+        function rosterLoad() {
+            try { return JSON.parse(localStorage.getItem(ROSTER_KEY)||'[]'); } catch { return []; }
+        }
+        function rosterSave(data) { localStorage.setItem(ROSTER_KEY, JSON.stringify(data)); }
+
+        // 사번으로 라인 자동 조회
+        function partLookupLine(empno) {
+            const hint  = document.getElementById('part-empno-hint');
+            const badge = document.getElementById('part-line-auto-badge');
+            const sel   = document.getElementById('part-line');
+            const row   = document.getElementById('part-line-row');
+            if (!empno || empno.length < 3) {
+                if (hint) hint.textContent = '';
+                if (badge) badge.style.display = 'none';
+                if (row) row.style.display = '';
+                return;
+            }
+            const roster = rosterLoad();
+            const found  = roster.find(r => r.empno === empno.trim());
+            if (found) {
+                if (sel) sel.value = found.line;
+                if (row) row.style.display = 'none';
+                if (badge) { badge.style.display = ''; badge.textContent = `✓ ${found.line} (자동 조회)`; }
+                if (hint) { hint.textContent = `${found.name} · ${found.line}`; hint.style.color = '#059669'; }
+                // 이름도 자동 채우기
+                const nameEl = document.getElementById('part-name');
+                if (nameEl && !nameEl.value) nameEl.value = found.name;
+            } else {
+                if (row) row.style.display = '';
+                if (badge) badge.style.display = 'none';
+                if (hint) { hint.textContent = roster.length ? '명부에 없음 — 라인을 직접 선택하세요.' : ''; hint.style.color = '#92400E'; }
+            }
+        }
+
         // --- Step 1 → 2 (본인 확인) ---
         function partStep1Next() {
-            const name = document.getElementById('part-name').value.trim();
+            const name  = document.getElementById('part-name').value.trim();
             const empno = document.getElementById('part-empno').value.trim();
-            if (!name) { showToast('⚠️ 성명을 입력해 주세요.', 'warn'); return; }
+            if (!name)  { showToast('⚠️ 성명을 입력해 주세요.', 'warn'); return; }
             if (!empno) { showToast('⚠️ 사번을 입력해 주세요.', 'warn'); return; }
+            // 라인 확인 (명부 자동 or 직접 선택)
+            const lineRow = document.getElementById('part-line-row');
+            const lineSel = document.getElementById('part-line');
+            const lineVisible = lineRow && lineRow.style.display !== 'none';
+            if (lineVisible && (!lineSel || !lineSel.value)) {
+                showToast('⚠️ 소속 라인을 선택해 주세요.', 'warn'); return;
+            }
             document.getElementById('part-step-1').classList.add('hidden');
             document.getElementById('part-step-2').classList.remove('hidden');
             partUpdateStepBar(1);
@@ -3668,11 +3805,24 @@
             const now = new Date();
             const timeStr = now.toLocaleString('ko-KR');
 
-            const name = document.getElementById('part-name').value.trim();
+            const name  = document.getElementById('part-name').value.trim();
             const empno = document.getElementById('part-empno').value.trim();
+            // 라인 조회 (자동 or 직접 선택)
+            const lineRow = document.getElementById('part-line-row');
+            const lineSel = document.getElementById('part-line');
+            const badge   = document.getElementById('part-line-auto-badge');
+            let line = '';
+            if (lineSel && lineSel.value) {
+                line = lineSel.value;
+            } else {
+                // 자동 조회된 경우 배지 텍스트에서 추출
+                const roster = rosterLoad();
+                const found  = roster.find(r => r.empno === empno);
+                if (found) line = found.line;
+            }
 
             // 결과 저장
-            const result = { name, empno, score, passed, time: timeStr, correct, total };
+            const result = { name, empno, line, score, passed, time: timeStr, correct, total };
             evalSessions[currentSessionId].results.push(result);
             evalSaveToStorage();
 
@@ -3699,13 +3849,22 @@
 
         // --- 수료증 출력 ---
         function evalPrintResult() {
-            const name = document.getElementById('part-result-name').textContent;
+            const name  = document.getElementById('part-result-name').textContent;
             const empno = document.getElementById('part-result-empno').textContent;
-            const edu = document.getElementById('part-result-edu').textContent;
+            const edu   = document.getElementById('part-result-edu').textContent;
             const score = document.getElementById('part-result-score').textContent;
-            const pass = document.getElementById('part-result-pass').textContent;
-            const time = document.getElementById('part-result-time').textContent;
+            const pass  = document.getElementById('part-result-pass').textContent;
+            const time  = document.getElementById('part-result-time').textContent;
             const passed = pass.includes('합격') && !pass.includes('불합격');
+
+            // 라인 조회 (명부 or 직접 선택)
+            const lineSel = document.getElementById('part-line');
+            let line = lineSel?.value || '';
+            if (!line) {
+                const roster = rosterLoad();
+                const found  = roster.find(r => r.empno === empno);
+                if (found) line = found.line;
+            }
 
             const win = window.open('', '_blank');
             win.document.write(`<!DOCTYPE html>
@@ -3744,6 +3903,7 @@
     <div class="cert-declare" style="margin-top:8px;">위 성명의 임직원이 교육 평가를 이수하였음을 확인합니다.</div>
     <table class="cert-table">
       <tr><td>사번</td><td>${empno}</td></tr>
+      ${line ? `<tr><td>소속 라인</td><td>${line}</td></tr>` : ''}
       <tr><td>교육명</td><td>${edu}</td></tr>
       <tr><td>취득 점수</td><td>${score}</td></tr>
       <tr><td>응시 일시</td><td>${time}</td></tr>
@@ -3751,7 +3911,7 @@
     <div class="cert-pass">${passed ? '✅ 합격' : '❌ 불합격'}</div>
   </div>
   <div class="cert-seal">
-    <p>세아씨엠 안전보건팀</p>
+    <p>세아씨엠 안전환경팀</p>
     <p style="margin-top:4px; font-size:12px;">본 이수증은 세아씨엠 안전 AI 플랫폼에서 자동 발급되었습니다.</p>
   </div>
 </div>
@@ -3783,12 +3943,49 @@
             const results = session.results;
 
             document.getElementById('manage-stat-total').textContent = results.length;
-            document.getElementById('manage-stat-pass').textContent = results.filter(r => r.passed).length;
-            document.getElementById('manage-stat-fail').textContent = results.filter(r => !r.passed).length;
+            document.getElementById('manage-stat-pass').textContent  = results.filter(r => r.passed).length;
+            document.getElementById('manage-stat-fail').textContent  = results.filter(r => !r.passed).length;
 
+            // ── 라인별 현황 차트 ───────────────────────────────────
+            const chartEl = document.getElementById('manage-line-chart');
+            if (chartEl) {
+                if (results.length === 0) {
+                    chartEl.innerHTML = '<div style="text-align:center;color:var(--scm-subtext);font-size:12.5px;padding:16px;">아직 응시자가 없습니다.</div>';
+                } else {
+                    // 라인별 집계
+                    const lineMap = {};
+                    LINES_LIST.forEach(l => lineMap[l] = { total:0, pass:0, fail:0 });
+                    lineMap['미지정'] = { total:0, pass:0, fail:0 };
+                    results.forEach(r => {
+                        const key = (r.line && LINES_LIST.includes(r.line)) ? r.line : '미지정';
+                        lineMap[key].total++;
+                        r.passed ? lineMap[key].pass++ : lineMap[key].fail++;
+                    });
+                    const activeLines = [...LINES_LIST, '미지정'].filter(l => lineMap[l].total > 0);
+                    chartEl.innerHTML = activeLines.map(line => {
+                        const d   = lineMap[line];
+                        const pct = d.total > 0 ? Math.round(d.pass / d.total * 100) : 0;
+                        const barColor = pct === 100 ? '#059669' : pct >= 60 ? '#2563EB' : '#DC2626';
+                        return `<div style="display:grid;grid-template-columns:90px 1fr 50px;gap:10px;align-items:center;">
+                            <div style="font-size:12.5px;font-weight:700;color:var(--scm-text);white-space:nowrap;">${line}</div>
+                            <div>
+                                <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                                    <span style="font-size:11px;color:var(--scm-subtext);">응시 ${d.total}명 · 합격 <span style="color:#059669;font-weight:700;">${d.pass}</span> · 불합격 <span style="color:#DC2626;font-weight:700;">${d.fail}</span></span>
+                                </div>
+                                <div style="height:8px;background:#F1F5F9;border-radius:99px;overflow:hidden;">
+                                    <div style="height:100%;width:${pct}%;background:${barColor};border-radius:99px;transition:width 0.8s cubic-bezier(0.4,0,0.2,1);"></div>
+                                </div>
+                            </div>
+                            <div style="font-size:14px;font-weight:900;color:${barColor};text-align:right;">${pct}%</div>
+                        </div>`;
+                    }).join('');
+                }
+            }
+
+            // ── 이수자 테이블 ───────────────────────────────────────
             const tbody = document.getElementById('manage-tbody');
             if (results.length === 0) {
-                tbody.innerHTML = '<tr id="manage-empty-row"><td colspan="6" class="px-4 py-12 text-center text-[13px]" style="color:var(--scm-subtext);">아직 응시자가 없습니다.</td></tr>';
+                tbody.innerHTML = '<tr id="manage-empty-row"><td colspan="7" class="px-4 py-12 text-center text-[13px]" style="color:var(--scm-subtext);">아직 응시자가 없습니다.</td></tr>';
                 return;
             }
             tbody.innerHTML = results.map((r, i) => `
@@ -3796,6 +3993,9 @@
                     <td class="px-4 py-3" style="color:var(--scm-subtext);">${i+1}</td>
                     <td class="px-4 py-3 font-bold" style="color:var(--scm-text);">${r.name}</td>
                     <td class="px-4 py-3" style="color:var(--scm-text);">${r.empno}</td>
+                    <td class="px-4 py-3">
+                        <span style="background:#EFF6FF;color:#1D4ED8;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:99px;">${r.line||'미지정'}</span>
+                    </td>
                     <td class="px-4 py-3 font-bold" style="color:var(--scm-navy);">${r.score}점</td>
                     <td class="px-4 py-3 font-bold" style="color:${r.passed ? 'var(--scm-accent)' : '#DC2626'};">${r.passed ? '✅ 합격' : '❌ 불합격'}</td>
                     <td class="px-4 py-3 text-[12px]" style="color:var(--scm-subtext);">${r.time}</td>
@@ -3803,12 +4003,123 @@
             `).join('');
         }
 
+        // ── 직원 명부 관리 함수들 ─────────────────────────────────
+        function eduShowLineManage() {
+            const panel = document.getElementById('manage-line-panel');
+            if (!panel) return;
+            panel.style.display = panel.style.display === 'none' ? '' : 'none';
+            if (panel.style.display !== 'none') eduRosterRenderTable();
+        }
+
+        function eduRosterRenderTable() {
+            const roster = rosterLoad();
+            const tbody  = document.getElementById('roster-tbody');
+            const countEl= document.getElementById('roster-count');
+            if (countEl) countEl.textContent = `총 ${roster.length}명 등록됨`;
+            if (!tbody) return;
+            if (roster.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="padding:20px;text-align:center;color:var(--scm-subtext);">등록된 직원이 없습니다.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = roster.map((r, i) => `
+                <tr style="border-top:1px solid var(--scm-border);">
+                    <td style="padding:8px 12px;font-size:12.5px;">${r.empno}</td>
+                    <td style="padding:8px 12px;font-size:12.5px;font-weight:600;">${r.name}</td>
+                    <td style="padding:8px 12px;">
+                        <span style="background:#EFF6FF;color:#1D4ED8;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:99px;">${r.line}</span>
+                    </td>
+                    <td style="padding:8px 12px;text-align:right;">
+                        <button onclick="eduRosterDelete(${i})" style="font-size:11.5px;color:#DC2626;background:none;border:none;cursor:pointer;font-weight:700;">삭제</button>
+                    </td>
+                </tr>`).join('');
+        }
+
+        function eduRosterAddOne() {
+            const empno = document.getElementById('roster-add-empno')?.value.trim();
+            const name  = document.getElementById('roster-add-name')?.value.trim();
+            const line  = document.getElementById('roster-add-line')?.value;
+            if (!empno || !name || !line) { showToast('⚠️ 사번, 성명, 라인을 모두 입력하세요.', 'warn'); return; }
+            const roster = rosterLoad();
+            if (roster.find(r => r.empno === empno)) { showToast('⚠️ 이미 등록된 사번입니다.', 'warn'); return; }
+            roster.push({ empno, name, line });
+            rosterSave(roster);
+            ['roster-add-empno','roster-add-name'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+            document.getElementById('roster-add-line').value = '';
+            eduRosterRenderTable();
+            showToast(`✅ ${name} (${line}) 추가되었습니다.`, 'success');
+        }
+
+        function eduRosterDelete(idx) {
+            const roster = rosterLoad();
+            if (!confirm(`${roster[idx]?.name}을(를) 명부에서 삭제하시겠습니까?`)) return;
+            roster.splice(idx, 1);
+            rosterSave(roster);
+            eduRosterRenderTable();
+        }
+
+        function eduRosterClear() {
+            rosterSave([]);
+            eduRosterRenderTable();
+            showToast('🗑 명부가 초기화되었습니다.', 'success');
+        }
+
+        // 엑셀 명부 import (SheetJS)
+        async function eduImportRoster(file) {
+            if (!file) return;
+            const statusEl = document.getElementById('roster-file-status');
+            if (statusEl) statusEl.textContent = '읽는 중...';
+            try {
+                let waitCount = 0;
+                while (typeof XLSX === 'undefined' && waitCount < 50) { await new Promise(r=>setTimeout(r,100)); waitCount++; }
+                if (typeof XLSX === 'undefined') throw new Error('SheetJS 로딩 실패');
+                const buf  = await file.arrayBuffer();
+                const wb   = XLSX.read(buf, { type:'array' });
+                const ws   = wb.Sheets[wb.SheetNames[0]];
+                const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
+                // 헤더 스킵 (첫 행)
+                const data = rows.slice(1).filter(r => r[0] || r[1]);
+                const roster = rosterLoad();
+                let added = 0, skipped = 0;
+                data.forEach(r => {
+                    const empno = String(r[0]||'').trim();
+                    const name  = String(r[1]||'').trim();
+                    const line  = String(r[2]||'').trim();
+                    if (!empno || !name || !line) return;
+                    if (roster.find(x => x.empno === empno)) { skipped++; return; }
+                    roster.push({ empno, name, line });
+                    added++;
+                });
+                rosterSave(roster);
+                eduRosterRenderTable();
+                if (statusEl) statusEl.textContent = `✅ ${added}명 추가 (${skipped}명 중복 스킵)`;
+                showToast(`✅ ${added}명이 명부에 등록되었습니다.`, 'success');
+            } catch(e) {
+                if (statusEl) statusEl.textContent = `⚠️ 실패: ${e.message}`;
+                showToast(`⚠️ 명부 가져오기 실패: ${e.message}`, 'warn');
+            }
+        }
+
+        // 명부 양식 다운로드
+        function eduDownloadRosterTemplate() {
+            if (typeof XLSX === 'undefined') { showToast('잠시 후 다시 시도해 주세요.', 'warn'); return; }
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet([
+                ['사번','성명','소속라인'],
+                ['240510','홍길동','1CCL'],
+                ['240511','김철수','CPL'],
+                ['240512','이영희','기계정비반'],
+            ]);
+            ws['!cols'] = [{wch:12},{wch:14},{wch:14}];
+            XLSX.utils.book_append_sheet(wb, ws, '직원명부');
+            XLSX.writeFile(wb, '세아씨엠_직원명부_양식.xlsx');
+        }
+
         // --- 세션 목록 로드 ---
         function evalLoadSessionList() {
             const sessions = Object.values(evalSessions);
-            const emptyEl = document.getElementById('eval-session-list-empty');
-            const tableEl = document.getElementById('eval-session-list-table');
-            const tbody = document.getElementById('eval-session-list-tbody');
+            const emptyEl  = document.getElementById('eval-session-list-empty');
+            const tableEl  = document.getElementById('eval-session-list-table');
+            const tbody    = document.getElementById('eval-session-list-tbody');
 
             if (sessions.length === 0) {
                 emptyEl?.classList.remove('hidden');
@@ -3831,10 +4142,26 @@
                         <div class="flex items-center gap-2">
                             <button onclick="evalOpenParticipate('${s.sessionId}')" class="text-[11px] font-bold px-2.5 py-1.5 rounded-lg border hover:bg-blue-50 transition-colors" style="border-color:#93C5FD; color:#1D4ED8;">참여 미리보기</button>
                             <button onclick="evalOpenManage('${s.sessionId}')" class="text-[11px] font-bold px-2.5 py-1.5 rounded-lg border hover:bg-slate-50 transition-colors" style="border-color:var(--scm-border); color:var(--scm-text);">이수 현황</button>
+                            <button onclick="evalDeleteSession('${s.sessionId}')" class="text-[11px] font-bold px-2.5 py-1.5 rounded-lg border hover:bg-red-50 transition-colors" style="border-color:#FECACA; color:#DC2626;">🗑 삭제</button>
                         </div>
                     </td>
                 </tr>
             `).join('');
+        }
+
+        function evalDeleteSession(sessionId) {
+            const session = evalSessions[sessionId];
+            if (!session) return;
+            const title      = session.info.title;
+            const resultCount = session.results.length;
+            const msg = resultCount > 0
+                ? `"${title}" 세션을 삭제하시겠습니까?\n\n⚠️ 이수자 ${resultCount}명의 응시 데이터도 함께 삭제됩니다.\n삭제 후 복구할 수 없습니다.`
+                : `"${title}" 세션을 삭제하시겠습니까?`;
+            if (!confirm(msg)) return;
+            delete evalSessions[sessionId];
+            evalSaveToStorage();
+            showToast(`🗑 "${title}" 세션이 삭제되었습니다.`, 'success');
+            evalLoadSessionList();
         }
 
         // --- PDF 내보내기 (이수 현황) ---
