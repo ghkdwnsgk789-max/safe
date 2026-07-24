@@ -8,6 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <!-- Google Fonts (Noto Sans KR) -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <style>
@@ -1451,7 +1452,7 @@
 
                 <!-- 자료 미리보기 모달 -->
                 <div id="mat-preview-overlay" class="hidden" style="position:fixed; inset:0; background:rgba(15,23,42,0.55); z-index:60; align-items:center; justify-content:center; padding:20px;" onclick="if(event.target===this) matClosePreview()">
-                    <div style="background:white; border-radius:16px; width:100%; max-width:820px; max-height:88vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+                    <div style="background:white; border-radius:16px; width:100%; max-width:900px; max-height:92vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.3);" onclick="event.stopPropagation()">
                         <div class="flex items-start justify-between gap-3 px-5 py-4" style="border-bottom:1px solid var(--scm-border);">
                             <div class="min-w-0">
                                 <p id="mat-preview-category" class="text-[11px] font-bold mb-0.5" style="color: var(--scm-subtext);"></p>
@@ -1464,7 +1465,41 @@
                                 <button onclick="matClosePreview()" class="text-[16px] w-9 h-9 rounded-lg flex items-center justify-center hover:bg-slate-100 transition-colors" style="color: var(--scm-subtext);">✕</button>
                             </div>
                         </div>
-                        <div id="mat-preview-body" class="p-5" style="overflow-y:auto; flex:1; background:#F8FAFC;"></div>
+
+                        <!-- PDF 페이지 이동 툴바 (여러 장일 때만 표시) -->
+                        <div id="mat-pdf-nav" class="hidden items-center justify-center gap-3 py-2.5" style="border-bottom:1px solid var(--scm-border); background:#F8FAFC;">
+                            <button id="mat-pdf-prev-btn" onclick="matPdfPrev()" class="text-[12.5px] font-bold px-3 py-1.5 rounded-lg border hover:bg-white transition-colors" style="border-color: var(--scm-border); color: var(--scm-text);">◀ 이전장</button>
+                            <span id="mat-pdf-pageinfo" class="text-[12.5px] font-bold" style="color: var(--scm-text); min-width:64px; text-align:center;">1 / 1</span>
+                            <button id="mat-pdf-next-btn" onclick="matPdfNext()" class="text-[12.5px] font-bold px-3 py-1.5 rounded-lg border hover:bg-white transition-colors" style="border-color: var(--scm-border); color: var(--scm-text);">다음장 ▶</button>
+                        </div>
+
+                        <div id="mat-preview-body" class="p-5" style="overflow-y:auto; flex:1; background:#F8FAFC;">
+                            <!-- PDF -->
+                            <div id="mat-pv-pdf" class="hidden">
+                                <p id="mat-pdf-loading" class="text-center text-[12.5px] py-10" style="color: var(--scm-subtext);"></p>
+                                <div style="overflow:auto; text-align:center;">
+                                    <canvas id="mat-pdf-canvas" style="max-width:100%; box-shadow:0 1px 8px rgba(0,0,0,0.15); background:white;"></canvas>
+                                </div>
+                            </div>
+                            <!-- 영상 -->
+                            <div id="mat-pv-video" class="hidden">
+                                <video id="mat-video-el" controls style="width:100%; max-height:65vh; border-radius:8px; background:black;"></video>
+                            </div>
+                            <!-- 이미지 -->
+                            <div id="mat-pv-image" class="hidden">
+                                <img id="mat-image-el" style="max-width:100%; border-radius:8px; display:block; margin:0 auto;">
+                            </div>
+                            <!-- 유튜브/외부 임베드 -->
+                            <div id="mat-pv-embed" class="hidden">
+                                <iframe id="mat-embed-el" style="width:100%; height:65vh; border:none; border-radius:8px;" allowfullscreen></iframe>
+                            </div>
+                            <!-- 미리보기 불가 -->
+                            <div id="mat-pv-fallback" class="hidden text-center py-16">
+                                <p id="mat-fallback-icon" class="text-3xl mb-3"></p>
+                                <p id="mat-fallback-msg1" class="text-[13px]" style="color: var(--scm-subtext);"></p>
+                                <p id="mat-fallback-msg2" class="text-[12px] mt-1" style="color: var(--scm-subtext);"></p>
+                            </div>
+                        </div>
                         <div id="mat-preview-desc" class="px-5 py-3 text-[12.5px]" style="border-top:1px solid var(--scm-border); color: var(--scm-subtext); display:none;"></div>
                     </div>
                 </div>
@@ -3512,6 +3547,9 @@
         // =====================================================
         //  교육 자료실 (교육 자료 통합 관리)
         // =====================================================
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
         const MAT_STORAGE = 'seahcm_edu_materials_v1';
         const MAT_CATEGORIES = ['법정 안전보건교육', '신규채용자 교육', '관리감독자 교육', '특별안전교육', '공지자료'];
         const MAT_TYPE_META = {
@@ -3779,6 +3817,22 @@
             matShowPreview(id);
         }
 
+        function matHideAllPreviewSections() {
+            ['mat-pv-pdf','mat-pv-video','mat-pv-image','mat-pv-embed','mat-pv-fallback'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById('mat-pdf-nav').classList.add('hidden');
+            document.getElementById('mat-pdf-nav').style.display = 'none';
+        }
+
+        function matShowFallback(icon, msg1, msg2) {
+            matHideAllPreviewSections();
+            document.getElementById('mat-fallback-icon').textContent = icon;
+            document.getElementById('mat-fallback-msg1').textContent = msg1;
+            document.getElementById('mat-fallback-msg2').textContent = msg2 || '';
+            document.getElementById('mat-pv-fallback').classList.remove('hidden');
+        }
+
         function matShowPreview(id) {
             const m = matList.find(x => x.id === id);
             if (!m) return;
@@ -3790,42 +3844,39 @@
             if (m.desc) { descBox.textContent = m.desc; descBox.style.display = ''; }
             else { descBox.style.display = 'none'; }
 
-            const body = document.getElementById('mat-preview-body');
             const dlBtn = document.getElementById('mat-preview-download-btn');
+            matHideAllPreviewSections();
 
             if (m.fileData) {
                 dlBtn.style.display = '';
                 dlBtn.innerHTML = '⬇ 다운로드';
                 if (type === 'pdf') {
-                    body.innerHTML = `<iframe src="${m.fileData}" style="width:100%; height:65vh; border:none; border-radius:8px; background:white;"></iframe>`;
+                    document.getElementById('mat-pv-pdf').classList.remove('hidden');
+                    matLoadPdf({ data: matDataUrlToBytes(m.fileData) });
                 } else if (type === 'video') {
-                    body.innerHTML = `<video controls style="width:100%; max-height:65vh; border-radius:8px; background:black;"><source src="${m.fileData}" type="${m.fileMime || ''}"></video>`;
+                    document.getElementById('mat-pv-video').classList.remove('hidden');
+                    const v = document.getElementById('mat-video-el');
+                    v.src = m.fileData;
                 } else if (type === 'image') {
-                    body.innerHTML = `<img src="${m.fileData}" style="max-width:100%; border-radius:8px; display:block; margin:0 auto;">`;
+                    document.getElementById('mat-pv-image').classList.remove('hidden');
+                    document.getElementById('mat-image-el').src = m.fileData;
                 } else {
-                    body.innerHTML = `<div class="text-center py-16">
-                        <p class="text-3xl mb-3">📎</p>
-                        <p class="text-[13px]" style="color: var(--scm-subtext);">이 파일 형식은 미리보기를 지원하지 않습니다.</p>
-                        <p class="text-[12px] mt-1" style="color: var(--scm-subtext);">우측 상단 다운로드 버튼으로 파일을 받아 확인해 주세요.</p>
-                    </div>`;
+                    matShowFallback('📎', '이 파일 형식은 미리보기를 지원하지 않습니다.', '우측 상단 다운로드 버튼으로 파일을 받아 확인해 주세요.');
                 }
             } else if (m.url) {
                 const yt = matYoutubeEmbed(m.url);
                 dlBtn.style.display = '';
                 dlBtn.innerHTML = '↗ 새 탭에서 열기';
                 if (yt) {
-                    body.innerHTML = `<iframe src="${yt}" style="width:100%; height:65vh; border:none; border-radius:8px;" allowfullscreen></iframe>`;
+                    document.getElementById('mat-pv-embed').classList.remove('hidden');
+                    document.getElementById('mat-embed-el').src = yt;
                 } else if (type === 'pdf') {
-                    body.innerHTML = `<iframe src="${m.url}" style="width:100%; height:65vh; border:none; border-radius:8px; background:white;"></iframe>`;
+                    document.getElementById('mat-pv-pdf').classList.remove('hidden');
+                    matLoadPdf({ url: m.url });
                 } else {
-                    body.innerHTML = `<div class="text-center py-16">
-                        <p class="text-3xl mb-3">🔗</p>
-                        <p class="text-[13px]" style="color: var(--scm-subtext);">외부 링크 자료는 이 화면에서 바로 표시할 수 없습니다.</p>
-                        <p class="text-[12px] mt-1" style="color: var(--scm-subtext);">우측 상단 버튼으로 새 탭에서 열어 확인해 주세요.</p>
-                    </div>`;
+                    matShowFallback('🔗', '외부 링크 자료는 이 화면에서 바로 표시할 수 없습니다.', '우측 상단 버튼으로 새 탭에서 열어 확인해 주세요.');
                 }
             } else {
-                body.innerHTML = '';
                 dlBtn.style.display = 'none';
             }
             document.getElementById('mat-preview-overlay').classList.remove('hidden');
@@ -3835,7 +3886,10 @@
         function matClosePreview() {
             document.getElementById('mat-preview-overlay').classList.add('hidden');
             document.getElementById('mat-preview-overlay').style.display = 'none';
-            document.getElementById('mat-preview-body').innerHTML = '';
+            document.getElementById('mat-video-el').src = '';
+            document.getElementById('mat-image-el').src = '';
+            document.getElementById('mat-embed-el').src = '';
+            matPdfDoc = null;
             matPreviewId = null;
         }
 
@@ -3854,6 +3908,81 @@
                 window.open(m.url, '_blank', 'noopener');
             }
         }
+
+        // =====================================================
+        //  PDF 인페이지 뷰어 (pdf.js) — 페이지 이동으로 넘겨보기
+        // =====================================================
+        let matPdfDoc = null;
+        let matPdfCurrentPage = 1;
+        let matPdfTotalPages = 1;
+        let matPdfRenderTask = null;
+
+        function matDataUrlToBytes(dataUrl) {
+            const base64 = dataUrl.split(',')[1] || '';
+            const binary = atob(base64);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+            return bytes;
+        }
+
+        function matLoadPdf(source) {
+            matPdfDoc = null;
+            matPdfCurrentPage = 1;
+            const loadingEl = document.getElementById('mat-pdf-loading');
+            const canvas = document.getElementById('mat-pdf-canvas');
+            canvas.style.display = 'none';
+            loadingEl.textContent = '문서를 불러오는 중...';
+
+            if (typeof pdfjsLib === 'undefined') {
+                matShowFallback('📄', 'PDF 미리보기 기능을 불러오지 못했습니다.', '우측 상단 버튼으로 다운로드하거나 새 탭에서 열어 확인해 주세요.');
+                return;
+            }
+
+            pdfjsLib.getDocument(source).promise.then(pdf => {
+                matPdfDoc = pdf;
+                matPdfTotalPages = pdf.numPages;
+                loadingEl.textContent = '';
+                canvas.style.display = 'inline-block';
+                document.getElementById('mat-pdf-nav').classList.toggle('hidden', pdf.numPages <= 1);
+                document.getElementById('mat-pdf-nav').style.display = pdf.numPages > 1 ? 'flex' : 'none';
+                matPdfRenderPage(1);
+            }).catch(err => {
+                console.error('PDF 로드 실패', err);
+                matShowFallback('📄', 'PDF를 불러오지 못했습니다.', '우측 상단 버튼으로 다운로드하거나 새 탭에서 열어 확인해 주세요.');
+            });
+        }
+
+        function matPdfRenderPage(num) {
+            if (!matPdfDoc) return;
+            matPdfCurrentPage = num;
+            matPdfDoc.getPage(num).then(page => {
+                const canvas = document.getElementById('mat-pdf-canvas');
+                const ctx = canvas.getContext('2d');
+                const bodyWidth = document.getElementById('mat-preview-body').clientWidth - 40;
+                const baseViewport = page.getViewport({ scale: 1 });
+                const scale = Math.max(0.5, Math.min(2.2, bodyWidth / baseViewport.width)) || 1;
+                const viewport = page.getViewport({ scale });
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                if (matPdfRenderTask) { try { matPdfRenderTask.cancel(); } catch (e) {} }
+                matPdfRenderTask = page.render({ canvasContext: ctx, viewport });
+                matPdfRenderTask.promise.then(matPdfUpdateNav).catch(() => {});
+            });
+        }
+
+        function matPdfUpdateNav() {
+            const info = document.getElementById('mat-pdf-pageinfo');
+            const prevBtn = document.getElementById('mat-pdf-prev-btn');
+            const nextBtn = document.getElementById('mat-pdf-next-btn');
+            info.textContent = `${matPdfCurrentPage} / ${matPdfTotalPages}`;
+            prevBtn.disabled = matPdfCurrentPage <= 1;
+            nextBtn.disabled = matPdfCurrentPage >= matPdfTotalPages;
+            prevBtn.style.opacity = prevBtn.disabled ? '0.4' : '1';
+            nextBtn.style.opacity = nextBtn.disabled ? '0.4' : '1';
+        }
+
+        function matPdfPrev() { if (matPdfCurrentPage > 1) matPdfRenderPage(matPdfCurrentPage - 1); }
+        function matPdfNext() { if (matPdfCurrentPage < matPdfTotalPages) matPdfRenderPage(matPdfCurrentPage + 1); }
 
         // --- 날짜 기간 포맷 (예: "6월 30일 ~ 7월 3일" 또는 단일일자) ---
         function evalFormatDateRange(start, end) {
