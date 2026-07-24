@@ -283,7 +283,6 @@
                                 <button class="mega-item-btn" onclick="switchTab('risk');setTimeout(()=>riskShowTab('near'),80)">아차사고 관리</button>
                                 <button class="mega-item-btn" onclick="switchTab('risk');setTimeout(()=>riskShowTab('fix'),80)">위험요인 개선조치</button>
                                 <button class="mega-item-btn" onclick="switchTab('risk');setTimeout(()=>riskShowTab('climate'),80)">온열/한랭질환 관리</button>
-                                <button class="mega-item-btn" onclick="showComingSoon('행동관찰')">행동관찰</button>
                             </div>
                         </div>
                     </div>
@@ -312,7 +311,7 @@
                             <p class="mega-group-title">교육 관리</p>
                             <div class="mega-items-row">
                                 <button class="mega-item-btn" onclick="switchTab('education')">교육 평가 시스템</button>
-                                <button class="mega-item-btn" onclick="showComingSoon('교육 자료실')">교육 자료실</button>
+                                <button class="mega-item-btn" onclick="switchTab('education');setTimeout(()=>eduShowView('materials'),80)">교육 자료실</button>
                                 <button class="mega-item-btn" onclick="showComingSoon('특별안전교육')">특별안전교육</button>
                                 <button class="mega-item-btn" onclick="showComingSoon('관리감독자 교육')">관리감독자 교육</button>
                             </div>
@@ -1357,12 +1356,130 @@
                         <span class="inline-block mt-3 text-[12px] font-bold" style="color: #0891B2;">시스템 열기 →</span>
                     </button>
                     <!-- 교육 자료 카드 -->
-                    <button onclick="showComingSoon('교육 자료')" class="scm-card p-6 text-left hover:shadow-md hover:-translate-y-0.5 transition-all group">
+                    <button onclick="eduShowView('materials')" class="scm-card p-6 text-left hover:shadow-md hover:-translate-y-0.5 transition-all group">
                         <div class="w-12 h-12 rounded-xl flex items-center justify-center text-xl mb-4" style="background: #F0FDF4; color: #16A34A;">📂</div>
                         <h3 class="text-base font-extrabold mb-1" style="color: var(--scm-text);">교육 자료</h3>
                         <p class="text-[12.5px] leading-relaxed" style="color: var(--scm-subtext);">법정 안전보건교육 자료, 공지 자료, 강의자료를 통합 관리합니다.</p>
-                        <span class="inline-block mt-3 text-[12px] font-bold" style="color: var(--scm-subtext);">준비 중 →</span>
+                        <span class="inline-block mt-3 text-[12px] font-bold" style="color: #16A34A;">자료실 열기 →</span>
                     </button>
+                </div>
+            </div>
+
+            <!-- =============================================
+                 [M] 교육 자료실
+                 ============================================= -->
+            <div id="edu-view-materials" class="hidden space-y-5">
+                <div class="flex items-center gap-3">
+                    <button onclick="eduShowView('menu')" class="text-[12.5px] font-bold flex items-center gap-1.5 hover:underline" style="color: var(--scm-subtext);">
+                        ← 교육 관리
+                    </button>
+                    <span style="color: var(--scm-border);">/</span>
+                    <span class="text-[12.5px] font-bold" style="color: var(--scm-text);">교육 자료실</span>
+                </div>
+
+                <div class="flex items-start justify-between flex-wrap gap-3">
+                    <div>
+                        <h2 class="text-xl font-black" style="color: var(--scm-text);">📂 교육 자료실</h2>
+                        <p class="text-[13px] mt-1.5" style="color: var(--scm-subtext);">법정 안전보건교육 및 사내 강의자료를 통합 관리합니다.</p>
+                    </div>
+                    <button id="mat-add-btn" onclick="matShowForm()" class="text-white text-[13px] font-bold px-4 py-2.5 rounded-lg hover:opacity-90 transition-opacity flex items-center gap-1.5" style="background: var(--scm-navy);">
+                        <span>+</span> 자료 등록
+                    </button>
+                </div>
+
+                <!-- 카테고리 필터 -->
+                <div id="mat-category-filters" class="flex flex-wrap gap-2"></div>
+
+                <!-- 검색 -->
+                <div class="relative">
+                    <input id="mat-search" type="text" placeholder="자료명, 키워드로 검색" oninput="matRender()" class="w-full border rounded-lg pl-9 pr-3 py-2.5 text-[13px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); color: var(--scm-text);">
+                    <span class="absolute" style="left:11px; top:50%; transform:translateY(-50%); color: var(--scm-subtext); font-size:13px;">🔍</span>
+                </div>
+
+                <!-- 등록/수정 폼 -->
+                <div id="mat-form-card" class="hidden scm-card p-6 space-y-4">
+                    <h3 id="mat-form-title" class="text-base font-black" style="color: var(--scm-text);">새 자료 등록</h3>
+                    <input type="hidden" id="mat-edit-id">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="md:col-span-2">
+                            <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">자료명 <span style="color:#DC2626;">*</span></label>
+                            <input id="mat-title" type="text" placeholder="예: 밀폐공간 질식 예방 교육" class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); color: var(--scm-text);">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">카테고리 <span style="color:#DC2626;">*</span></label>
+                            <select id="mat-category" class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); color: var(--scm-text); background:white;">
+                                <option value="법정 안전보건교육">법정 안전보건교육</option>
+                                <option value="신규채용자 교육">신규채용자 교육</option>
+                                <option value="관리감독자 교육">관리감독자 교육</option>
+                                <option value="특별안전교육">특별안전교육</option>
+                                <option value="공지자료">공지자료</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">등록 방식</label>
+                            <div class="flex gap-2">
+                                <button type="button" id="mat-mode-url-btn" onclick="matSetMode('url')" class="flex-1 text-[12.5px] font-bold py-2.5 rounded-lg border transition-colors">🔗 URL 링크</button>
+                                <button type="button" id="mat-mode-file-btn" onclick="matSetMode('file')" class="flex-1 text-[12.5px] font-bold py-2.5 rounded-lg border transition-colors">📎 파일 첨부</button>
+                            </div>
+                        </div>
+                        <div class="md:col-span-2" id="mat-url-row">
+                            <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">자료 URL <span style="color:#DC2626;">*</span></label>
+                            <input id="mat-url" type="url" placeholder="https://..." class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); color: var(--scm-text);">
+                        </div>
+                        <div class="md:col-span-2 hidden" id="mat-file-row">
+                            <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">첨부 파일 <span style="color:#DC2626;">*</span></label>
+                            <input id="mat-file" type="file" onchange="matHandleFile(this)" class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); color: var(--scm-text); background:white;">
+                            <p id="mat-file-hint" class="text-[11px] mt-1" style="color: var(--scm-subtext);">최대 5MB 권장 (브라우저 저장공간에 직접 저장됩니다)</p>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">설명</label>
+                            <textarea id="mat-desc" rows="3" placeholder="자료에 대한 간단한 설명을 입력하세요." class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2 resize-none" style="border-color: var(--scm-border); color: var(--scm-text);"></textarea>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 justify-end pt-1">
+                        <button onclick="matHideForm()" class="text-[12.5px] font-bold px-4 py-2.5 rounded-lg border hover:bg-slate-50 transition-colors" style="border-color: var(--scm-border); color: var(--scm-subtext);">취소</button>
+                        <button onclick="matSubmit()" class="text-white text-[12.5px] font-bold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity" style="background: var(--scm-navy);">저장</button>
+                    </div>
+                </div>
+
+                <!-- 자료 목록 -->
+                <div id="mat-grid-empty" class="hidden py-16 text-center" style="color: var(--scm-subtext);">
+                    <p class="text-3xl mb-3">📂</p>
+                    <p class="text-[13px]">등록된 자료가 없습니다.</p>
+                </div>
+                <div id="mat-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+
+                <!-- 자료 미리보기 모달 -->
+                <div id="mat-preview-overlay" class="hidden" style="position:fixed; inset:0; background:rgba(15,23,42,0.55); z-index:60; align-items:center; justify-content:center; padding:20px;" onclick="if(event.target===this) matClosePreview()">
+                    <div style="background:white; border-radius:16px; width:100%; max-width:820px; max-height:88vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+                        <div class="flex items-start justify-between gap-3 px-5 py-4" style="border-bottom:1px solid var(--scm-border);">
+                            <div class="min-w-0">
+                                <p id="mat-preview-category" class="text-[11px] font-bold mb-0.5" style="color: var(--scm-subtext);"></p>
+                                <h3 id="mat-preview-title" class="text-base font-black truncate" style="color: var(--scm-text);"></h3>
+                            </div>
+                            <div class="flex items-center gap-2 shrink-0">
+                                <button id="mat-preview-download-btn" onclick="matDownloadCurrent()" class="text-[12.5px] font-bold px-3 py-2 rounded-lg flex items-center gap-1.5 hover:opacity-90 transition-opacity" style="background:var(--scm-navy); color:white;">
+                                    ⬇ 다운로드
+                                </button>
+                                <button onclick="matClosePreview()" class="text-[16px] w-9 h-9 rounded-lg flex items-center justify-center hover:bg-slate-100 transition-colors" style="color: var(--scm-subtext);">✕</button>
+                            </div>
+                        </div>
+                        <div id="mat-preview-body" class="p-5" style="overflow-y:auto; flex:1; background:#F8FAFC;"></div>
+                        <div id="mat-preview-desc" class="px-5 py-3 text-[12.5px]" style="border-top:1px solid var(--scm-border); color: var(--scm-subtext); display:none;"></div>
+                    </div>
+                </div>
+
+                <!-- 삭제 확인 모달 -->
+                <div id="mat-confirm-overlay" class="hidden" style="position:fixed; inset:0; background:rgba(15,23,42,0.55); z-index:70; align-items:center; justify-content:center; padding:20px;" onclick="if(event.target===this) matCancelDelete()">
+                    <div style="background:white; border-radius:16px; width:100%; max-width:360px; padding:1.5rem; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+                        <div class="w-11 h-11 rounded-full flex items-center justify-center text-xl mb-3" style="background:#FEF2F2;">🗑</div>
+                        <h3 class="text-base font-black mb-1.5" style="color: var(--scm-text);">자료를 삭제하시겠습니까?</h3>
+                        <p class="text-[12.5px] mb-5" style="color: var(--scm-subtext);"><strong id="mat-confirm-name" style="color: var(--scm-text);"></strong> 자료가 영구적으로 삭제되며, 되돌릴 수 없습니다.</p>
+                        <div class="flex gap-2 justify-end">
+                            <button onclick="matCancelDelete()" class="text-[12.5px] font-bold px-4 py-2.5 rounded-lg border hover:bg-slate-50 transition-colors" style="border-color: var(--scm-border); color: var(--scm-subtext);">취소</button>
+                            <button onclick="matConfirmDelete()" class="text-white text-[12.5px] font-bold px-4 py-2.5 rounded-lg hover:opacity-90 transition-opacity" style="background:#DC2626;">삭제</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -1527,6 +1644,9 @@
                     <!-- 단계별 패널 -->
                     <!-- Step 1: 본인 확인 -->
                     <div id="part-step-1" class="scm-card p-6 space-y-5">
+                        <button onclick="partStep1Back()" class="flex items-center gap-1 text-[12.5px] font-bold hover:opacity-70 transition-opacity" style="color: var(--scm-subtext);">
+                            <span>←</span><span>뒤로</span>
+                        </button>
                         <div>
                             <h3 class="text-base font-bold mb-1" style="color: var(--scm-text);">본인 확인</h3>
                             <p class="text-[12.5px]" style="color: var(--scm-subtext);">교육 시작 전 이름과 사번을 입력해 주세요. 회원가입 없이 바로 참여 가능합니다.</p>
@@ -3389,6 +3509,352 @@
         // 페이지 최초 로드 시 저장된 세션 불러오기
         evalLoadFromStorage();
 
+        // =====================================================
+        //  교육 자료실 (교육 자료 통합 관리)
+        // =====================================================
+        const MAT_STORAGE = 'seahcm_edu_materials_v1';
+        const MAT_CATEGORIES = ['법정 안전보건교육', '신규채용자 교육', '관리감독자 교육', '특별안전교육', '공지자료'];
+        const MAT_TYPE_META = {
+            video: { icon: '🎬' },
+            pdf:   { icon: '📄' },
+            image: { icon: '🖼' },
+            ppt:   { icon: '📊' },
+            doc:   { icon: '📝' },
+            link:  { icon: '🔗' }
+        };
+        let matList = [];
+        let matActiveCategory = '전체';
+        let matPreviewId = null;
+
+        function matLoad() {
+            try {
+                const raw = localStorage.getItem(MAT_STORAGE);
+                matList = raw ? JSON.parse(raw) : [];
+            } catch (e) { matList = []; }
+        }
+        function matSave() {
+            try { localStorage.setItem(MAT_STORAGE, JSON.stringify(matList)); }
+            catch (e) { showToast('⚠️ 자료 저장에 실패했습니다.', 'warn'); }
+        }
+        matLoad();
+
+        // --- 파일명/MIME/URL 기반 자료 유형 자동 판별 ---
+        function matDetectType(m) {
+            const mime = (m.fileMime || '').toLowerCase();
+            const name = (m.fileName || m.url || '').toLowerCase();
+            if (mime.startsWith('video/') || /\.(mp4|mov|avi|wmv|mkv|webm)(\?|$)/.test(name)) return 'video';
+            if (mime.startsWith('image/') || /\.(png|jpg|jpeg|gif|webp)(\?|$)/.test(name)) return 'image';
+            if (mime === 'application/pdf' || /\.pdf(\?|$)/.test(name)) return 'pdf';
+            if (mime.includes('presentation') || /\.(ppt|pptx)(\?|$)/.test(name)) return 'ppt';
+            if (!m.fileData && m.url) return 'link';
+            return 'doc';
+        }
+
+        function matRenderFilters() {
+            const box = document.getElementById('mat-category-filters');
+            if (!box) return;
+            const cats = ['전체', ...MAT_CATEGORIES];
+            box.innerHTML = cats.map(c => {
+                const active = c === matActiveCategory;
+                return `<button onclick="matSetCategory('${c}')" class="text-[12px] font-bold px-3 py-1.5 rounded-full transition-colors"
+                    style="${active ? 'background: var(--scm-navy); color: white;' : 'background: white; border: 1px solid var(--scm-border); color: var(--scm-subtext);'}">${c}</button>`;
+            }).join('');
+        }
+        function matSetCategory(c) {
+            matActiveCategory = c;
+            matRenderFilters();
+            matRender();
+        }
+
+        function matRender() {
+            matRenderFilters();
+            const grid = document.getElementById('mat-grid');
+            const empty = document.getElementById('mat-grid-empty');
+            const addBtn = document.getElementById('mat-add-btn');
+            if (addBtn) addBtn.style.display = IS_ADMIN ? '' : 'none';
+            const q = (document.getElementById('mat-search')?.value || '').trim().toLowerCase();
+            let items = [...matList];
+            if (matActiveCategory !== '전체') items = items.filter(m => m.category === matActiveCategory);
+            if (q) items = items.filter(m => (m.title + ' ' + (m.desc||'')).toLowerCase().includes(q));
+            items.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+            if (!items.length) {
+                grid.innerHTML = '';
+                empty.classList.remove('hidden');
+                return;
+            }
+            empty.classList.add('hidden');
+            grid.innerHTML = items.map(m => {
+                const meta = MAT_TYPE_META[matDetectType(m)] || MAT_TYPE_META.doc;
+                const dateStr = new Date(m.createdAt).toLocaleDateString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit' });
+                const sourceBadge = m.fileData
+                    ? `<span title="${m.fileName || ''}">📎 첨부파일</span>`
+                    : `<span>🔗 링크</span>`;
+                return `<div class="scm-card p-5 cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all" onclick="matOpen(${m.id})">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="w-10 h-10 rounded-lg flex items-center justify-center text-lg" style="background:#EFF6FF;">${meta.icon}</div>
+                        <div class="flex gap-1">
+                            ${IS_ADMIN ? `<button onclick="event.stopPropagation();matShowForm(${m.id})" class="text-[11px] font-bold px-2 py-1 rounded-md border hover:bg-slate-50" style="border-color: var(--scm-border); color: var(--scm-subtext);">수정</button>` : ''}
+                            ${IS_MASTER ? `<button onclick="event.stopPropagation();matRequestDelete(${m.id})" class="text-[11px] font-bold px-2 py-1 rounded-md border hover:bg-red-50" style="border-color: #FECACA; color: #DC2626;">삭제</button>` : ''}
+                        </div>
+                    </div>
+                    <p class="text-[11px] font-bold mb-1" style="color: var(--scm-subtext);">${m.category}</p>
+                    <p class="text-[14px] font-extrabold mb-2 leading-snug" style="color: var(--scm-text);">${m.title}</p>
+                    <div class="flex items-center justify-between text-[11.5px]" style="color: var(--scm-subtext);">
+                        <span>📅 ${dateStr}</span>
+                        <span>👁 ${m.views || 0}</span>
+                    </div>
+                    <div class="text-[11px] mt-1.5" style="color: var(--scm-subtext);">${sourceBadge}</div>
+                </div>`;
+            }).join('');
+        }
+
+        // --- 등록 방식 전환 (URL / 파일 첨부) ---
+        let matPendingFile = null; // { name, mimeType, dataUrl }
+        function matSetMode(mode) {
+            const urlRow = document.getElementById('mat-url-row');
+            const fileRow = document.getElementById('mat-file-row');
+            const urlBtn = document.getElementById('mat-mode-url-btn');
+            const fileBtn = document.getElementById('mat-mode-file-btn');
+            const navy = 'var(--scm-navy)';
+            if (mode === 'file') {
+                fileRow.classList.remove('hidden');
+                urlRow.classList.add('hidden');
+                fileBtn.style.background = navy; fileBtn.style.color = 'white'; fileBtn.style.borderColor = navy;
+                urlBtn.style.background = 'white'; urlBtn.style.color = 'var(--scm-subtext)'; urlBtn.style.borderColor = 'var(--scm-border)';
+            } else {
+                urlRow.classList.remove('hidden');
+                fileRow.classList.add('hidden');
+                urlBtn.style.background = navy; urlBtn.style.color = 'white'; urlBtn.style.borderColor = navy;
+                fileBtn.style.background = 'white'; fileBtn.style.color = 'var(--scm-subtext)'; fileBtn.style.borderColor = 'var(--scm-border)';
+            }
+            document.getElementById('mat-form-card').dataset.mode = mode;
+        }
+
+        function matHandleFile(input) {
+            const file = input.files && input.files[0];
+            const hint = document.getElementById('mat-file-hint');
+            if (!file) { matPendingFile = null; return; }
+            if (file.size > 8 * 1024 * 1024) {
+                showToast('⚠️ 파일이 너무 큽니다. 8MB 이하 파일을 사용하거나 URL 링크를 이용해 주세요.', 'warn');
+                input.value = '';
+                matPendingFile = null;
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = () => {
+                matPendingFile = { name: file.name, mimeType: file.type, dataUrl: reader.result };
+                if (hint) hint.textContent = `선택됨: ${file.name} (${(file.size/1024).toFixed(0)}KB)`;
+            };
+            reader.onerror = () => {
+                showToast('⚠️ 파일을 읽는 데 실패했습니다.', 'warn');
+                matPendingFile = null;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function matShowForm(id) {
+            const card = document.getElementById('mat-form-card');
+            const title = document.getElementById('mat-form-title');
+            document.getElementById('mat-edit-id').value = id || '';
+            document.getElementById('mat-file').value = '';
+            document.getElementById('mat-file-hint').textContent = '최대 8MB 권장 (브라우저 저장공간에 직접 저장됩니다)';
+            matPendingFile = null;
+            if (id) {
+                const m = matList.find(x => x.id === id);
+                if (!m) return;
+                title.textContent = '자료 수정';
+                document.getElementById('mat-title').value = m.title;
+                document.getElementById('mat-category').value = m.category;
+                document.getElementById('mat-url').value = m.url || '';
+                document.getElementById('mat-desc').value = m.desc || '';
+                matSetMode(m.fileData ? 'file' : 'url');
+                if (m.fileData) document.getElementById('mat-file-hint').textContent = `현재 첨부: ${m.fileName || '파일'} (변경하려면 새 파일을 선택하세요)`;
+            } else {
+                title.textContent = '새 자료 등록';
+                document.getElementById('mat-title').value = '';
+                document.getElementById('mat-category').value = MAT_CATEGORIES[0];
+                document.getElementById('mat-url').value = '';
+                document.getElementById('mat-desc').value = '';
+                matSetMode('url');
+            }
+            card.classList.remove('hidden');
+            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        function matHideForm() {
+            document.getElementById('mat-form-card').classList.add('hidden');
+            matPendingFile = null;
+        }
+
+        function matSubmit() {
+            const editId = document.getElementById('mat-edit-id').value;
+            const title = document.getElementById('mat-title').value.trim();
+            const category = document.getElementById('mat-category').value;
+            const desc = document.getElementById('mat-desc').value.trim();
+            const mode = document.getElementById('mat-form-card').dataset.mode || 'url';
+            const url = document.getElementById('mat-url').value.trim();
+            if (!title) { showToast('⚠️ 자료명을 입력해 주세요.', 'warn'); return; }
+
+            const existing = editId ? matList.find(x => x.id === Number(editId)) : null;
+            let fileData = existing ? existing.fileData : null;
+            let fileName = existing ? existing.fileName : null;
+            let fileMime = existing ? existing.fileMime : null;
+            let finalUrl = url;
+
+            if (mode === 'file') {
+                if (matPendingFile) {
+                    fileData = matPendingFile.dataUrl;
+                    fileName = matPendingFile.name;
+                    fileMime = matPendingFile.mimeType;
+                    finalUrl = '';
+                } else if (!fileData) {
+                    showToast('⚠️ 첨부할 파일을 선택해 주세요.', 'warn'); return;
+                }
+            } else {
+                if (!url) { showToast('⚠️ 자료 URL을 입력해 주세요.', 'warn'); return; }
+                fileData = null; fileName = null; fileMime = null;
+            }
+
+            if (editId) {
+                const idx = matList.findIndex(x => x.id === Number(editId));
+                if (idx !== -1) {
+                    matList[idx] = { ...matList[idx], title, category, url: finalUrl, desc, fileData, fileName, fileMime };
+                }
+                showToast('✅ 자료가 수정되었습니다.', 'success');
+            } else {
+                matList.unshift({ id: Date.now(), title, category, url: finalUrl, desc, fileData, fileName, fileMime, views: 0, createdAt: new Date().toISOString() });
+                showToast('✅ 자료가 등록되었습니다.', 'success');
+            }
+            try {
+                matSave();
+            } catch (e) {
+                showToast('⚠️ 저장 공간이 부족합니다. 파일 용량을 줄이거나 URL 링크를 이용해 주세요.', 'warn');
+                return;
+            }
+            matHideForm();
+            matRender();
+        }
+
+        let matDeleteTargetId = null;
+        function matRequestDelete(id) {
+            if (!IS_MASTER) {
+                showToast('⚠️ 자료 삭제는 마스터 권한이 필요합니다.', 'warn');
+                return;
+            }
+            const m = matList.find(x => x.id === id);
+            if (!m) return;
+            matDeleteTargetId = id;
+            const nameEl = document.getElementById('mat-confirm-name');
+            if (nameEl) nameEl.textContent = m.title;
+            document.getElementById('mat-confirm-overlay').classList.remove('hidden');
+            document.getElementById('mat-confirm-overlay').style.display = 'flex';
+        }
+        function matCancelDelete() {
+            matDeleteTargetId = null;
+            document.getElementById('mat-confirm-overlay').classList.add('hidden');
+            document.getElementById('mat-confirm-overlay').style.display = 'none';
+        }
+        function matConfirmDelete() {
+            if (!IS_MASTER || matDeleteTargetId == null) { matCancelDelete(); return; }
+            matList = matList.filter(x => x.id !== matDeleteTargetId);
+            matSave();
+            matCancelDelete();
+            matRender();
+            showToast('🗑 자료가 삭제되었습니다.', 'success');
+        }
+
+        // --- 유튜브 링크 → 임베드 URL 변환 ---
+        function matYoutubeEmbed(url) {
+            const m1 = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})/);
+            return m1 ? `https://www.youtube.com/embed/${m1[1]}` : null;
+        }
+
+        // --- 카드 클릭 시 미리보기 모달 오픈 ---
+        function matOpen(id) {
+            const m = matList.find(x => x.id === id);
+            if (!m) return;
+            m.views = (m.views || 0) + 1;
+            matSave();
+            matRender();
+            matShowPreview(id);
+        }
+
+        function matShowPreview(id) {
+            const m = matList.find(x => x.id === id);
+            if (!m) return;
+            matPreviewId = id;
+            const type = matDetectType(m);
+            document.getElementById('mat-preview-category').textContent = m.category;
+            document.getElementById('mat-preview-title').textContent = m.title;
+            const descBox = document.getElementById('mat-preview-desc');
+            if (m.desc) { descBox.textContent = m.desc; descBox.style.display = ''; }
+            else { descBox.style.display = 'none'; }
+
+            const body = document.getElementById('mat-preview-body');
+            const dlBtn = document.getElementById('mat-preview-download-btn');
+
+            if (m.fileData) {
+                dlBtn.style.display = '';
+                dlBtn.innerHTML = '⬇ 다운로드';
+                if (type === 'pdf') {
+                    body.innerHTML = `<iframe src="${m.fileData}" style="width:100%; height:65vh; border:none; border-radius:8px; background:white;"></iframe>`;
+                } else if (type === 'video') {
+                    body.innerHTML = `<video controls style="width:100%; max-height:65vh; border-radius:8px; background:black;"><source src="${m.fileData}" type="${m.fileMime || ''}"></video>`;
+                } else if (type === 'image') {
+                    body.innerHTML = `<img src="${m.fileData}" style="max-width:100%; border-radius:8px; display:block; margin:0 auto;">`;
+                } else {
+                    body.innerHTML = `<div class="text-center py-16">
+                        <p class="text-3xl mb-3">📎</p>
+                        <p class="text-[13px]" style="color: var(--scm-subtext);">이 파일 형식은 미리보기를 지원하지 않습니다.</p>
+                        <p class="text-[12px] mt-1" style="color: var(--scm-subtext);">우측 상단 다운로드 버튼으로 파일을 받아 확인해 주세요.</p>
+                    </div>`;
+                }
+            } else if (m.url) {
+                const yt = matYoutubeEmbed(m.url);
+                dlBtn.style.display = '';
+                dlBtn.innerHTML = '↗ 새 탭에서 열기';
+                if (yt) {
+                    body.innerHTML = `<iframe src="${yt}" style="width:100%; height:65vh; border:none; border-radius:8px;" allowfullscreen></iframe>`;
+                } else if (type === 'pdf') {
+                    body.innerHTML = `<iframe src="${m.url}" style="width:100%; height:65vh; border:none; border-radius:8px; background:white;"></iframe>`;
+                } else {
+                    body.innerHTML = `<div class="text-center py-16">
+                        <p class="text-3xl mb-3">🔗</p>
+                        <p class="text-[13px]" style="color: var(--scm-subtext);">외부 링크 자료는 이 화면에서 바로 표시할 수 없습니다.</p>
+                        <p class="text-[12px] mt-1" style="color: var(--scm-subtext);">우측 상단 버튼으로 새 탭에서 열어 확인해 주세요.</p>
+                    </div>`;
+                }
+            } else {
+                body.innerHTML = '';
+                dlBtn.style.display = 'none';
+            }
+            document.getElementById('mat-preview-overlay').classList.remove('hidden');
+            document.getElementById('mat-preview-overlay').style.display = 'flex';
+        }
+
+        function matClosePreview() {
+            document.getElementById('mat-preview-overlay').classList.add('hidden');
+            document.getElementById('mat-preview-overlay').style.display = 'none';
+            document.getElementById('mat-preview-body').innerHTML = '';
+            matPreviewId = null;
+        }
+
+        // --- 미리보기 상단 다운로드 / 새 탭 열기 버튼 ---
+        function matDownloadCurrent() {
+            const m = matList.find(x => x.id === matPreviewId);
+            if (!m) return;
+            if (m.fileData) {
+                const a = document.createElement('a');
+                a.href = m.fileData;
+                a.download = m.fileName || m.title;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            } else if (m.url) {
+                window.open(m.url, '_blank', 'noopener');
+            }
+        }
+
         // --- 날짜 기간 포맷 (예: "6월 30일 ~ 7월 3일" 또는 단일일자) ---
         function evalFormatDateRange(start, end) {
             if (!start) return '—';
@@ -3450,11 +3916,12 @@
 
         // --- 뷰 전환 ---
         function eduShowView(view) {
-            ['menu','eval-admin','eval-participate','eval-manage'].forEach(v => {
+            ['menu','eval-admin','eval-participate','eval-manage','materials'].forEach(v => {
                 document.getElementById(`edu-view-${v}`).classList.add('hidden');
             });
             document.getElementById(`edu-view-${view}`).classList.remove('hidden');
             if (view === 'eval-admin') evalLoadSessionList();
+            if (view === 'materials') matRender();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -3729,6 +4196,11 @@
                 if (badge) badge.style.display = 'none';
                 if (hint) { hint.textContent = roster.length ? '명부에 없음 — 라인을 직접 선택하세요.' : ''; hint.style.color = '#92400E'; }
             }
+        }
+
+        // --- Step 1 뒤로가기 (교육 메뉴로) ---
+        function partStep1Back() {
+            eduShowView('menu');
         }
 
         // --- Step 1 → 2 (본인 확인) ---
