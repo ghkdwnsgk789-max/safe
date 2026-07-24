@@ -579,6 +579,21 @@
                             </div>
                         </div>
                         <div id="weather-alert-box" class="hidden rounded-lg p-3 text-[12px] mb-3" style="background:#FEF9C3;border:1px solid #FDE047;"><div id="weather-alert-list"></div></div>
+
+                        <!-- 시간별 예보 (미래 시간 날씨·기온·체감온도) -->
+                        <div id="weather-hourly-section" class="hidden mb-3" style="border-top:1px solid var(--scm-border); padding-top:12px;">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-[11.5px] font-bold" style="color: var(--scm-text);">⏱ 시간별 예보</span>
+                                <div style="display:flex; gap:3px; background:#F1F5F9; border-radius:8px; padding:2px;">
+                                    <button id="hourly-tab-weather" onclick="hourlySetTab('weather')" style="font-size:10.5px; font-weight:700; padding:4px 9px; border-radius:6px; border:none; cursor:pointer; background:var(--scm-navy); color:white;">날씨</button>
+                                    <button id="hourly-tab-rain" onclick="hourlySetTab('rain')" style="font-size:10.5px; font-weight:700; padding:4px 9px; border-radius:6px; border:none; cursor:pointer; color:var(--scm-subtext);">강수</button>
+                                    <button id="hourly-tab-wind" onclick="hourlySetTab('wind')" style="font-size:10.5px; font-weight:700; padding:4px 9px; border-radius:6px; border:none; cursor:pointer; color:var(--scm-subtext);">바람</button>
+                                    <button id="hourly-tab-hum" onclick="hourlySetTab('hum')" style="font-size:10.5px; font-weight:700; padding:4px 9px; border-radius:6px; border:none; cursor:pointer; color:var(--scm-subtext);">습도</button>
+                                </div>
+                            </div>
+                            <div id="weather-hourly-bar" style="display:flex; gap:2px; overflow-x:auto; padding-bottom:4px;"></div>
+                        </div>
+
                         <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--scm-subtext);">
                             <span>기상청 초단기실황 | 소룡동 (nx 57, ny 93)</span>
                             <span id="weather-updated"></span>
@@ -7912,6 +7927,9 @@ ${extraText}
                     items[idx] = { ...items[idx], process, hazard, equip, measure, freq, sev, score: scoreVal, grade, afterFreq, afterSev, afterScore: afterScoreVal, afterGrade, reduction, owner, due, status };
                     raSave(items);
                     showToast('✅ 위험성평가표가 수정되었습니다.', 'success');
+                    if (afterScoreVal >= 8) {
+                        setTimeout(() => showToast(`⚠️ 개선 후 위험도가 여전히 ${afterScoreVal}점(${afterGrade})입니다. 추가 감소대책이 필요합니다.`, 'warn'), 600);
+                    }
                 }
             } else {
                 items.unshift({
@@ -7925,6 +7943,9 @@ ${extraText}
                 });
                 raSave(items);
                 showToast('✅ 위험성평가표가 등록되었습니다. 아래 목록에서 확인하세요.', 'success');
+                if (afterScoreVal >= 8) {
+                    setTimeout(() => showToast(`⚠️ 개선 후 위험도가 여전히 ${afterScoreVal}점(${afterGrade})입니다. 추가 감소대책이 필요합니다.`, 'warn'), 600);
+                }
             }
 
             raResetForm();
@@ -7988,8 +8009,23 @@ ${extraText}
             raRender();
         }
 
+        let raDeleteArmedId = null;
+        let raDeleteArmTimer = null;
+
         function raDelete(id) {
-            if (!confirm('이 위험성평가 항목을 삭제하시겠습니까?')) return;
+            const btn = document.getElementById(`ra-delete-btn-${id}`);
+            if (raDeleteArmedId !== id) {
+                raDeleteArmedId = id;
+                if (btn) { btn.textContent = '정말 삭제?'; btn.style.background = '#991B1B'; btn.style.color = 'white'; }
+                clearTimeout(raDeleteArmTimer);
+                raDeleteArmTimer = setTimeout(() => {
+                    raDeleteArmedId = null;
+                    raRender();
+                }, 4000);
+                return;
+            }
+            clearTimeout(raDeleteArmTimer);
+            raDeleteArmedId = null;
             raSave(raLoad().filter(i => i.id !== id));
             raRender();
             showToast('🗑 삭제되었습니다.', 'success');
@@ -8088,7 +8124,7 @@ ${extraText}
                                         : `<span style="font-size:11.5px; color:var(--scm-text);">${i.status}</span>`)}
                                 ${IS_ADMIN ? `<td style="border-bottom:1px solid var(--scm-border); padding:9px 10px; text-align:center; white-space:nowrap;">
                                     <button onclick="raEditStart(${i.id})" style="font-size:11px; font-weight:700; color:var(--scm-navy); background:none; border:1px solid var(--scm-border); border-radius:6px; padding:3px 8px; cursor:pointer; margin-right:4px;">수정</button>
-                                    <button onclick="raDelete(${i.id})" style="font-size:11px; font-weight:700; color:#DC2626; background:none; border:1px solid #FECACA; border-radius:6px; padding:3px 8px; cursor:pointer;">삭제</button>
+                                    <button id="ra-delete-btn-${i.id}" onclick="raDelete(${i.id})" style="font-size:11px; font-weight:700; color:#DC2626; background:none; border:1px solid #FECACA; border-radius:6px; padding:3px 8px; cursor:pointer;">삭제</button>
                                 </td>` : ''}
                             </tr>`;
                         }).join('')}
