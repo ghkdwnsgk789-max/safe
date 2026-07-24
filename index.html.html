@@ -680,9 +680,41 @@
             <div class="scm-card p-5">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center gap-2"><span>🔔</span><h3 class="font-extrabold text-[15px]" style="color: var(--scm-text);">업무 알리미</h3></div>
-                    <button onclick="showComingSoon('알림 관리')" class="text-xs font-bold px-3 py-1.5 rounded-lg border flex items-center gap-1.5 hover:bg-slate-50 transition-colors" style="border-color: var(--scm-border); color: var(--scm-text);">알림 관리</button>
+                    <button onclick="reminderOpenCalendar()" class="text-xs font-bold px-3 py-1.5 rounded-lg border flex items-center gap-1.5 hover:bg-slate-50 transition-colors" style="border-color: var(--scm-border); color: var(--scm-text);">📅 알림 관리</button>
                 </div>
-                <div class="flex items-center justify-center py-6 text-[13px]" style="color: var(--scm-subtext);">등록된 업무 알림이 없습니다</div>
+                <div id="home-reminder-list">
+                    <div class="flex items-center justify-center py-6 text-[13px]" style="color: var(--scm-subtext);">등록된 업무 알림이 없습니다</div>
+                </div>
+            </div>
+
+            <!-- 업무 알리미 캘린더 모달 -->
+            <div id="reminder-cal-overlay" class="hidden" style="position:fixed; inset:0; background:rgba(15,23,42,0.6); z-index:9999; display:none; align-items:center; justify-content:center; padding:16px;" onclick="if(event.target===this) reminderCloseCalendar()">
+                <div style="background:white; border-radius:16px; width:100%; max-width:820px; max-height:90vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.3);" onclick="event.stopPropagation()">
+                    <div class="flex items-center justify-between gap-3 px-5 py-4" style="border-bottom:1px solid var(--scm-border);">
+                        <h3 class="text-base font-black" style="color: var(--scm-text);">🔔 업무 알리미 — 알림 관리</h3>
+                        <button onclick="reminderCloseCalendar()" class="text-[16px] w-9 h-9 rounded-lg flex items-center justify-center hover:bg-slate-100 transition-colors" style="color: var(--scm-subtext);">✕</button>
+                    </div>
+                    <div style="overflow-y:auto; flex:1; padding:20px;">
+                        <div style="display:grid; grid-template-columns:1.3fr 1fr; gap:20px; align-items:start;">
+                            <!-- 캘린더 -->
+                            <div>
+                                <div class="flex items-center justify-between mb-3">
+                                    <button onclick="reminderPrevMonth()" class="text-[13px] font-bold px-2.5 py-1.5 rounded-lg border hover:bg-slate-50" style="border-color: var(--scm-border); color: var(--scm-text);">◀</button>
+                                    <span id="reminder-cal-title" class="text-[14.5px] font-black" style="color: var(--scm-navy);"></span>
+                                    <button onclick="reminderNextMonth()" class="text-[13px] font-bold px-2.5 py-1.5 rounded-lg border hover:bg-slate-50" style="border-color: var(--scm-border); color: var(--scm-text);">▶</button>
+                                </div>
+                                <div id="reminder-cal-weekdays" style="display:grid; grid-template-columns:repeat(7,1fr); gap:3px; margin-bottom:4px; font-size:11px; font-weight:700; text-align:center; color:var(--scm-subtext);"></div>
+                                <div id="reminder-cal-grid" style="display:grid; grid-template-columns:repeat(7,1fr); gap:3px;"></div>
+                            </div>
+                            <!-- 선택한 날짜 상세 -->
+                            <div>
+                                <div id="reminder-day-panel">
+                                    <div class="text-center py-10 text-[12.5px]" style="color: var(--scm-subtext);">날짜를 선택하면<br>알림을 등록할 수 있습니다.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
         </section>
@@ -901,11 +933,18 @@
                         <span id="assess-result-badge" style="font-size:13px; font-weight:800; padding:5px 14px; border-radius:99px;"></span>
                     </div>
 
-                    <div style="overflow-x:auto;">
-                        <table id="assess-matrix-table" style="border-collapse:collapse; width:100%; min-width:480px; text-align:center; font-size:12.5px;">
+                    <div style="display:flex; justify-content:center; overflow-x:auto;">
+                        <table id="assess-matrix-table" style="border-collapse:collapse; width:auto; max-width:540px; margin:0 auto; text-align:center; font-size:12.5px; table-layout:fixed;">
+                            <colgroup>
+                                <col style="width:108px;">
+                                <col style="width:100px;">
+                                <col style="width:100px;">
+                                <col style="width:100px;">
+                                <col style="width:100px;">
+                            </colgroup>
                             <thead>
                                 <tr>
-                                    <th style="border:1px solid var(--scm-border); padding:8px; background:#F1F5F9; font-size:11.5px; color:var(--scm-subtext);">가능성(빈도) \ 중대성(강도)</th>
+                                    <th style="border:1px solid var(--scm-border); padding:8px 6px; background:#F1F5F9; font-size:10.5px; line-height:1.3; color:var(--scm-subtext);">가능성(빈도)<br>\ 중대성(강도)</th>
                                     <th style="border:1px solid var(--scm-border); padding:8px; background:#F1F5F9;">최대(4)</th>
                                     <th style="border:1px solid var(--scm-border); padding:8px; background:#F1F5F9;">대(3)</th>
                                     <th style="border:1px solid var(--scm-border); padding:8px; background:#F1F5F9;">중(2)</th>
@@ -3077,6 +3116,205 @@
         }
 
         // ============================================================
+        //  업무 알리미 (캘린더 기반 알림 시스템)
+        //  - 날짜 클릭 → 시간/기간/내용 등록
+        //  - 등록일이 오늘이거나 임박하면 페이지 로드시 알림 토스트 표시
+        // ============================================================
+        const REMINDER_STORAGE = 'seahcm_task_reminders_v1';
+        let reminderCalYear, reminderCalMonth; // 0-indexed month
+        let reminderSelectedDate = null; // 'YYYY-MM-DD'
+
+        function reminderLoad() {
+            try { return JSON.parse(localStorage.getItem(REMINDER_STORAGE) || '[]'); } catch (e) { return []; }
+        }
+        function reminderSave(list) {
+            try { localStorage.setItem(REMINDER_STORAGE, JSON.stringify(list)); }
+            catch (e) { showToast('⚠️ 알림 저장에 실패했습니다.', 'warn'); }
+        }
+        function reminderPad(n) { return String(n).padStart(2, '0'); }
+        function reminderDateStr(y, m, d) { return `${y}-${reminderPad(m + 1)}-${reminderPad(d)}`; }
+        function reminderToday() {
+            const t = new Date();
+            return reminderDateStr(t.getFullYear(), t.getMonth(), t.getDate());
+        }
+
+        // 특정 날짜가 알림의 [date, endDate] 범위에 포함되는지
+        function reminderCoversDate(item, dateStr) {
+            const end = item.endDate || item.date;
+            return dateStr >= item.date && dateStr <= end;
+        }
+
+        function reminderOpenCalendar() {
+            const now = new Date();
+            reminderCalYear = now.getFullYear();
+            reminderCalMonth = now.getMonth();
+            reminderSelectedDate = null;
+            reminderRenderCalendar();
+            document.getElementById('reminder-day-panel').innerHTML = `<div class="text-center py-10 text-[12.5px]" style="color: var(--scm-subtext);">날짜를 선택하면<br>알림을 등록할 수 있습니다.</div>`;
+            const overlay = document.getElementById('reminder-cal-overlay');
+            overlay.classList.remove('hidden');
+            overlay.style.display = 'flex';
+        }
+        function reminderCloseCalendar() {
+            const overlay = document.getElementById('reminder-cal-overlay');
+            overlay.classList.add('hidden');
+            overlay.style.display = 'none';
+        }
+        function reminderPrevMonth() {
+            reminderCalMonth--;
+            if (reminderCalMonth < 0) { reminderCalMonth = 11; reminderCalYear--; }
+            reminderRenderCalendar();
+        }
+        function reminderNextMonth() {
+            reminderCalMonth++;
+            if (reminderCalMonth > 11) { reminderCalMonth = 0; reminderCalYear++; }
+            reminderRenderCalendar();
+        }
+
+        function reminderRenderCalendar() {
+            document.getElementById('reminder-cal-title').textContent = `${reminderCalYear}년 ${reminderCalMonth + 1}월`;
+            const wkEl = document.getElementById('reminder-cal-weekdays');
+            wkEl.innerHTML = ['일','월','화','수','목','금','토'].map(d => `<div>${d}</div>`).join('');
+
+            const firstDay = new Date(reminderCalYear, reminderCalMonth, 1).getDay();
+            const daysInMonth = new Date(reminderCalYear, reminderCalMonth + 1, 0).getDate();
+            const items = reminderLoad();
+            const today = reminderToday();
+
+            const cells = [];
+            for (let i = 0; i < firstDay; i++) cells.push('<div></div>');
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = reminderDateStr(reminderCalYear, reminderCalMonth, d);
+                const hasItems = items.some(it => reminderCoversDate(it, dateStr));
+                const isToday = dateStr === today;
+                const isSelected = dateStr === reminderSelectedDate;
+                cells.push(`<button onclick="reminderSelectDay('${dateStr}')" style="
+                    aspect-ratio:1; border-radius:8px; font-size:12px; font-weight:${isToday ? '900' : '600'};
+                    border:1.5px solid ${isSelected ? 'var(--scm-navy)' : 'transparent'};
+                    background:${isToday ? '#EFF6FF' : (isSelected ? '#F8FAFC' : 'white')};
+                    color:${isToday ? 'var(--scm-navy)' : 'var(--scm-text)'};
+                    cursor:pointer; position:relative; display:flex; align-items:center; justify-content:center;
+                ">${d}${hasItems ? '<span style="position:absolute; bottom:3px; width:4px; height:4px; border-radius:99px; background:#EF4444;"></span>' : ''}</button>`);
+            }
+            document.getElementById('reminder-cal-grid').innerHTML = cells.join('');
+        }
+
+        function reminderSelectDay(dateStr) {
+            reminderSelectedDate = dateStr;
+            reminderRenderCalendar();
+            const items = reminderLoad().filter(it => reminderCoversDate(it, dateStr))
+                .sort((a,b) => (a.time||'').localeCompare(b.time||''));
+            const [y, m, d] = dateStr.split('-');
+
+            const listHtml = items.length
+                ? items.map(it => `<div style="border:1px solid var(--scm-border); border-radius:8px; padding:8px 10px; margin-bottom:6px;">
+                    <div style="display:flex; justify-content:space-between; align-items:start; gap:6px;">
+                        <div style="min-width:0;">
+                            <p style="font-size:11.5px; font-weight:800; color:var(--scm-navy);">${it.time ? it.time + ' · ' : ''}${it.content}</p>
+                            ${it.endDate && it.endDate !== it.date ? `<p style="font-size:10.5px; color:var(--scm-subtext); margin-top:2px;">${it.date} ~ ${it.endDate}</p>` : ''}
+                        </div>
+                        <button onclick="reminderDelete(${it.id})" style="font-size:10.5px; font-weight:700; color:#DC2626; background:none; border:1px solid #FECACA; border-radius:6px; padding:2px 7px; cursor:pointer; white-space:nowrap;">삭제</button>
+                    </div>
+                </div>`).join('')
+                : `<p style="font-size:11.5px; color:var(--scm-subtext); margin-bottom:10px;">등록된 알림이 없습니다.</p>`;
+
+            document.getElementById('reminder-day-panel').innerHTML = `
+                <p style="font-size:13px; font-weight:800; color:var(--scm-text); margin-bottom:10px;">${y}년 ${Number(m)}월 ${Number(d)}일</p>
+                <div style="margin-bottom:16px;">${listHtml}</div>
+                <div style="border-top:1px solid var(--scm-border); padding-top:14px;">
+                    <p style="font-size:12px; font-weight:800; color:var(--scm-navy); margin-bottom:8px;">+ 새 알림 등록</p>
+                    <div style="margin-bottom:8px;">
+                        <label style="font-size:11px; font-weight:700; color:var(--scm-text); display:block; margin-bottom:3px;">시간</label>
+                        <input type="time" id="reminder-time" style="width:100%; border:1.5px solid var(--scm-border); border-radius:7px; padding:6px 8px; font-size:12px; outline:none;">
+                    </div>
+                    <div style="margin-bottom:8px;">
+                        <label style="font-size:11px; font-weight:700; color:var(--scm-text); display:block; margin-bottom:3px;">기간 (종료일, 선택)</label>
+                        <input type="date" id="reminder-end-date" min="${dateStr}" style="width:100%; border:1.5px solid var(--scm-border); border-radius:7px; padding:6px 8px; font-size:12px; outline:none;">
+                    </div>
+                    <div style="margin-bottom:10px;">
+                        <label style="font-size:11px; font-weight:700; color:var(--scm-text); display:block; margin-bottom:3px;">내용 *</label>
+                        <input type="text" id="reminder-content" placeholder="예: 안전보건교육 자료 제출" style="width:100%; border:1.5px solid var(--scm-border); border-radius:7px; padding:6px 8px; font-size:12px; outline:none;">
+                    </div>
+                    <button onclick="reminderAdd()" class="text-white text-[12px] font-bold px-4 py-2 rounded-lg hover:opacity-90 transition-opacity" style="background: var(--scm-navy); width:100%;">등록</button>
+                </div>
+            `;
+        }
+
+        function reminderAdd() {
+            if (!reminderSelectedDate) return;
+            const time = document.getElementById('reminder-time').value;
+            const endDate = document.getElementById('reminder-end-date').value || reminderSelectedDate;
+            const content = document.getElementById('reminder-content').value.trim();
+            if (!content) { showToast('⚠️ 내용을 입력해 주세요.', 'warn'); return; }
+            if (endDate < reminderSelectedDate) { showToast('⚠️ 종료일은 시작일 이후여야 합니다.', 'warn'); return; }
+
+            const items = reminderLoad();
+            items.push({ id: Date.now(), date: reminderSelectedDate, endDate, time, content, createdAt: new Date().toISOString() });
+            reminderSave(items);
+            showToast('✅ 알림이 등록되었습니다.', 'success');
+            reminderSelectDay(reminderSelectedDate);
+            reminderRenderCalendar();
+            reminderRenderHomeWidget();
+        }
+
+        function reminderDelete(id) {
+            reminderSave(reminderLoad().filter(it => it.id !== id));
+            if (reminderSelectedDate) reminderSelectDay(reminderSelectedDate);
+            reminderRenderCalendar();
+            reminderRenderHomeWidget();
+            showToast('🗑 알림이 삭제되었습니다.', 'success');
+        }
+
+        // 홈 화면 "업무 알리미" 카드 — 다가오는 알림 목록
+        function reminderRenderHomeWidget() {
+            const el = document.getElementById('home-reminder-list');
+            if (!el) return;
+            const today = reminderToday();
+            const items = reminderLoad()
+                .filter(it => (it.endDate || it.date) >= today)
+                .sort((a,b) => a.date.localeCompare(b.date) || (a.time||'').localeCompare(b.time||''))
+                .slice(0, 5);
+
+            if (!items.length) {
+                el.innerHTML = `<div class="flex items-center justify-center py-6 text-[13px]" style="color: var(--scm-subtext);">등록된 업무 알림이 없습니다</div>`;
+                return;
+            }
+            const msPerDay = 86400000;
+            el.innerHTML = items.map(it => {
+                const dday = Math.round((new Date(it.date) - new Date(today)) / msPerDay);
+                const ddayLabel = dday === 0 ? '오늘' : dday === 1 ? '내일' : `D-${dday}`;
+                const ddayColor = dday <= 0 ? '#DC2626' : dday <= 2 ? '#CA8A04' : 'var(--scm-subtext)';
+                return `<div style="display:flex; align-items:center; gap:10px; padding:9px 4px; border-bottom:1px solid var(--scm-border);">
+                    <span style="font-size:11px; font-weight:800; color:${ddayColor}; min-width:34px;">${ddayLabel}</span>
+                    <div style="flex:1; min-width:0;">
+                        <p style="font-size:12.5px; font-weight:700; color:var(--scm-text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${it.content}</p>
+                        <p style="font-size:10.5px; color:var(--scm-subtext);">${it.date}${it.time ? ' ' + it.time : ''}${it.endDate && it.endDate !== it.date ? ' ~ ' + it.endDate : ''}</p>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // 페이지 로드시 오늘/임박 알림 토스트로 표시 (세션당 1회)
+        function reminderCheckNotifications() {
+            const flagKey = 'seahcm_reminder_notified_' + reminderToday();
+            if (sessionStorage.getItem(flagKey)) return;
+            const today = reminderToday();
+            const items = reminderLoad();
+            const dueToday = items.filter(it => reminderCoversDate(it, today));
+            dueToday.forEach((it, i) => {
+                setTimeout(() => showToast(`🔔 오늘 일정: ${it.time ? it.time + ' ' : ''}${it.content}`, 'warn'), 600 + i * 500);
+            });
+            sessionStorage.setItem(flagKey, '1');
+        }
+
+        reminderRenderHomeWidget();
+        reminderCheckNotifications();
+        (function () {
+            const el = document.getElementById('reminder-cal-overlay');
+            if (el && el.parentElement !== document.body) document.body.appendChild(el);
+        })();
+
+        // ============================================================
         //  체감온도 위젯 JS
         //  - 기상청 초단기실황 API (소룡동 nx=56, ny=93)
         //  - 매시 40분 이후 데이터 갱신, 카운트다운으로 다음 갱신 시각 표시
@@ -4341,13 +4579,22 @@
                 document.getElementById(`edu-view-${v}`).classList.add('hidden');
             });
             document.getElementById(`edu-view-${view}`).classList.remove('hidden');
-            if (view === 'eval-admin') evalLoadSessionList();
+            if (view === 'eval-admin') {
+                evalLoadSessionList();
+                const createTabBtn = document.getElementById('eval-tab-create');
+                if (createTabBtn) createTabBtn.style.display = IS_MASTER ? '' : 'none';
+                switchEvalAdminTab(IS_MASTER ? 'create' : 'list');
+            }
             if (view === 'materials') matRender();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         // --- 관리자 탭 전환 (세션 생성 / 목록) ---
         function switchEvalAdminTab(tab) {
+            if (tab === 'create' && !IS_MASTER) {
+                showToast('⚠️ 새 교육 세션 만들기는 마스터만 가능합니다.', 'warn');
+                tab = 'list';
+            }
             ['create','list'].forEach(t => {
                 document.getElementById(`eval-panel-${t}`).classList.add('hidden');
                 const btn = document.getElementById(`eval-tab-${t}`);
@@ -4439,6 +4686,10 @@
 
         // --- 세션 생성 ---
         function evalCreateSession() {
+            if (!IS_MASTER) {
+                showToast('⚠️ 새 교육 세션 만들기는 마스터만 가능합니다.', 'warn');
+                return;
+            }
             const title = document.getElementById('eval-title').value.trim();
             const dateStart = document.getElementById('eval-date-start').value;
             const dateEnd = document.getElementById('eval-date-end').value;
