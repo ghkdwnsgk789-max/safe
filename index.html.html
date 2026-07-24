@@ -276,7 +276,7 @@
                         <div class="mega-panel-wide">
                             <p class="mega-group-title">위험요인 관리</p>
                             <div class="mega-items-row">
-                                <button class="mega-item-btn" onclick="showComingSoon('위험성평가')">위험성평가</button>
+                                <button class="mega-item-btn" onclick="switchTab('risk');setTimeout(()=>riskShowTab('assess'),80)">위험성평가</button>
                                 <button class="mega-item-btn" onclick="showComingSoon('안전제안')">안전제안</button>
                                 <button class="mega-item-btn" onclick="showComingSoon('TBM')">TBM (작업 전 미팅)</button>
                                 <button class="mega-item-btn" onclick="switchTab('risk');setTimeout(()=>riskShowTab('patrol'),80)">매월 패트롤 발굴</button>
@@ -843,7 +843,8 @@
 
             <!-- 서브탭 버튼 -->
             <div style="display:flex;gap:0;border-bottom:2px solid var(--scm-border);padding-bottom:0;flex-wrap:wrap;">
-                <button id="rtab-btn-fix"      onclick="riskShowTab('fix')"      class="rtab-btn" style="padding:8px 16px;font-size:12.5px;font-weight:700;border:none;background:none;cursor:pointer;border-bottom:3px solid #1B3A6B;color:#1B3A6B;margin-bottom:-2px;white-space:nowrap;">🔧 위험요인 개선조치</button>
+                <button id="rtab-btn-assess"   onclick="riskShowTab('assess')"   class="rtab-btn" style="padding:8px 16px;font-size:12.5px;font-weight:700;border:none;background:none;cursor:pointer;border-bottom:3px solid #1B3A6B;color:#1B3A6B;margin-bottom:-2px;white-space:nowrap;">📐 위험성평가</button>
+                <button id="rtab-btn-fix"      onclick="riskShowTab('fix')"      class="rtab-btn" style="padding:8px 16px;font-size:12.5px;font-weight:700;border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;color:var(--scm-subtext);margin-bottom:-2px;white-space:nowrap;">🔧 위험요인 개선조치</button>
                 <button id="rtab-btn-patrol"   onclick="riskShowTab('patrol')"   class="rtab-btn" style="padding:8px 16px;font-size:12.5px;font-weight:700;border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;color:var(--scm-subtext);margin-bottom:-2px;white-space:nowrap;">📋 매월 패트롤</button>
                 <button id="rtab-btn-joint"    onclick="riskShowTab('joint')"    class="rtab-btn" style="padding:8px 16px;font-size:12.5px;font-weight:700;border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;color:var(--scm-subtext);margin-bottom:-2px;white-space:nowrap;">🤝 합동점검</button>
                 <button id="rtab-btn-near"     onclick="riskShowTab('near')"     class="rtab-btn" style="padding:8px 16px;font-size:12.5px;font-weight:700;border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;color:var(--scm-subtext);margin-bottom:-2px;white-space:nowrap;">💡 아차사고</button>
@@ -851,9 +852,272 @@
             </div>
 
             <!-- ══════════════════════════════════════════
+                 0. 위험성평가
+                 ══════════════════════════════════════════ -->
+            <div id="rtab-assess">
+                <div class="scm-card p-5 mb-4">
+                    <h3 style="font-size:14px;font-weight:800;color:var(--scm-navy); margin-bottom:4px;">위험성 추정 매트릭스</h3>
+                    <p style="font-size:12px;color:var(--scm-subtext); margin-bottom:14px;">가능성(빈도) 5단계 × 중대성(강도) 4단계를 곱해 위험성 점수를 산정합니다. 아래에서 가능성·중대성을 선택하면 해당 칸이 강조되고 점수·등급이 표시됩니다.</p>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:18px;">
+                        <div>
+                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">가능성(빈도)</label>
+                            <select id="assess-freq" onchange="assessUpdateSelection()" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;background:white;">
+                                <option value="5">최상(5) — 안전대책·표시표지·안전수칙 등이 없음</option>
+                                <option value="4">상(4) — 가드·안전장치 상당히 불비, 준수 어려움</option>
+                                <option value="3" selected>중(3) — 안전장치는 있으나 불비, 위험영역 접근 있음</option>
+                                <option value="2">하(2) — 안전장치 설치, 위험영역 출입 곤란</option>
+                                <option value="1">최하(1) — 안전조치가 전반적으로 잘되어 있음</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">중대성(강도)</label>
+                            <select id="assess-sev" onchange="assessUpdateSelection()" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;background:white;">
+                                <option value="4">최대(4) — 사망 또는 영구 근로불능 (장애)</option>
+                                <option value="3" selected>대(3) — 휴업을 수반하는 중대한 부상·질병</option>
+                                <option value="2">중(2) — 응급조치 이상 치료, 휴업 미수반</option>
+                                <option value="1">소(1) — 처치 후 바로 원래 작업 복귀 가능</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="assess-result" class="flex items-center justify-between" style="padding:12px 16px; border-radius:10px; margin-bottom:18px; background:#F8FAFC;">
+                        <span style="font-size:12.5px; color:var(--scm-subtext);">선택된 위험성 점수</span>
+                        <span id="assess-result-badge" style="font-size:13px; font-weight:800; padding:5px 14px; border-radius:99px;"></span>
+                    </div>
+
+                    <div style="overflow-x:auto;">
+                        <table id="assess-matrix-table" style="border-collapse:collapse; width:100%; min-width:480px; text-align:center; font-size:12.5px;">
+                            <thead>
+                                <tr>
+                                    <th style="border:1px solid var(--scm-border); padding:8px; background:#F1F5F9; font-size:11.5px; color:var(--scm-subtext);">가능성(빈도) \ 중대성(강도)</th>
+                                    <th style="border:1px solid var(--scm-border); padding:8px; background:#F1F5F9;">최대(4)</th>
+                                    <th style="border:1px solid var(--scm-border); padding:8px; background:#F1F5F9;">대(3)</th>
+                                    <th style="border:1px solid var(--scm-border); padding:8px; background:#F1F5F9;">중(2)</th>
+                                    <th style="border:1px solid var(--scm-border); padding:8px; background:#F1F5F9;">소(1)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="assess-matrix-body"></tbody>
+                        </table>
+                    </div>
+
+                    <div style="display:flex; gap:14px; margin-top:14px; font-size:11.5px; color:var(--scm-subtext); flex-wrap:wrap;">
+                        <span><span style="display:inline-block;width:11px;height:11px;background:#EF4444;border-radius:2px;vertical-align:-1px;margin-right:4px;"></span>상 (8점 이상) — 즉시 조치</span>
+                        <span><span style="display:inline-block;width:11px;height:11px;background:#FACC15;border-radius:2px;vertical-align:-1px;margin-right:4px;"></span>중 (4~6점) — 개선계획 수립</span>
+                        <span><span style="display:inline-block;width:11px;height:11px;background:#22C55E;border-radius:2px;vertical-align:-1px;margin-right:4px;"></span>하 (1~3점) — 현 상태 관리</span>
+                    </div>
+                </div>
+
+                <!-- 라인 선택 -->
+                <div id="ra-line-select">
+                    <h3 style="font-size:14px;font-weight:800;color:var(--scm-navy); margin-bottom:10px;">라인별 위험성평가표</h3>
+                    <div id="ra-line-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:10px;"></div>
+                </div>
+
+                <!-- 라인별 작업공간 (선택된 라인의 평가표) -->
+                <div id="ra-workspace" class="hidden">
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+                        <button onclick="raBackToLines()" style="font-size:12.5px; font-weight:700; color:var(--scm-subtext); background:none; border:none; cursor:pointer; display:flex; align-items:center; gap:4px;">← 라인 목록</button>
+                        <span style="color:var(--scm-border);">/</span>
+                        <span id="ra-current-line-badge" style="font-size:12.5px; font-weight:800; color:white; background:var(--scm-navy); padding:4px 12px; border-radius:99px;"></span>
+                    </div>
+
+                <!-- 통계 -->
+                <div id="ra-stats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;"></div>
+
+                <!-- 위험성평가표 등록 -->
+                <div id="ra-form-card" class="scm-card p-5 mb-4">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                        <h3 id="ra-form-title" style="font-size:13.5px;font-weight:800;color:var(--scm-navy);">+ 위험성평가표 등록</h3>
+                        <span style="font-size:11.5px;color:var(--scm-subtext);">2025_생산1팀_위험성평가 양식 기준</span>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
+                        <div>
+                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">단위공정 / 작업명 *</label>
+                            <input id="ra-process" list="ra-process-list" placeholder="예: 코일 인출 작업" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
+                            <datalist id="ra-process-list">
+                                <option value="사전준비 및 안전보호구 착용">
+                                <option value="표면검사 및 불량 처리">
+                                <option value="코일 인출 작업">
+                                <option value="코일 절단 작업">
+                                <option value="코일 이송 작업">
+                                <option value="설비 청소 및 점검">
+                            </datalist>
+                        </div>
+                        <div style="grid-column: span 2;">
+                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">유해위험요인 *</label>
+                            <input id="ra-hazard" placeholder="예: 롤 통과 시 끼임·협착 위험" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
+                        </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+                        <div>
+                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">관련 물질 / 설비</label>
+                            <input id="ra-equip" placeholder="예: 구리스, 유압유, 롤 설비" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
+                        </div>
+                        <div>
+                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">현재 안전조치사항</label>
+                            <input id="ra-measure" placeholder="예: 방호덮개 설치, 작업표준 게시" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
+                        </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:10px;margin-bottom:10px;">
+                        <div>
+                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">가능성(빈도)</label>
+                            <select id="ra-freq" onchange="raUpdateScorePreview()" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;background:white;">
+                                <option value="5">최상(5) — 안전대책·표시표지·안전수칙 등이 없음</option>
+                                <option value="4">상(4) — 가드·안전장치 상당히 불비, 준수 어려움</option>
+                                <option value="3" selected>중(3) — 안전장치는 있으나 불비, 위험영역 접근 있음</option>
+                                <option value="2">하(2) — 안전장치 설치, 위험영역 출입 곤란</option>
+                                <option value="1">최하(1) — 안전조치가 전반적으로 잘되어 있음</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">중대성(강도)</label>
+                            <select id="ra-sev" onchange="raUpdateScorePreview()" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;background:white;">
+                                <option value="4">최대(4) — 사망 또는 영구 근로불능 (장애)</option>
+                                <option value="3" selected>대(3) — 휴업을 수반하는 중대한 부상·질병</option>
+                                <option value="2">중(2) — 응급조치 이상 치료, 휴업 미수반</option>
+                                <option value="1">소(1) — 처치 후 바로 원래 작업 복귀 가능</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">위험성 점수 (자동계산)</label>
+                            <div id="ra-score-preview" style="width:100%;border-radius:8px;padding:7px 10px;font-size:12.5px;font-weight:800;text-align:center;"></div>
+                        </div>
+                    </div>
+                    <div style="margin-bottom:10px;">
+                        <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">위험성 감소대책 *</label>
+                        <input id="ra-reduction" placeholder="예: 안전난간 및 방호울 설치, 2인 1조 작업 지정" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
+                    </div>
+
+                    <!-- 개선 후 재평가 (감소대책 적용 후 위험도가 8 미만으로 낮아졌는지 확인) -->
+                    <div style="background:#F0FDF4; border:1px solid #BBF7D0; border-radius:10px; padding:12px 14px; margin-bottom:14px;">
+                        <p style="font-size:12px; font-weight:800; color:#15803D; margin-bottom:8px;">✅ 개선 후 재평가 — 감소대책 적용 후 위험도를 다시 산정해 8점 미만(하)인지 확인하세요.</p>
+                        <div style="display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:10px;">
+                            <div>
+                                <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">개선 후 가능성(빈도)</label>
+                                <select id="ra-after-freq" onchange="raUpdateScorePreview()" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;background:white;">
+                                    <option value="5">최상(5)</option>
+                                    <option value="4">상(4)</option>
+                                    <option value="3">중(3)</option>
+                                    <option value="2" selected>하(2)</option>
+                                    <option value="1">최하(1)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">개선 후 중대성(강도)</label>
+                                <select id="ra-after-sev" onchange="raUpdateScorePreview()" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;background:white;">
+                                    <option value="4">최대(4)</option>
+                                    <option value="3">대(3)</option>
+                                    <option value="2" selected>중(2)</option>
+                                    <option value="1">소(1)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">개선 후 위험도 (자동계산)</label>
+                                <div id="ra-after-score-preview" style="width:100%;border-radius:8px;padding:7px 10px;font-size:12.5px;font-weight:800;text-align:center;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;">
+                        <div>
+                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">작성자 *</label>
+                            <input id="ra-owner" placeholder="이름 또는 부서" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
+                        </div>
+                        <div>
+                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">개선기한 *</label>
+                            <input type="date" id="ra-due" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
+                        </div>
+                        <div>
+                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">진행상태</label>
+                            <select id="ra-status" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;background:white;">
+                                <option value="미착수">미착수</option>
+                                <option value="진행중">진행중</option>
+                                <option value="완료">완료</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- 개선 전/후 사진 첨부 -->
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
+                        <div>
+                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:6px;">📷 개선 전 사진 (선택)</label>
+                            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                                <label style="display:flex;align-items:center;gap:6px;background:#F8FAFC;border:1.5px dashed var(--scm-border);border-radius:8px;padding:8px 14px;cursor:pointer;font-size:12.5px;color:var(--scm-navy);font-weight:600;">
+                                    <span>📁</span> 사진 선택
+                                    <input type="file" id="ra-before-photo" accept="image/*" multiple style="display:none;" onchange="raPreviewPhotos('before')">
+                                </label>
+                            </div>
+                            <div id="ra-before-preview" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;"></div>
+                        </div>
+                        <div>
+                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:6px;">📷 개선 후 사진 (선택)</label>
+                            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                                <label style="display:flex;align-items:center;gap:6px;background:#F8FAFC;border:1.5px dashed var(--scm-border);border-radius:8px;padding:8px 14px;cursor:pointer;font-size:12.5px;color:var(--scm-navy);font-weight:600;">
+                                    <span>📁</span> 사진 선택
+                                    <input type="file" id="ra-after-photo" accept="image/*" multiple style="display:none;" onchange="raPreviewPhotos('after')">
+                                </label>
+                            </div>
+                            <div id="ra-after-preview" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;"></div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="ra-edit-id" value="">
+                    <div style="display:flex; gap:8px;">
+                        <button id="ra-submit-btn" onclick="raAdd()" class="text-white text-[12.5px] font-bold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity" style="background: var(--scm-navy);">평가표 등록</button>
+                        <button id="ra-cancel-edit-btn" onclick="raCancelEdit()" class="hidden text-[12.5px] font-bold px-5 py-2.5 rounded-lg border hover:bg-slate-50 transition-colors" style="border-color: var(--scm-border); color: var(--scm-subtext);">취소</button>
+                    </div>
+                </div>
+
+                <!-- 위험성평가표 목록 -->
+                <div id="ra-list"></div>
+                </div>
+
+                <!-- 사진 확대보기 (조회 + 이전/다음 + 삭제/추가를 한 화면에서) -->
+                <div id="ra-lightbox-overlay" class="hidden" style="position:fixed; inset:0; background:rgba(15,23,42,0.85); z-index:10001; display:none; align-items:center; justify-content:center; padding:20px;" onclick="if(event.target===this) raCloseLightbox()">
+                    <div style="max-width:640px; width:100%; display:flex; flex-direction:column; align-items:center;" onclick="event.stopPropagation()">
+                        <div style="display:flex; align-items:center; justify-content:space-between; width:100%; margin-bottom:10px;">
+                            <span id="ra-lightbox-title" style="color:white; font-size:12.5px; font-weight:700;"></span>
+                            <button onclick="raCloseLightbox()" style="width:32px; height:32px; border-radius:99px; background:rgba(255,255,255,0.15); color:white; border:none; font-size:16px; cursor:pointer;">✕</button>
+                        </div>
+                        <div style="position:relative; width:100%; display:flex; align-items:center; justify-content:center;">
+                            <button id="ra-lightbox-prev" onclick="raLightboxPrev()" style="position:absolute; left:-6px; width:36px; height:36px; border-radius:99px; background:rgba(255,255,255,0.15); color:white; border:none; font-size:16px; cursor:pointer;">◀</button>
+                            <img id="ra-lightbox-img" src="" style="max-width:100%; max-height:60vh; border-radius:8px; box-shadow:0 20px 60px rgba(0,0,0,0.5); background:white;">
+                            <button id="ra-lightbox-next" onclick="raLightboxNext()" style="position:absolute; right:-6px; width:36px; height:36px; border-radius:99px; background:rgba(255,255,255,0.15); color:white; border:none; font-size:16px; cursor:pointer;">▶</button>
+                        </div>
+                        <p id="ra-lightbox-counter" style="color:rgba(255,255,255,0.7); font-size:11.5px; margin:10px 0 0;"></p>
+                        <div style="display:flex; gap:8px; margin-top:14px;">
+                            <button id="ra-lightbox-delete-btn" onclick="raLightboxDelete()" style="font-size:12.5px; font-weight:700; color:white; background:#DC2626; border:none; border-radius:8px; padding:8px 16px; cursor:pointer;">🗑 이 사진 삭제</button>
+                            <button onclick="raOpenAddPhotoModal(raLightboxItemId, raLightboxType)" style="font-size:12.5px; font-weight:700; color:var(--scm-navy); background:white; border:none; border-radius:8px; padding:8px 16px; cursor:pointer;">+ 사진 추가</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 사진 추가 (미리보기 후 저장 버튼으로 확정) -->
+                <div id="ra-photo-add-overlay" class="hidden" style="position:fixed; inset:0; background:rgba(15,23,42,0.65); z-index:10002; display:none; align-items:center; justify-content:center; padding:20px;" onclick="if(event.target===this) raCancelAddPhotoModal()">
+                    <div style="background:white; border-radius:16px; width:100%; max-width:480px; max-height:85vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.3);" onclick="event.stopPropagation()">
+                        <div class="flex items-start justify-between gap-3 px-5 py-4" style="border-bottom:1px solid var(--scm-border);">
+                            <h3 id="ra-photo-add-title" class="text-base font-black" style="color: var(--scm-text);"></h3>
+                            <button onclick="raCancelAddPhotoModal()" class="text-[16px] w-9 h-9 rounded-lg flex items-center justify-center hover:bg-slate-100 transition-colors" style="color: var(--scm-subtext);">✕</button>
+                        </div>
+                        <div style="overflow-y:auto; padding:18px 20px; flex:1;">
+                            <label style="display:flex; align-items:center; justify-content:center; gap:6px; background:#F8FAFC; border:1.5px dashed var(--scm-border); border-radius:10px; padding:14px; cursor:pointer; font-size:12.5px; color:var(--scm-navy); font-weight:600; margin-bottom:14px;">
+                                📁 사진 선택 (여러 장 가능)
+                                <input type="file" accept="image/*" multiple style="display:none;" onchange="raStageAddPhotoFiles(this)">
+                            </label>
+                            <div id="ra-photo-add-preview" style="display:flex; gap:10px; flex-wrap:wrap;"></div>
+                            <p id="ra-photo-add-empty-msg" style="font-size:12px; color:var(--scm-subtext); text-align:center; padding:10px 0;">선택한 사진이 여기에 미리보기로 표시됩니다.</p>
+                        </div>
+                        <div style="display:flex; gap:8px; padding:14px 20px; border-top:1px solid var(--scm-border); justify-content:flex-end;">
+                            <button onclick="raCancelAddPhotoModal()" class="text-[12.5px] font-bold px-4 py-2.5 rounded-lg border hover:bg-slate-50 transition-colors" style="border-color: var(--scm-border); color: var(--scm-subtext);">취소</button>
+                            <button onclick="raSaveStagedAddPhotos()" class="text-white text-[12.5px] font-bold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity" style="background: var(--scm-navy);">저장</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════
                  1. 위험요인 개선조치
                  ══════════════════════════════════════════ -->
-            <div id="rtab-fix">
+            <div id="rtab-fix" style="display:none;">
 
                 <!-- 통계 카드 -->
                 <div id="fix-stats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;"></div>
@@ -2612,6 +2876,12 @@
     </div>
 
     <script>
+        // ============================================
+        // 권한 플래그 — 스크립트 최상단에 선언 (아래 코드에서 어디서든 안전하게 참조 가능하도록)
+        // ============================================
+        const IS_ADMIN  = true;   // 일반 관리자 이상 (개선 후 사진 등록 가능)
+        const IS_MASTER = true;   // 마스터(=안전팀장) — 위험요인 등록 + 개선 전 사진 등록 가능
+
         // ============================================
         // 메뉴 구조 데이터 (플랫폼 구성 다이어그램의 하위 항목 기반)
         // ============================================
@@ -7232,7 +7502,7 @@ ${extraText}
         document.addEventListener('DOMContentLoaded', () => { homeRenderRiskProgress(); });
 
         function riskShowTab(tab) {
-            ['fix','patrol','joint','near','climate'].forEach(t => {
+            ['assess','fix','patrol','joint','near','climate'].forEach(t => {
                 const el  = document.getElementById('rtab-' + t);
                 const btn = document.getElementById('rtab-btn-' + t);
                 if (el)  el.style.display  = (t === tab) ? '' : 'none';
@@ -7241,6 +7511,7 @@ ${extraText}
                     btn.style.color        = (t === tab) ? '#1B3A6B' : 'var(--scm-subtext)';
                 }
             });
+            if (tab === 'assess')  { assessRenderMatrix(); raRender(); }
             if (tab === 'fix')     { fixRender(); }
             if (tab === 'patrol')  { patrolRenderFolders(); }
             if (tab === 'joint')   { jointRenderFolders(); }
@@ -7249,8 +7520,603 @@ ${extraText}
         }
 
         // ══════════════════════════════════════════════════════════════
-        //  ④ 매월 패트롤 위험요인 발굴 및 관리
+        //  ⓪ 위험성평가 — 가능성(빈도) × 중대성(강도) 매트릭스
         // ══════════════════════════════════════════════════════════════
+        const ASSESS_FREQ_LABELS = { 5:'최상', 4:'상', 3:'중', 2:'하', 1:'최하' };
+        const ASSESS_SEV_LABELS  = { 4:'최대', 3:'대', 2:'중', 1:'소' };
+
+        function assessGrade(score) {
+            if (score >= 8) return { label: '상', color: '#EF4444', bg: '#FEE2E2' };
+            if (score >= 4) return { label: '중', color: '#CA8A04', bg: '#FEF9C3' };
+            return { label: '하', color: '#16A34A', bg: '#DCFCE7' };
+        }
+
+        function assessRenderMatrix() {
+            const body = document.getElementById('assess-matrix-body');
+            if (!body) return;
+            const freqLevels = [5, 4, 3, 2, 1];
+            const sevLevels  = [4, 3, 2, 1];
+            const selFreq = Number(document.getElementById('assess-freq').value);
+            const selSev  = Number(document.getElementById('assess-sev').value);
+
+            body.innerHTML = freqLevels.map(f => {
+                const cells = sevLevels.map(s => {
+                    const score = f * s;
+                    const g = assessGrade(score);
+                    const isSelected = (f === selFreq && s === selSev);
+                    return `<td style="border:1px solid var(--scm-border); padding:10px 4px; font-weight:800; background:${g.bg}; color:${g.color}; ${isSelected ? 'outline:3px solid #1B3A6B; outline-offset:-3px; position:relative;' : ''}">${score}</td>`;
+                }).join('');
+                return `<tr>
+                    <td style="border:1px solid var(--scm-border); padding:8px; background:#F8FAFC; font-weight:700; color:var(--scm-text); text-align:left; white-space:nowrap;">${ASSESS_FREQ_LABELS[f]}(${f})</td>
+                    ${cells}
+                </tr>`;
+            }).join('');
+
+            assessUpdateResultBadge(selFreq, selSev);
+        }
+
+        function assessUpdateResultBadge(freq, sev) {
+            const score = freq * sev;
+            const g = assessGrade(score);
+            const badge = document.getElementById('assess-result-badge');
+            badge.textContent = `${ASSESS_FREQ_LABELS[freq]}(${freq}) × ${ASSESS_SEV_LABELS[sev]}(${sev}) = ${score}점 · ${g.label}`;
+            badge.style.background = g.bg;
+            badge.style.color = g.color;
+        }
+
+        function assessUpdateSelection() {
+            assessRenderMatrix();
+        }
+
+        assessRenderMatrix();
+
+        // ══════════════════════════════════════════════════════════════
+        //  ⓪-2 위험성평가표 (등록 대장) — 2025_생산1팀_위험성평가 양식 기준
+        // ══════════════════════════════════════════════════════════════
+        const RA_STORAGE = 'seahcm_risk_assess_records_v1';
+        const RA_LINES = ['CPL','CRM','CGL','1CCL','2CCL','3CCL','기계정비반','전기정비반','시험검사반','공정물류반'];
+        let raSelectedLine = null;
+
+        function raLoad() { try { return JSON.parse(localStorage.getItem(RA_STORAGE) || '[]'); } catch (e) { return []; } }
+        function raSave(items) {
+            try { localStorage.setItem(RA_STORAGE, JSON.stringify(items)); }
+            catch (e) { showToast('⚠️ 저장에 실패했습니다.', 'warn'); }
+        }
+
+        function raRenderLineGrid(allItems) {
+            const grid = document.getElementById('ra-line-grid');
+            if (!grid) return;
+            allItems = allItems || raLoad();
+            grid.innerHTML = RA_LINES.map(line => {
+                const items = allItems.filter(i => i.line === line);
+                const high = items.filter(i => i.grade === '상' && i.status !== '완료').length;
+                return `<button onclick="raSelectLine('${line}')" class="scm-card" style="padding:16px 12px; text-align:center; cursor:pointer; border:1.5px solid var(--scm-border); transition:all .15s;" onmouseover="this.style.borderColor='var(--scm-navy)'" onmouseout="this.style.borderColor='var(--scm-border)'">
+                    <p style="font-size:13.5px; font-weight:800; color:var(--scm-navy); margin:0 0 6px;">${line}</p>
+                    <p style="font-size:11px; color:var(--scm-subtext); margin:0;">${items.length}건 등록</p>
+                    ${high > 0 ? `<p style="font-size:10.5px; font-weight:700; color:#EF4444; margin:4px 0 0;">⚠ 상 등급 ${high}건</p>` : ''}
+                </button>`;
+            }).join('');
+        }
+
+        function raSelectLine(line) {
+            raSelectedLine = line;
+            document.getElementById('ra-line-select').classList.add('hidden');
+            document.getElementById('ra-workspace').classList.remove('hidden');
+            document.getElementById('ra-current-line-badge').textContent = line;
+            raResetForm();
+            raRender();
+        }
+
+        function raBackToLines() {
+            raSelectedLine = null;
+            document.getElementById('ra-workspace').classList.add('hidden');
+            document.getElementById('ra-line-select').classList.remove('hidden');
+            raRenderLineGrid(raLoad());
+        }
+
+        // ── 사진 확대보기 (조회 + 이전/다음 + 삭제/추가 통합) ──
+        let raLightboxItemId = null;
+        let raLightboxType   = null; // 'before' | 'after'
+        let raLightboxIndex  = 0;
+        let raLightboxDeleteArmed = false;
+        let raLightboxDeleteArmTimer = null;
+
+        function raLightboxPhotos() {
+            const item = raLoad().find(x => x.id === raLightboxItemId);
+            if (!item) return [];
+            return (raLightboxType === 'before' ? item.beforePhotos : item.afterPhotos) || [];
+        }
+
+        function raOpenLightbox(itemId, type, index) {
+            raLightboxItemId = itemId;
+            raLightboxType = type;
+            raLightboxIndex = index || 0;
+            raRenderLightbox();
+            const overlay = document.getElementById('ra-lightbox-overlay');
+            overlay.classList.remove('hidden');
+            overlay.style.display = 'flex';
+        }
+
+        function raRenderLightbox() {
+            const photos = raLightboxPhotos();
+            if (!photos.length) { raCloseLightbox(); return; }
+            if (raLightboxIndex >= photos.length) raLightboxIndex = photos.length - 1;
+            if (raLightboxIndex < 0) raLightboxIndex = 0;
+            document.getElementById('ra-lightbox-img').src = photos[raLightboxIndex].dataUrl;
+            document.getElementById('ra-lightbox-title').textContent = raLightboxType === 'before' ? '📷 개선 전 사진' : '📷 개선 후 사진';
+            document.getElementById('ra-lightbox-counter').textContent = `${raLightboxIndex + 1} / ${photos.length}`;
+            const showNav = photos.length > 1;
+            document.getElementById('ra-lightbox-prev').style.display = showNav ? '' : 'none';
+            document.getElementById('ra-lightbox-next').style.display = showNav ? '' : 'none';
+            // 사진이 바뀌면 삭제 확인 상태 초기화
+            raLightboxDeleteArmed = false;
+            clearTimeout(raLightboxDeleteArmTimer);
+            const delBtn = document.getElementById('ra-lightbox-delete-btn');
+            if (delBtn) { delBtn.textContent = '🗑 이 사진 삭제'; delBtn.style.background = '#DC2626'; }
+        }
+
+        function raLightboxPrev() {
+            const photos = raLightboxPhotos();
+            raLightboxIndex = (raLightboxIndex - 1 + photos.length) % photos.length;
+            raRenderLightbox();
+        }
+        function raLightboxNext() {
+            const photos = raLightboxPhotos();
+            raLightboxIndex = (raLightboxIndex + 1) % photos.length;
+            raRenderLightbox();
+        }
+
+        function raLightboxDelete() {
+            if (raLightboxItemId == null) return;
+            const btn = document.getElementById('ra-lightbox-delete-btn');
+            if (!raLightboxDeleteArmed) {
+                // 1차 클릭: 확인 상태로 전환 (네이티브 confirm() 사용 안 함 — 일부 환경에서 차단될 수 있음)
+                raLightboxDeleteArmed = true;
+                if (btn) { btn.textContent = '정말 삭제할까요? (다시 클릭)'; btn.style.background = '#991B1B'; }
+                clearTimeout(raLightboxDeleteArmTimer);
+                raLightboxDeleteArmTimer = setTimeout(() => {
+                    raLightboxDeleteArmed = false;
+                    if (btn) { btn.textContent = '🗑 이 사진 삭제'; btn.style.background = '#DC2626'; }
+                }, 4000);
+                return;
+            }
+            // 2차 클릭: 실제 삭제
+            clearTimeout(raLightboxDeleteArmTimer);
+            raLightboxDeleteArmed = false;
+            const items = raLoad();
+            const idx = items.findIndex(x => x.id === raLightboxItemId);
+            if (idx === -1) return;
+            const key = raLightboxType === 'before' ? 'beforePhotos' : 'afterPhotos';
+            items[idx][key].splice(raLightboxIndex, 1);
+            raSave(items);
+            raRender();
+            if (items[idx][key].length === 0) {
+                raCloseLightbox();
+            } else {
+                raRenderLightbox();
+            }
+            showToast('🗑 사진이 삭제되었습니다.', 'success');
+        }
+
+        function raCloseLightbox() {
+            raLightboxItemId = null;
+            raLightboxType = null;
+            raLightboxIndex = 0;
+            const overlay = document.getElementById('ra-lightbox-overlay');
+            overlay.classList.add('hidden');
+            overlay.style.display = 'none';
+            document.getElementById('ra-lightbox-img').src = '';
+        }
+
+        // ── 사진 추가 모달: 선택한 사진을 미리보기만 하고, "저장" 버튼을 눌러야 실제 저장됨 ──
+        let raAddPhotoItemId = null;
+        let raAddPhotoType = null;   // 'before' | 'after'
+        let raAddPhotoStaged = [];   // [{name, dataUrl}] 아직 저장 전 임시 목록
+        let raAddPhotoReturnToLightbox = false;
+
+        function raOpenAddPhotoModal(itemId, type) {
+            raAddPhotoItemId = itemId;
+            raAddPhotoType = type;
+            raAddPhotoStaged = [];
+            // 라이트박스가 열려있던 상태에서 호출된 경우, 저장 후 라이트박스로 복귀
+            raAddPhotoReturnToLightbox = document.getElementById('ra-lightbox-overlay').style.display === 'flex';
+            document.getElementById('ra-photo-add-title').textContent = type === 'before' ? '📷 개선 전 사진 추가' : '📷 개선 후 사진 추가';
+            raRenderAddPhotoPreview();
+            const overlay = document.getElementById('ra-photo-add-overlay');
+            overlay.classList.remove('hidden');
+            overlay.style.display = 'flex';
+        }
+
+        function raCancelAddPhotoModal() {
+            raAddPhotoItemId = null;
+            raAddPhotoType = null;
+            raAddPhotoStaged = [];
+            const overlay = document.getElementById('ra-photo-add-overlay');
+            overlay.classList.add('hidden');
+            overlay.style.display = 'none';
+        }
+
+        function raStageAddPhotoFiles(inputEl) {
+            const files = Array.from(inputEl.files || []);
+            if (!files.length) return;
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    raAddPhotoStaged.push({ name: file.name, dataUrl: e.target.result });
+                    raRenderAddPhotoPreview();
+                };
+                reader.readAsDataURL(file);
+            });
+            inputEl.value = '';
+        }
+
+        function raRemoveStagedAddPhoto(idx) {
+            raAddPhotoStaged.splice(idx, 1);
+            raRenderAddPhotoPreview();
+        }
+
+        function raRenderAddPhotoPreview() {
+            const el = document.getElementById('ra-photo-add-preview');
+            const emptyMsg = document.getElementById('ra-photo-add-empty-msg');
+            if (!raAddPhotoStaged.length) {
+                el.innerHTML = '';
+                emptyMsg.style.display = '';
+                return;
+            }
+            emptyMsg.style.display = 'none';
+            el.innerHTML = raAddPhotoStaged.map((p, idx) => `
+                <div style="position:relative; display:inline-block;">
+                    <img src="${p.dataUrl}" style="width:76px; height:76px; object-fit:cover; border-radius:8px; border:1.5px solid var(--scm-border);">
+                    <button onclick="raRemoveStagedAddPhoto(${idx})" style="position:absolute; top:-6px; right:-6px; width:20px; height:20px; border-radius:99px; background:#DC2626; color:white; border:2px solid white; font-size:11px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center;">✕</button>
+                </div>`).join('');
+        }
+
+        function raSaveStagedAddPhotos() {
+            if (raAddPhotoItemId == null) return;
+            if (!raAddPhotoStaged.length) {
+                showToast('⚠️ 저장할 사진을 먼저 선택해 주세요.', 'warn');
+                return;
+            }
+            const items = raLoad();
+            const idx = items.findIndex(x => x.id === raAddPhotoItemId);
+            if (idx === -1) { raCancelAddPhotoModal(); return; }
+            const key = raAddPhotoType === 'before' ? 'beforePhotos' : 'afterPhotos';
+            if (!items[idx][key]) items[idx][key] = [];
+            let addedCount = 0, dupCount = 0;
+            raAddPhotoStaged.forEach(p => {
+                const isDup = items[idx][key].some(existing => existing.dataUrl === p.dataUrl);
+                if (isDup) { dupCount++; return; }
+                items[idx][key].push(p);
+                addedCount++;
+            });
+            let statusChanged = null;
+            if (addedCount > 0) {
+                if (raAddPhotoType === 'before' && items[idx].status === '미착수') {
+                    items[idx].status = '진행중';
+                    statusChanged = '진행중';
+                } else if (raAddPhotoType === 'after') {
+                    items[idx].status = '완료';
+                    statusChanged = '완료';
+                }
+            }
+            raSave(items);
+            raRender();
+
+            const wasLightbox = raAddPhotoReturnToLightbox;
+            const returnItemId = raAddPhotoItemId, returnType = raAddPhotoType;
+            raCancelAddPhotoModal();
+
+            if (addedCount > 0) {
+                showToast(statusChanged ? `✅ 사진이 저장되었습니다. 진행상태: ${statusChanged}` : '✅ 사진이 저장되었습니다.', 'success');
+            }
+            if (dupCount > 0) {
+                showToast(`⚠️ 이미 등록된 동일한 사진 ${dupCount}장은 건너뛰었습니다.`, 'warn');
+            }
+            if (wasLightbox && addedCount > 0) {
+                const savedItem = raLoad().find(x => x.id === returnItemId);
+                const photos = returnType === 'before' ? savedItem.beforePhotos : savedItem.afterPhotos;
+                raOpenLightbox(returnItemId, returnType, photos.length - 1);
+            }
+        }
+
+        function raUpdateScorePreview() {
+            const freq = Number(document.getElementById('ra-freq').value);
+            const sev  = Number(document.getElementById('ra-sev').value);
+            const score = freq * sev;
+            const g = assessGrade(score);
+            const box = document.getElementById('ra-score-preview');
+            box.textContent = `${score}점 · ${g.label}`;
+            box.style.background = g.bg;
+            box.style.color = g.color;
+
+            const afterFreqEl = document.getElementById('ra-after-freq');
+            const afterSevEl  = document.getElementById('ra-after-sev');
+            const afterBox    = document.getElementById('ra-after-score-preview');
+            if (afterFreqEl && afterSevEl && afterBox) {
+                const afterFreq = Number(afterFreqEl.value);
+                const afterSev  = Number(afterSevEl.value);
+                const afterScoreVal = afterFreq * afterSev;
+                const ag = assessGrade(afterScoreVal);
+                afterBox.textContent = afterScoreVal >= 8 ? `${afterScoreVal}점 · ${ag.label} (⚠ 추가 개선 필요)` : `${afterScoreVal}점 · ${ag.label}`;
+                afterBox.style.background = ag.bg;
+                afterBox.style.color = ag.color;
+            }
+        }
+
+        // 개선 전/후 사진 — 등록 폼 미리보기용 임시 저장
+        let _raBeforePhotos = []; // [{name, dataUrl}]
+        let _raAfterPhotos  = []; // [{name, dataUrl}]
+
+        function raPreviewPhotos(type) {
+            const input     = document.getElementById(`ra-${type}-photo`);
+            const previewEl = document.getElementById(`ra-${type}-preview`);
+            if (!input || !previewEl) return;
+            if (type === 'before') _raBeforePhotos = []; else _raAfterPhotos = [];
+            const files = Array.from(input.files);
+            if (!files.length) { previewEl.innerHTML = ''; return; }
+            previewEl.innerHTML = '<div style="font-size:11px;color:var(--scm-subtext);width:100%;margin-bottom:2px;">미리보기 (' + files.length + '장):</div>';
+            files.forEach((file, i) => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const photo = { name: file.name, dataUrl: e.target.result };
+                    if (type === 'before') _raBeforePhotos[i] = photo; else _raAfterPhotos[i] = photo;
+                    const box = document.createElement('div');
+                    box.style.cssText = 'position:relative;display:inline-block;';
+                    box.innerHTML = `<img src="${e.target.result}" style="width:64px;height:64px;object-fit:cover;border-radius:7px;border:1.5px solid var(--scm-border);">`;
+                    previewEl.appendChild(box);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function raAdd() {
+            const editId    = document.getElementById('ra-edit-id').value;
+            const process   = document.getElementById('ra-process').value.trim();
+            const hazard    = document.getElementById('ra-hazard').value.trim();
+            const equip     = document.getElementById('ra-equip').value.trim();
+            const measure   = document.getElementById('ra-measure').value.trim();
+            const freq      = Number(document.getElementById('ra-freq').value);
+            const sev       = Number(document.getElementById('ra-sev').value);
+            const afterFreq = Number(document.getElementById('ra-after-freq').value);
+            const afterSev  = Number(document.getElementById('ra-after-sev').value);
+            const reduction = document.getElementById('ra-reduction').value.trim();
+            const owner     = document.getElementById('ra-owner').value.trim();
+            const due       = document.getElementById('ra-due').value;
+            const status    = document.getElementById('ra-status').value;
+
+            const missing = [];
+            if (!process)   missing.push('단위공정/작업명');
+            if (!hazard)    missing.push('유해위험요인');
+            if (!reduction) missing.push('위험성 감소대책');
+            if (!owner)     missing.push('작성자');
+            if (!due)       missing.push('개선기한');
+            if (missing.length) {
+                showToast(`⚠️ 다음 항목을 입력해 주세요: ${missing.join(', ')}`, 'warn');
+                const firstMissingId = { '단위공정/작업명':'ra-process', '유해위험요인':'ra-hazard', '위험성 감소대책':'ra-reduction', '작성자':'ra-owner', '개선기한':'ra-due' }[missing[0]];
+                const el = document.getElementById(firstMissingId);
+                if (el) { el.style.borderColor = '#DC2626'; el.focus(); el.scrollIntoView?.({ behavior:'smooth', block:'center' }); }
+                return;
+            }
+            const scoreVal = freq * sev;
+            const grade = assessGrade(scoreVal).label;
+            const afterScoreVal = afterFreq * afterSev;
+            const afterGrade = assessGrade(afterScoreVal).label;
+            const items = raLoad();
+
+            if (editId) {
+                // 수정 모드 — 사진은 건드리지 않고 텍스트/평가 정보만 갱신
+                const idx = items.findIndex(x => x.id === Number(editId));
+                if (idx === -1) {
+                    showToast('⚠️ 수정할 항목을 찾을 수 없습니다.', 'warn');
+                } else {
+                    items[idx] = { ...items[idx], process, hazard, equip, measure, freq, sev, score: scoreVal, grade, afterFreq, afterSev, afterScore: afterScoreVal, afterGrade, reduction, owner, due, status };
+                    raSave(items);
+                    showToast('✅ 위험성평가표가 수정되었습니다.', 'success');
+                }
+            } else {
+                items.unshift({
+                    id: Date.now(), line: raSelectedLine, process, hazard, equip, measure,
+                    freq, sev, score: scoreVal, grade,
+                    afterFreq, afterSev, afterScore: afterScoreVal, afterGrade,
+                    reduction, owner, due, status,
+                    beforePhotos: _raBeforePhotos.filter(p => p && p.dataUrl).map(p => ({ name: p.name, dataUrl: p.dataUrl })),
+                    afterPhotos : _raAfterPhotos.filter(p => p && p.dataUrl).map(p => ({ name: p.name, dataUrl: p.dataUrl })),
+                    createdAt: new Date().toISOString()
+                });
+                raSave(items);
+                showToast('✅ 위험성평가표가 등록되었습니다. 아래 목록에서 확인하세요.', 'success');
+            }
+
+            raResetForm();
+            raRender();
+            setTimeout(() => { document.getElementById('ra-list')?.scrollIntoView?.({ behavior: 'smooth', block: 'center' }); }, 150);
+        }
+
+        function raResetForm() {
+            ['ra-process','ra-hazard','ra-equip','ra-measure','ra-reduction','ra-owner','ra-due'].forEach(id => { document.getElementById(id).value = ''; document.getElementById(id).style.borderColor = 'var(--scm-border)'; });
+            document.getElementById('ra-freq').value = '3';
+            document.getElementById('ra-sev').value = '3';
+            document.getElementById('ra-after-freq').value = '2';
+            document.getElementById('ra-after-sev').value = '2';
+            document.getElementById('ra-status').value = '미착수';
+            document.getElementById('ra-before-photo').value = '';
+            document.getElementById('ra-after-photo').value = '';
+            document.getElementById('ra-before-preview').innerHTML = '';
+            document.getElementById('ra-after-preview').innerHTML = '';
+            _raBeforePhotos = [];
+            _raAfterPhotos  = [];
+            document.getElementById('ra-edit-id').value = '';
+            document.getElementById('ra-form-title').textContent = '+ 위험성평가표 등록';
+            document.getElementById('ra-submit-btn').textContent = '평가표 등록';
+            document.getElementById('ra-cancel-edit-btn').classList.add('hidden');
+            raUpdateScorePreview();
+        }
+
+        function raEditStart(id) {
+            const item = raLoad().find(x => x.id === id);
+            if (!item) return;
+            document.getElementById('ra-edit-id').value = item.id;
+            document.getElementById('ra-process').value   = item.process || '';
+            document.getElementById('ra-hazard').value    = item.hazard || '';
+            document.getElementById('ra-equip').value     = item.equip || '';
+            document.getElementById('ra-measure').value   = item.measure || '';
+            document.getElementById('ra-freq').value      = item.freq || 3;
+            document.getElementById('ra-sev').value       = item.sev || 3;
+            document.getElementById('ra-after-freq').value = item.afterFreq || 2;
+            document.getElementById('ra-after-sev').value  = item.afterSev || 2;
+            document.getElementById('ra-reduction').value = item.reduction || '';
+            document.getElementById('ra-owner').value     = item.owner || '';
+            document.getElementById('ra-due').value       = item.due || '';
+            document.getElementById('ra-status').value    = item.status || '미착수';
+            raUpdateScorePreview();
+            document.getElementById('ra-form-title').textContent = '✏️ 위험성평가표 수정 (사진은 목록에서 직접 클릭해 수정)';
+            document.getElementById('ra-submit-btn').textContent = '수정 완료';
+            document.getElementById('ra-cancel-edit-btn').classList.remove('hidden');
+            document.getElementById('ra-form-card')?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+        }
+
+        function raCancelEdit() {
+            raResetForm();
+        }
+
+        function raSetStatus(id, status) {
+            const items = raLoad();
+            const idx = items.findIndex(i => i.id === id);
+            if (idx === -1) return;
+            items[idx].status = status;
+            raSave(items);
+            raRender();
+        }
+
+        function raDelete(id) {
+            if (!confirm('이 위험성평가 항목을 삭제하시겠습니까?')) return;
+            raSave(raLoad().filter(i => i.id !== id));
+            raRender();
+            showToast('🗑 삭제되었습니다.', 'success');
+        }
+
+        function raRender() {
+          try {
+            const allItems = raLoad();
+            const items = allItems.filter(i => i.line === raSelectedLine);
+            const statsEl = document.getElementById('ra-stats');
+            const total = items.length;
+            const high  = items.filter(i => i.grade === '상').length;
+            const open  = items.filter(i => i.status !== '완료').length;
+            const done  = items.filter(i => i.status === '완료').length;
+            if (statsEl) {
+                const card = (label, val, color) => `<div style="background:white; border:1px solid var(--scm-border); border-radius:10px; padding:12px 14px;">
+                    <p style="font-size:11px; color:var(--scm-subtext); margin:0 0 4px;">${label}</p>
+                    <p style="font-size:20px; font-weight:800; color:${color}; margin:0;">${val}</p>
+                </div>`;
+                statsEl.innerHTML = card('전체 평가 항목', total, 'var(--scm-text)')
+                    + card('상 등급 (즉시조치)', high, '#EF4444')
+                    + card('미완료', open, '#CA8A04')
+                    + card('완료', done, '#16A34A');
+            }
+
+            raRenderLineGrid(allItems);
+
+            const listEl = document.getElementById('ra-list');
+            if (!listEl) return;
+            if (!items.length) {
+                listEl.innerHTML = `<div class="scm-card p-8 text-center" style="color: var(--scm-subtext);">
+                    <p class="text-3xl mb-2">📐</p>
+                    <p class="text-[13px]">등록된 위험성평가 항목이 없습니다.</p>
+                </div>`;
+                return;
+            }
+            const grade = { '상': { color:'#EF4444', bg:'#FEE2E2' }, '중': { color:'#CA8A04', bg:'#FEF9C3' }, '하': { color:'#16A34A', bg:'#DCFCE7' } };
+            const photoCell = (photos, type, itemId) => {
+                if (!photos || !photos.length) {
+                    return `<button onclick="raOpenAddPhotoModal(${itemId}, '${type}')" title="사진 추가" style="width:40px; height:40px; border-radius:6px; border:1.5px dashed var(--scm-border); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--scm-subtext); font-size:15px; background:white;">+</button>`;
+                }
+                const first = photos[0];
+                return `<div style="position:relative; display:inline-block;">
+                    <img src="${first.dataUrl}" onclick="raOpenLightbox(${itemId}, '${type}', 0)" title="클릭하여 확대" style="width:40px; height:40px; object-fit:cover; border-radius:6px; border:1px solid var(--scm-border); cursor:zoom-in;">
+                    ${photos.length > 1 ? `<span style="position:absolute; bottom:-4px; right:-4px; background:var(--scm-navy); color:white; font-size:9px; font-weight:800; border-radius:99px; padding:1px 4px;">${photos.length}</span>` : ''}
+                </div>`;
+            };
+            const th = (label, align) => `<th style="border-bottom:1px solid var(--scm-border); padding:9px 10px; text-align:${align||'center'}; color:var(--scm-subtext); font-weight:700; white-space:nowrap;">${label}</th>`;
+            const td = (content, align, extra) => `<td style="border-bottom:1px solid var(--scm-border); padding:9px 10px; text-align:${align||'center'}; ${extra||''}">${content}</td>`;
+            listEl.innerHTML = `            <div class="scm-card p-0" style="overflow-x:auto;">
+                <table style="border-collapse:collapse; width:100%; min-width:1440px; font-size:12px;">
+                    <thead>
+                        <tr style="background:#F8FAFC;">
+                            ${th('단위공정','left')}
+                            ${th('작성자')}
+                            ${th('유해위험요인','left')}
+                            ${th('빈도')}
+                            ${th('강도')}
+                            ${th('위험성')}
+                            ${th('개선전')}
+                            ${th('감소대책','left')}
+                            ${th('빈도')}
+                            ${th('강도')}
+                            ${th('위험도')}
+                            ${th('개선후')}
+                            ${th('개선기한')}
+                            ${th('진행상태')}
+                            ${IS_ADMIN ? '<th style="border-bottom:1px solid var(--scm-border); padding:9px 10px;"></th>' : ''}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${items.map(i => {
+                            const g  = grade[i.grade] || grade['하'];
+                            const ag = grade[i.afterGrade] || grade['하'];
+                            const afterWarn = (i.afterScore != null && i.afterScore >= 8);
+                            return `<tr>
+                                ${td(i.process, 'left', 'font-weight:700; color:var(--scm-text);')}
+                                ${td(i.owner, 'center', 'color:var(--scm-text);')}
+                                ${td(i.hazard, 'left', 'color:var(--scm-text);')}
+                                ${td(i.freq, 'center', 'color:var(--scm-text);')}
+                                ${td(i.sev, 'center', 'color:var(--scm-text);')}
+                                ${td(`<span style="display:inline-block; padding:3px 9px; border-radius:99px; font-weight:800; background:${g.bg}; color:${g.color};">${i.score}점·${i.grade}</span>`)}
+                                ${td(photoCell(i.beforePhotos, 'before', i.id))}
+                                ${td(i.reduction, 'left', 'color:var(--scm-subtext);')}
+                                ${td(i.afterFreq ?? '-', 'center', 'color:var(--scm-text);')}
+                                ${td(i.afterSev ?? '-', 'center', 'color:var(--scm-text);')}
+                                ${td(i.afterScore != null ? `<span style="display:inline-block; padding:3px 9px; border-radius:99px; font-weight:800; background:${ag.bg}; color:${ag.color};">${i.afterScore}점·${i.afterGrade}${afterWarn ? ' ⚠' : ''}</span>` : '-')}
+                                ${td(photoCell(i.afterPhotos, 'after', i.id))}
+                                ${td(i.due, 'center', 'color:var(--scm-text);')}
+                                ${td(IS_ADMIN
+                                        ? `<select onchange="raSetStatus(${i.id}, this.value)" style="font-size:11.5px; border:1px solid var(--scm-border); border-radius:6px; padding:3px 6px; background:white;">
+                                            <option value="미착수" ${i.status==='미착수'?'selected':''}>미착수</option>
+                                            <option value="진행중" ${i.status==='진행중'?'selected':''}>진행중</option>
+                                            <option value="완료" ${i.status==='완료'?'selected':''}>완료</option>
+                                          </select>`
+                                        : `<span style="font-size:11.5px; color:var(--scm-text);">${i.status}</span>`)}
+                                ${IS_ADMIN ? `<td style="border-bottom:1px solid var(--scm-border); padding:9px 10px; text-align:center; white-space:nowrap;">
+                                    <button onclick="raEditStart(${i.id})" style="font-size:11px; font-weight:700; color:var(--scm-navy); background:none; border:1px solid var(--scm-border); border-radius:6px; padding:3px 8px; cursor:pointer; margin-right:4px;">수정</button>
+                                    <button onclick="raDelete(${i.id})" style="font-size:11px; font-weight:700; color:#DC2626; background:none; border:1px solid #FECACA; border-radius:6px; padding:3px 8px; cursor:pointer;">삭제</button>
+                                </td>` : ''}
+                            </tr>`;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>`;
+          } catch (e) {
+            console.error('raRender 오류:', e);
+            const listEl = document.getElementById('ra-list');
+            if (listEl) listEl.innerHTML = `<div class="scm-card p-6 text-center" style="color:#DC2626;">
+                <p class="text-[13px] font-bold">목록을 불러오는 중 오류가 발생했습니다.</p>
+                <p class="text-[11.5px] mt-1" style="color:var(--scm-subtext);">페이지를 새로고침한 뒤 다시 시도해 주세요.</p>
+            </div>`;
+          }
+        }
+
+        // 사진 확대보기 / 추가 모달이 다른 요소에 가려지지 않도록 body 최상위로 이동
+        (function () {
+            const lb = document.getElementById('ra-lightbox-overlay');
+            if (lb && lb.parentElement !== document.body) document.body.appendChild(lb);
+            const pa = document.getElementById('ra-photo-add-overlay');
+            if (pa && pa.parentElement !== document.body) document.body.appendChild(pa);
+        })();
+
+        raUpdateScorePreview();
+        raRenderLineGrid(raLoad());
+
+
         const PATROL_KEY     = 'seahcm_patrol_v1';
         const MONTH_NAMES    = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
         let   patrolCurMonth = '';
@@ -10697,9 +11563,7 @@ ${extraText}
 
         // 관리자 여부 (헤더에 "황준하(관리자)"가 표시되면 관리자)
         // 추후 로그인 시스템 연동 시 이 값을 동적으로 교체
-        const IS_ADMIN  = true;   // 일반 관리자 이상 (개선 후 사진 등록 가능)
-        const IS_MASTER = true;   // 마스터(=안전팀장) — 위험요인 등록 + 개선 전 사진 등록 가능
-                                  // 실제 운영 시: 일반 관리자 계정은 IS_MASTER = false 로 설정
+        // (IS_ADMIN / IS_MASTER는 스크립트 최상단에서 이미 선언됨 — TDZ 문제 방지)
 
         const MGMT_STORAGE = { policy: 'seahcm_policy_file', goal: 'seahcm_goal_file' };
         const MGMT_MAX_SIZE = 5 * 1024 * 1024; // 5MB
