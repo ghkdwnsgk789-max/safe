@@ -983,72 +983,68 @@
                 <div id="ra-form-card" class="scm-card p-5 mb-4">
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
                         <h3 id="ra-form-title" style="font-size:13.5px;font-weight:800;color:var(--scm-navy);">+ 위험성평가표 등록</h3>
-                        <span style="font-size:11.5px;color:var(--scm-subtext);">2025_생산1팀_위험성평가 양식 기준</span>
+                        <span style="font-size:11.5px;color:var(--scm-subtext);">사내 위험성평가 양식 기준</span>
                     </div>
-                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
+                    <div style="display:grid;grid-template-columns:1fr 2fr;gap:10px;margin-bottom:10px;">
                         <div>
-                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">단위공정 / 작업명 *</label>
-                            <input id="ra-process" list="ra-process-list" placeholder="예: 코일 인출 작업" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
+                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">작업단계 및 내용 *</label>
+                            <input id="ra-process" list="ra-process-list" placeholder="예: 샘플채취" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
                             <datalist id="ra-process-list">
-                                <option value="사전준비 및 안전보호구 착용">
-                                <option value="표면검사 및 불량 처리">
-                                <option value="코일 인출 작업">
-                                <option value="코일 절단 작업">
-                                <option value="코일 이송 작업">
-                                <option value="설비 청소 및 점검">
+                                <option value="샘플채취">
+                                <option value="샘플적재">
+                                <option value="샘플이송">
+                                <option value="샘플보관">
                             </datalist>
                         </div>
-                        <div style="grid-column: span 2;">
-                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">유해위험요인 *</label>
-                            <input id="ra-hazard" placeholder="예: 롤 통과 시 끼임·협착 위험" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
-                        </div>
-                    </div>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
                         <div>
-                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">관련 물질 / 설비</label>
-                            <input id="ra-equip" placeholder="예: 구리스, 유압유, 롤 설비" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
-                        </div>
-                        <div>
-                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">현재 안전조치사항</label>
-                            <input id="ra-measure" placeholder="예: 방호덮개 설치, 작업표준 게시" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
-                        </div>
-                    </div>
-                    <div style="display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:10px;margin-bottom:10px;">
-                        <div>
-                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">가능성(빈도)</label>
-                            <select id="ra-freq" onchange="raUpdateScorePreview()" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;background:white;">
-                                <option value="5">최상(5) — 안전대책·표시표지·안전수칙 등이 없음</option>
-                                <option value="4">상(4) — 가드·안전장치 상당히 불비, 준수 어려움</option>
-                                <option value="3" selected>중(3) — 안전장치는 있으나 불비, 위험영역 접근 있음</option>
-                                <option value="2">하(2) — 안전장치 설치, 위험영역 출입 곤란</option>
-                                <option value="1">최하(1) — 안전조치가 전반적으로 잘되어 있음</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">중대성(강도)</label>
-                            <select id="ra-sev" onchange="raUpdateScorePreview()" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;background:white;">
-                                <option value="4">최대(4) — 사망 또는 영구 근로불능 (장애)</option>
-                                <option value="3" selected>대(3) — 휴업을 수반하는 중대한 부상·질병</option>
-                                <option value="2">중(2) — 응급조치 이상 치료, 휴업 미수반</option>
-                                <option value="1">소(1) — 처치 후 바로 원래 작업 복귀 가능</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">위험성 점수 (자동계산)</label>
-                            <div id="ra-score-preview" style="width:100%;border-radius:8px;padding:7px 10px;font-size:12.5px;font-weight:800;text-align:center;"></div>
+                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">유해위험요인 및 재해(피해자)형태 *</label>
+                            <input id="ra-hazard" placeholder="예: CCL라인 샘플 커팅시 샘플 채취시 샘플 절단면 베임 위험" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
                         </div>
                     </div>
                     <div style="margin-bottom:10px;">
-                        <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">위험성 감소대책 *</label>
-                        <input id="ra-reduction" placeholder="예: 안전난간 및 방호울 설치, 2인 1조 작업 지정" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
+                        <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">현재 안전조치</label>
+                        <input id="ra-measure" placeholder="예: 면장갑 착용" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
                     </div>
 
-                    <!-- 개선 후 재평가 (감소대책 적용 후 위험도가 8 미만으로 낮아졌는지 확인) -->
-                    <div style="background:#F0FDF4; border:1px solid #BBF7D0; border-radius:10px; padding:12px 14px; margin-bottom:14px;">
-                        <p style="font-size:12px; font-weight:800; color:#15803D; margin-bottom:8px;">✅ 개선 후 재평가 — 감소대책 적용 후 위험도를 다시 산정해 8점 미만(하)인지 확인하세요.</p>
+                    <div style="background:#FEF2F2; border:1px solid #FECACA; border-radius:10px; padding:12px 14px; margin-bottom:14px;">
+                        <p style="font-size:12px; font-weight:800; color:#991B1B; margin-bottom:8px;">현재 위험성</p>
                         <div style="display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:10px;">
                             <div>
-                                <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">개선 후 가능성(빈도)</label>
+                                <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">빈도</label>
+                                <select id="ra-freq" onchange="raUpdateScorePreview()" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;background:white;">
+                                    <option value="5">최상(5) — 안전대책·표시표지·안전수칙 등이 없음</option>
+                                    <option value="4">상(4) — 가드·안전장치 상당히 불비, 준수 어려움</option>
+                                    <option value="3" selected>중(3) — 안전장치는 있으나 불비, 위험영역 접근 있음</option>
+                                    <option value="2">하(2) — 안전장치 설치, 위험영역 출입 곤란</option>
+                                    <option value="1">최하(1) — 안전조치가 전반적으로 잘되어 있음</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">강도</label>
+                                <select id="ra-sev" onchange="raUpdateScorePreview()" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;background:white;">
+                                    <option value="4">최대(4) — 사망 또는 영구 근로불능 (장애)</option>
+                                    <option value="3" selected>대(3) — 휴업을 수반하는 중대한 부상·질병</option>
+                                    <option value="2">중(2) — 응급조치 이상 치료, 휴업 미수반</option>
+                                    <option value="1">소(1) — 처치 후 바로 원래 작업 복귀 가능</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">위험성 (자동계산)</label>
+                                <div id="ra-score-preview" style="width:100%;border-radius:8px;padding:7px 10px;font-size:12.5px;font-weight:800;text-align:center;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom:14px;">
+                        <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">안전조치 및 위험성 감소(개선) 대책 *</label>
+                        <input id="ra-reduction" placeholder="예: PU장갑 착용" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
+                    </div>
+
+                    <div style="background:#F0FDF4; border:1px solid #BBF7D0; border-radius:10px; padding:12px 14px; margin-bottom:14px;">
+                        <p style="font-size:12px; font-weight:800; color:#15803D; margin-bottom:8px;">개선후 위험성</p>
+                        <div style="display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:10px;">
+                            <div>
+                                <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">빈도</label>
                                 <select id="ra-after-freq" onchange="raUpdateScorePreview()" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;background:white;">
                                     <option value="5">최상(5)</option>
                                     <option value="4">상(4)</option>
@@ -1058,7 +1054,7 @@
                                 </select>
                             </div>
                             <div>
-                                <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">개선 후 중대성(강도)</label>
+                                <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">강도</label>
                                 <select id="ra-after-sev" onchange="raUpdateScorePreview()" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;background:white;">
                                     <option value="4">최대(4)</option>
                                     <option value="3">대(3)</option>
@@ -1067,7 +1063,7 @@
                                 </select>
                             </div>
                             <div>
-                                <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">개선 후 위험도 (자동계산)</label>
+                                <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">위험성 (자동계산)</label>
                                 <div id="ra-after-score-preview" style="width:100%;border-radius:8px;padding:7px 10px;font-size:12.5px;font-weight:800;text-align:center;"></div>
                             </div>
                         </div>
@@ -1075,45 +1071,30 @@
 
                     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;">
                         <div>
-                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">작성자 *</label>
-                            <input id="ra-owner" placeholder="이름 또는 부서" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
-                        </div>
-                        <div>
-                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">개선기한 *</label>
-                            <input type="date" id="ra-due" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
-                        </div>
-                        <div>
-                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">진행상태</label>
-                            <select id="ra-status" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;background:white;">
-                                <option value="미착수">미착수</option>
-                                <option value="진행중">진행중</option>
-                                <option value="완료">완료</option>
+                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">아차사고 여부</label>
+                            <select id="ra-nearmiss" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;background:white;">
+                                <option value="X" selected>X (없음)</option>
+                                <option value="O">O (있음)</option>
                             </select>
                         </div>
-                    </div>
-                    <!-- 개선 전/후 사진 첨부 -->
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
-                        <div>
-                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:6px;">📷 개선 전 사진 (선택)</label>
-                            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-                                <label style="display:flex;align-items:center;gap:6px;background:#F8FAFC;border:1.5px dashed var(--scm-border);border-radius:8px;padding:8px 14px;cursor:pointer;font-size:12.5px;color:var(--scm-navy);font-weight:600;">
-                                    <span>📁</span> 사진 선택
-                                    <input type="file" id="ra-before-photo" accept="image/*" multiple style="display:none;" onchange="raPreviewPhotos('before')">
-                                </label>
-                            </div>
-                            <div id="ra-before-preview" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;"></div>
-                        </div>
-                        <div>
-                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:6px;">📷 개선 후 사진 (선택)</label>
-                            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-                                <label style="display:flex;align-items:center;gap:6px;background:#F8FAFC;border:1.5px dashed var(--scm-border);border-radius:8px;padding:8px 14px;cursor:pointer;font-size:12.5px;color:var(--scm-navy);font-weight:600;">
-                                    <span>📁</span> 사진 선택
-                                    <input type="file" id="ra-after-photo" accept="image/*" multiple style="display:none;" onchange="raPreviewPhotos('after')">
-                                </label>
-                            </div>
-                            <div id="ra-after-preview" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;"></div>
+                        <div style="grid-column: span 2;">
+                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">코드번호</label>
+                            <input id="ra-code" placeholder="예: 23A-1" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
                         </div>
                     </div>
+
+                    <!-- 사진 첨부 -->
+                    <div style="margin-bottom:14px;">
+                        <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:6px;">📷 사진 (선택)</label>
+                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                            <label style="display:flex;align-items:center;gap:6px;background:#F8FAFC;border:1.5px dashed var(--scm-border);border-radius:8px;padding:8px 14px;cursor:pointer;font-size:12.5px;color:var(--scm-navy);font-weight:600;">
+                                <span>📁</span> 사진 선택
+                                <input type="file" id="ra-photo-input" accept="image/*" multiple style="display:none;" onchange="raPreviewPhotos()">
+                            </label>
+                        </div>
+                        <div id="ra-photo-preview" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;"></div>
+                    </div>
+
                     <input type="hidden" id="ra-edit-id" value="">
                     <div style="display:flex; gap:8px;">
                         <button id="ra-submit-btn" onclick="raAdd()" class="text-white text-[12.5px] font-bold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity" style="background: var(--scm-navy);">평가표 등록</button>
@@ -7855,7 +7836,7 @@ ${extraText}
             allItems = allItems || raLoad();
             grid.innerHTML = RA_LINES.map(line => {
                 const items = allItems.filter(i => i.line === line);
-                const high = items.filter(i => i.grade === '상' && i.status !== '완료').length;
+                const high = items.filter(i => i.afterScore != null && i.afterScore >= 8).length;
                 return `<button onclick="raSelectLine('${line}')" class="scm-card" style="padding:16px 12px; text-align:center; cursor:pointer; border:1.5px solid var(--scm-border); transition:all .15s;" onmouseover="this.style.borderColor='var(--scm-navy)'" onmouseout="this.style.borderColor='var(--scm-border)'">
                     <p style="font-size:13.5px; font-weight:800; color:var(--scm-navy); margin:0 0 6px;">${line}</p>
                     <p style="font-size:11px; color:var(--scm-subtext); margin:0;">${items.length}건 등록</p>
@@ -7890,7 +7871,7 @@ ${extraText}
         function raLightboxPhotos() {
             const item = raLoad().find(x => x.id === raLightboxItemId);
             if (!item) return [];
-            return (raLightboxType === 'before' ? item.beforePhotos : item.afterPhotos) || [];
+            return item.photos || [];
         }
 
         function raOpenLightbox(itemId, type, index) {
@@ -7909,7 +7890,7 @@ ${extraText}
             if (raLightboxIndex >= photos.length) raLightboxIndex = photos.length - 1;
             if (raLightboxIndex < 0) raLightboxIndex = 0;
             document.getElementById('ra-lightbox-img').src = photos[raLightboxIndex].dataUrl;
-            document.getElementById('ra-lightbox-title').textContent = raLightboxType === 'before' ? '📷 개선 전 사진' : '📷 개선 후 사진';
+            document.getElementById('ra-lightbox-title').textContent = '📷 사진';
             document.getElementById('ra-lightbox-counter').textContent = `${raLightboxIndex + 1} / ${photos.length}`;
             const showNav = photos.length > 1;
             document.getElementById('ra-lightbox-prev').style.display = showNav ? '' : 'none';
@@ -7952,7 +7933,7 @@ ${extraText}
             const items = raLoad();
             const idx = items.findIndex(x => x.id === raLightboxItemId);
             if (idx === -1) return;
-            const key = raLightboxType === 'before' ? 'beforePhotos' : 'afterPhotos';
+            const key = 'photos';
             items[idx][key].splice(raLightboxIndex, 1);
             raSave(items);
             raRender();
@@ -7986,7 +7967,7 @@ ${extraText}
             raAddPhotoStaged = [];
             // 라이트박스가 열려있던 상태에서 호출된 경우, 저장 후 라이트박스로 복귀
             raAddPhotoReturnToLightbox = document.getElementById('ra-lightbox-overlay').style.display === 'flex';
-            document.getElementById('ra-photo-add-title').textContent = type === 'before' ? '📷 개선 전 사진 추가' : '📷 개선 후 사진 추가';
+            document.getElementById('ra-photo-add-title').textContent = '📷 사진 추가';
             raRenderAddPhotoPreview();
             const overlay = document.getElementById('ra-photo-add-overlay');
             overlay.classList.remove('hidden');
@@ -8046,7 +8027,7 @@ ${extraText}
             const items = raLoad();
             const idx = items.findIndex(x => x.id === raAddPhotoItemId);
             if (idx === -1) { raCancelAddPhotoModal(); return; }
-            const key = raAddPhotoType === 'before' ? 'beforePhotos' : 'afterPhotos';
+            const key = 'photos';
             if (!items[idx][key]) items[idx][key] = [];
             let addedCount = 0, dupCount = 0;
             raAddPhotoStaged.forEach(p => {
@@ -8055,16 +8036,6 @@ ${extraText}
                 items[idx][key].push(p);
                 addedCount++;
             });
-            let statusChanged = null;
-            if (addedCount > 0) {
-                if (raAddPhotoType === 'before' && items[idx].status === '미착수') {
-                    items[idx].status = '진행중';
-                    statusChanged = '진행중';
-                } else if (raAddPhotoType === 'after') {
-                    items[idx].status = '완료';
-                    statusChanged = '완료';
-                }
-            }
             raSave(items);
             raRender();
 
@@ -8073,14 +8044,14 @@ ${extraText}
             raCancelAddPhotoModal();
 
             if (addedCount > 0) {
-                showToast(statusChanged ? `✅ 사진이 저장되었습니다. 진행상태: ${statusChanged}` : '✅ 사진이 저장되었습니다.', 'success');
+                showToast('✅ 사진이 저장되었습니다.', 'success');
             }
             if (dupCount > 0) {
                 showToast(`⚠️ 이미 등록된 동일한 사진 ${dupCount}장은 건너뛰었습니다.`, 'warn');
             }
             if (wasLightbox && addedCount > 0) {
                 const savedItem = raLoad().find(x => x.id === returnItemId);
-                const photos = returnType === 'before' ? savedItem.beforePhotos : savedItem.afterPhotos;
+                const photos = savedItem.photos;
                 raOpenLightbox(returnItemId, returnType, photos.length - 1);
             }
         }
@@ -8110,22 +8081,20 @@ ${extraText}
         }
 
         // 개선 전/후 사진 — 등록 폼 미리보기용 임시 저장
-        let _raBeforePhotos = []; // [{name, dataUrl}]
-        let _raAfterPhotos  = []; // [{name, dataUrl}]
+        let _raPhotos = []; // [{name, dataUrl}]
 
-        function raPreviewPhotos(type) {
-            const input     = document.getElementById(`ra-${type}-photo`);
-            const previewEl = document.getElementById(`ra-${type}-preview`);
+        function raPreviewPhotos() {
+            const input     = document.getElementById('ra-photo-input');
+            const previewEl = document.getElementById('ra-photo-preview');
             if (!input || !previewEl) return;
-            if (type === 'before') _raBeforePhotos = []; else _raAfterPhotos = [];
+            _raPhotos = [];
             const files = Array.from(input.files);
             if (!files.length) { previewEl.innerHTML = ''; return; }
             previewEl.innerHTML = '<div style="font-size:11px;color:var(--scm-subtext);width:100%;margin-bottom:2px;">미리보기 (' + files.length + '장):</div>';
             files.forEach((file, i) => {
                 const reader = new FileReader();
                 reader.onload = e => {
-                    const photo = { name: file.name, dataUrl: e.target.result };
-                    if (type === 'before') _raBeforePhotos[i] = photo; else _raAfterPhotos[i] = photo;
+                    _raPhotos[i] = { name: file.name, dataUrl: e.target.result };
                     const box = document.createElement('div');
                     box.style.cssText = 'position:relative;display:inline-block;';
                     box.innerHTML = `<img src="${e.target.result}" style="width:64px;height:64px;object-fit:cover;border-radius:7px;border:1.5px solid var(--scm-border);">`;
@@ -8139,26 +8108,22 @@ ${extraText}
             const editId    = document.getElementById('ra-edit-id').value;
             const process   = document.getElementById('ra-process').value.trim();
             const hazard    = document.getElementById('ra-hazard').value.trim();
-            const equip     = document.getElementById('ra-equip').value.trim();
             const measure   = document.getElementById('ra-measure').value.trim();
             const freq      = Number(document.getElementById('ra-freq').value);
             const sev       = Number(document.getElementById('ra-sev').value);
             const afterFreq = Number(document.getElementById('ra-after-freq').value);
             const afterSev  = Number(document.getElementById('ra-after-sev').value);
             const reduction = document.getElementById('ra-reduction').value.trim();
-            const owner     = document.getElementById('ra-owner').value.trim();
-            const due       = document.getElementById('ra-due').value;
-            const status    = document.getElementById('ra-status').value;
+            const nearMiss  = document.getElementById('ra-nearmiss').value;
+            const code      = document.getElementById('ra-code').value.trim();
 
             const missing = [];
-            if (!process)   missing.push('단위공정/작업명');
-            if (!hazard)    missing.push('유해위험요인');
-            if (!reduction) missing.push('위험성 감소대책');
-            if (!owner)     missing.push('작성자');
-            if (!due)       missing.push('개선기한');
+            if (!process)   missing.push('작업단계 및 내용');
+            if (!hazard)    missing.push('유해위험요인 및 재해형태');
+            if (!reduction) missing.push('안전조치 및 위험성 감소대책');
             if (missing.length) {
                 showToast(`⚠️ 다음 항목을 입력해 주세요: ${missing.join(', ')}`, 'warn');
-                const firstMissingId = { '단위공정/작업명':'ra-process', '유해위험요인':'ra-hazard', '위험성 감소대책':'ra-reduction', '작성자':'ra-owner', '개선기한':'ra-due' }[missing[0]];
+                const firstMissingId = { '작업단계 및 내용':'ra-process', '유해위험요인 및 재해형태':'ra-hazard', '안전조치 및 위험성 감소대책':'ra-reduction' }[missing[0]];
                 const el = document.getElementById(firstMissingId);
                 if (el) { el.style.borderColor = '#DC2626'; el.focus(); el.scrollIntoView?.({ behavior:'smooth', block:'center' }); }
                 return;
@@ -8175,7 +8140,7 @@ ${extraText}
                 if (idx === -1) {
                     showToast('⚠️ 수정할 항목을 찾을 수 없습니다.', 'warn');
                 } else {
-                    items[idx] = { ...items[idx], process, hazard, equip, measure, freq, sev, score: scoreVal, grade, afterFreq, afterSev, afterScore: afterScoreVal, afterGrade, reduction, owner, due, status };
+                    items[idx] = { ...items[idx], process, hazard, measure, freq, sev, score: scoreVal, grade, afterFreq, afterSev, afterScore: afterScoreVal, afterGrade, reduction, nearMiss, code };
                     raSave(items);
                     showToast('✅ 위험성평가표가 수정되었습니다.', 'success');
                     if (afterScoreVal >= 8) {
@@ -8183,13 +8148,14 @@ ${extraText}
                     }
                 }
             } else {
+                const lineItems = items.filter(x => x.line === raSelectedLine);
+                const seq = lineItems.length ? Math.max(...lineItems.map(x => x.seq || 0)) + 1 : 1;
                 items.unshift({
-                    id: Date.now(), line: raSelectedLine, process, hazard, equip, measure,
+                    id: Date.now(), line: raSelectedLine, seq, process, hazard, measure,
                     freq, sev, score: scoreVal, grade,
                     afterFreq, afterSev, afterScore: afterScoreVal, afterGrade,
-                    reduction, owner, due, status,
-                    beforePhotos: _raBeforePhotos.filter(p => p && p.dataUrl).map(p => ({ name: p.name, dataUrl: p.dataUrl })),
-                    afterPhotos : _raAfterPhotos.filter(p => p && p.dataUrl).map(p => ({ name: p.name, dataUrl: p.dataUrl })),
+                    reduction, nearMiss, code,
+                    photos: _raPhotos.filter(p => p && p.dataUrl).map(p => ({ name: p.name, dataUrl: p.dataUrl })),
                     createdAt: new Date().toISOString()
                 });
                 raSave(items);
@@ -8205,18 +8171,15 @@ ${extraText}
         }
 
         function raResetForm() {
-            ['ra-process','ra-hazard','ra-equip','ra-measure','ra-reduction','ra-owner','ra-due'].forEach(id => { document.getElementById(id).value = ''; document.getElementById(id).style.borderColor = 'var(--scm-border)'; });
+            ['ra-process','ra-hazard','ra-measure','ra-reduction','ra-code'].forEach(id => { document.getElementById(id).value = ''; document.getElementById(id).style.borderColor = 'var(--scm-border)'; });
             document.getElementById('ra-freq').value = '3';
             document.getElementById('ra-sev').value = '3';
             document.getElementById('ra-after-freq').value = '2';
             document.getElementById('ra-after-sev').value = '2';
-            document.getElementById('ra-status').value = '미착수';
-            document.getElementById('ra-before-photo').value = '';
-            document.getElementById('ra-after-photo').value = '';
-            document.getElementById('ra-before-preview').innerHTML = '';
-            document.getElementById('ra-after-preview').innerHTML = '';
-            _raBeforePhotos = [];
-            _raAfterPhotos  = [];
+            document.getElementById('ra-nearmiss').value = 'X';
+            document.getElementById('ra-photo-input').value = '';
+            document.getElementById('ra-photo-preview').innerHTML = '';
+            _raPhotos = [];
             document.getElementById('ra-edit-id').value = '';
             document.getElementById('ra-form-title').textContent = '+ 위험성평가표 등록';
             document.getElementById('ra-submit-btn').textContent = '평가표 등록';
@@ -8230,16 +8193,14 @@ ${extraText}
             document.getElementById('ra-edit-id').value = item.id;
             document.getElementById('ra-process').value   = item.process || '';
             document.getElementById('ra-hazard').value    = item.hazard || '';
-            document.getElementById('ra-equip').value     = item.equip || '';
             document.getElementById('ra-measure').value   = item.measure || '';
             document.getElementById('ra-freq').value      = item.freq || 3;
             document.getElementById('ra-sev').value       = item.sev || 3;
             document.getElementById('ra-after-freq').value = item.afterFreq || 2;
             document.getElementById('ra-after-sev').value  = item.afterSev || 2;
             document.getElementById('ra-reduction').value = item.reduction || '';
-            document.getElementById('ra-owner').value     = item.owner || '';
-            document.getElementById('ra-due').value       = item.due || '';
-            document.getElementById('ra-status').value    = item.status || '미착수';
+            document.getElementById('ra-nearmiss').value   = item.nearMiss || 'X';
+            document.getElementById('ra-code').value       = item.code || '';
             raUpdateScorePreview();
             document.getElementById('ra-form-title').textContent = '✏️ 위험성평가표 수정 (사진은 목록에서 직접 클릭해 수정)';
             document.getElementById('ra-submit-btn').textContent = '수정 완료';
@@ -8249,15 +8210,6 @@ ${extraText}
 
         function raCancelEdit() {
             raResetForm();
-        }
-
-        function raSetStatus(id, status) {
-            const items = raLoad();
-            const idx = items.findIndex(i => i.id === id);
-            if (idx === -1) return;
-            items[idx].status = status;
-            raSave(items);
-            raRender();
         }
 
         let raDeleteArmedId = null;
@@ -8285,21 +8237,21 @@ ${extraText}
         function raRender() {
           try {
             const allItems = raLoad();
-            const items = allItems.filter(i => i.line === raSelectedLine);
+            const items = allItems.filter(i => i.line === raSelectedLine).sort((a,b) => (a.seq||0) - (b.seq||0));
             const statsEl = document.getElementById('ra-stats');
             const total = items.length;
             const high  = items.filter(i => i.grade === '상').length;
-            const open  = items.filter(i => i.status !== '완료').length;
-            const done  = items.filter(i => i.status === '완료').length;
+            const afterHigh = items.filter(i => i.afterScore != null && i.afterScore >= 8).length;
+            const nearMissCount = items.filter(i => i.nearMiss === 'O').length;
             if (statsEl) {
                 const card = (label, val, color) => `<div style="background:white; border:1px solid var(--scm-border); border-radius:10px; padding:12px 14px;">
                     <p style="font-size:11px; color:var(--scm-subtext); margin:0 0 4px;">${label}</p>
                     <p style="font-size:20px; font-weight:800; color:${color}; margin:0;">${val}</p>
                 </div>`;
                 statsEl.innerHTML = card('전체 평가 항목', total, 'var(--scm-text)')
-                    + card('상 등급 (즉시조치)', high, '#EF4444')
-                    + card('미완료', open, '#CA8A04')
-                    + card('완료', done, '#16A34A');
+                    + card('현재 상 등급', high, '#EF4444')
+                    + card('개선후에도 8점 이상', afterHigh, '#EA580C')
+                    + card('아차사고', nearMissCount, '#0F766E');
             }
 
             raRenderLineGrid(allItems);
@@ -8314,37 +8266,38 @@ ${extraText}
                 return;
             }
             const grade = { '상': { color:'#EF4444', bg:'#FEE2E2' }, '중': { color:'#CA8A04', bg:'#FEF9C3' }, '하': { color:'#16A34A', bg:'#DCFCE7' } };
-            const photoCell = (photos, type, itemId) => {
+            const photoCell = (photos, itemId) => {
                 if (!photos || !photos.length) {
-                    return `<button onclick="raOpenAddPhotoModal(${itemId}, '${type}')" title="사진 추가" style="width:40px; height:40px; border-radius:6px; border:1.5px dashed var(--scm-border); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--scm-subtext); font-size:15px; background:white;">+</button>`;
+                    return `<button onclick="raOpenAddPhotoModal(${itemId}, 'photo')" title="사진 추가" style="width:44px; height:44px; border-radius:6px; border:1.5px dashed var(--scm-border); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--scm-subtext); font-size:15px; background:white;">+</button>`;
                 }
                 const first = photos[0];
                 return `<div style="position:relative; display:inline-block;">
-                    <img src="${first.dataUrl}" onclick="raOpenLightbox(${itemId}, '${type}', 0)" title="클릭하여 확대" style="width:40px; height:40px; object-fit:cover; border-radius:6px; border:1px solid var(--scm-border); cursor:zoom-in;">
+                    <img src="${first.dataUrl}" onclick="raOpenLightbox(${itemId}, 'photo', 0)" title="클릭하여 확대" style="width:44px; height:44px; object-fit:cover; border-radius:6px; border:1px solid var(--scm-border); cursor:zoom-in;">
                     ${photos.length > 1 ? `<span style="position:absolute; bottom:-4px; right:-4px; background:var(--scm-navy); color:white; font-size:9px; font-weight:800; border-radius:99px; padding:1px 4px;">${photos.length}</span>` : ''}
                 </div>`;
             };
-            const th = (label, align) => `<th style="border-bottom:1px solid var(--scm-border); padding:9px 10px; text-align:${align||'center'}; color:var(--scm-subtext); font-weight:700; white-space:nowrap;">${label}</th>`;
-            const td = (content, align, extra) => `<td style="border-bottom:1px solid var(--scm-border); padding:9px 10px; text-align:${align||'center'}; ${extra||''}">${content}</td>`;
+            const th = (label, opts) => `<th style="border:1px solid var(--scm-border); padding:8px 9px; text-align:center; color:var(--scm-subtext); font-weight:700; white-space:nowrap; background:#F8FAFC;" ${opts||''}>${label}</th>`;
+            const td = (content, align, extra) => `<td style="border:1px solid var(--scm-border); padding:8px 9px; text-align:${align||'center'}; ${extra||''}">${content}</td>`;
+
             listEl.innerHTML = `            <div class="scm-card p-0" style="overflow-x:auto;">
-                <table style="border-collapse:collapse; width:100%; min-width:1440px; font-size:12px;">
+                <table style="border-collapse:collapse; width:100%; min-width:1360px; font-size:12px;">
                     <thead>
-                        <tr style="background:#F8FAFC;">
-                            ${th('단위공정','left')}
-                            ${th('작성자')}
-                            ${th('유해위험요인','left')}
-                            ${th('빈도')}
-                            ${th('강도')}
-                            ${th('위험성')}
-                            ${th('개선전')}
-                            ${th('감소대책','left')}
-                            ${th('빈도')}
-                            ${th('강도')}
-                            ${th('위험도')}
-                            ${th('개선후')}
-                            ${th('개선기한')}
-                            ${th('진행상태')}
-                            ${IS_ADMIN ? '<th style="border-bottom:1px solid var(--scm-border); padding:9px 10px;"></th>' : ''}
+                        <tr>
+                            ${th('번호', 'rowspan="2"')}
+                            ${th('작업단계 및 내용', 'rowspan="2"')}
+                            ${th('사진', 'rowspan="2"')}
+                            ${th('유해위험요인 및 재해(피해자)형태', 'rowspan="2"')}
+                            ${th('현재안전조치', 'rowspan="2"')}
+                            ${th('현재 위험성', 'colspan="3"')}
+                            ${th('안전조치 및 위험성 감소(개선) 대책', 'rowspan="2"')}
+                            ${th('개선후 위험성', 'colspan="3"')}
+                            ${th('비고', 'colspan="2"')}
+                            ${IS_ADMIN ? th('관리', 'rowspan="2"') : ''}
+                        </tr>
+                        <tr>
+                            ${th('빈도')}${th('강도')}${th('위험성')}
+                            ${th('빈도')}${th('강도')}${th('위험성')}
+                            ${th('아차사고<br>여부')}${th('코드번호')}
                         </tr>
                     </thead>
                     <tbody>
@@ -8353,27 +8306,21 @@ ${extraText}
                             const ag = grade[i.afterGrade] || grade['하'];
                             const afterWarn = (i.afterScore != null && i.afterScore >= 8);
                             return `<tr>
-                                ${td(i.process, 'left', 'font-weight:700; color:var(--scm-text);')}
-                                ${td(i.owner, 'center', 'color:var(--scm-text);')}
-                                ${td(i.hazard, 'left', 'color:var(--scm-text);')}
+                                ${td(i.seq ?? '-', 'center', 'font-weight:700; color:var(--scm-text);')}
+                                ${td(i.process, 'left', 'font-weight:700; color:var(--scm-text); min-width:110px;')}
+                                ${td(photoCell(i.photos, i.id))}
+                                ${td(i.hazard, 'left', 'color:var(--scm-text); min-width:200px;')}
+                                ${td(i.measure || '-', 'left', 'color:var(--scm-text); min-width:110px;')}
                                 ${td(i.freq, 'center', 'color:var(--scm-text);')}
                                 ${td(i.sev, 'center', 'color:var(--scm-text);')}
-                                ${td(`<span style="display:inline-block; padding:3px 9px; border-radius:99px; font-weight:800; background:${g.bg}; color:${g.color};">${i.score}점·${i.grade}</span>`)}
-                                ${td(photoCell(i.beforePhotos, 'before', i.id))}
-                                ${td(i.reduction, 'left', 'color:var(--scm-subtext);')}
+                                ${td(`<span style="display:inline-block; padding:3px 9px; border-radius:99px; font-weight:800; background:${g.bg}; color:${g.color};">${i.score}</span>`)}
+                                ${td(i.reduction, 'left', 'color:var(--scm-text); min-width:150px;')}
                                 ${td(i.afterFreq ?? '-', 'center', 'color:var(--scm-text);')}
                                 ${td(i.afterSev ?? '-', 'center', 'color:var(--scm-text);')}
-                                ${td(i.afterScore != null ? `<span style="display:inline-block; padding:3px 9px; border-radius:99px; font-weight:800; background:${ag.bg}; color:${ag.color};">${i.afterScore}점·${i.afterGrade}${afterWarn ? ' ⚠' : ''}</span>` : '-')}
-                                ${td(photoCell(i.afterPhotos, 'after', i.id))}
-                                ${td(i.due, 'center', 'color:var(--scm-text);')}
-                                ${td(IS_ADMIN
-                                        ? `<select onchange="raSetStatus(${i.id}, this.value)" style="font-size:11.5px; border:1px solid var(--scm-border); border-radius:6px; padding:3px 6px; background:white;">
-                                            <option value="미착수" ${i.status==='미착수'?'selected':''}>미착수</option>
-                                            <option value="진행중" ${i.status==='진행중'?'selected':''}>진행중</option>
-                                            <option value="완료" ${i.status==='완료'?'selected':''}>완료</option>
-                                          </select>`
-                                        : `<span style="font-size:11.5px; color:var(--scm-text);">${i.status}</span>`)}
-                                ${IS_ADMIN ? `<td style="border-bottom:1px solid var(--scm-border); padding:9px 10px; text-align:center; white-space:nowrap;">
+                                ${td(i.afterScore != null ? `<span style="display:inline-block; padding:3px 9px; border-radius:99px; font-weight:800; background:${ag.bg}; color:${ag.color};">${i.afterScore}${afterWarn ? ' ⚠' : ''}</span>` : '-')}
+                                ${td(i.nearMiss === 'O' ? `<span style="font-weight:800; color:#0F766E;">O</span>` : `<span style="color:var(--scm-subtext);">X</span>`)}
+                                ${td(i.code || '-', 'center', 'color:var(--scm-text);')}
+                                ${IS_ADMIN ? `<td style="border:1px solid var(--scm-border); padding:8px 9px; text-align:center; white-space:nowrap;">
                                     <button onclick="raEditStart(${i.id})" style="font-size:11px; font-weight:700; color:var(--scm-navy); background:none; border:1px solid var(--scm-border); border-radius:6px; padding:3px 8px; cursor:pointer; margin-right:4px;">수정</button>
                                     <button id="ra-delete-btn-${i.id}" onclick="raDelete(${i.id})" style="font-size:11px; font-weight:700; color:#DC2626; background:none; border:1px solid #FECACA; border-radius:6px; padding:3px 8px; cursor:pointer;">삭제</button>
                                 </td>` : ''}
