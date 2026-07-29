@@ -311,7 +311,7 @@
                         <div class="mega-panel-wide">
                             <p class="mega-group-title">교육 관리</p>
                             <div class="mega-items-row">
-                                <button class="mega-item-btn" onclick="switchTab('education')">교육 평가 시스템</button>
+                                <button class="mega-item-btn" onclick="switchTab('education'); eduShowView('eval-admin');">교육 평가 시스템</button>
                                 <button class="mega-item-btn" onclick="switchTab('education');setTimeout(()=>eduShowView('materials'),80)">교육 자료실</button>
                                 <button class="mega-item-btn" onclick="showComingSoon('특별안전교육')">특별안전교육</button>
                                 <button class="mega-item-btn" onclick="showComingSoon('관리감독자 교육')">관리감독자 교육</button>
@@ -1984,7 +1984,7 @@
                             </div>
                         </div>
                         <div class="flex gap-3 pt-2">
-                            <button onclick="evalOpenParticipate()" class="flex-1 text-white text-[13px] font-bold py-2.5 rounded-lg hover:opacity-90 transition-opacity" style="background: var(--scm-blue);">참여 화면 미리보기</button>
+                            <button onclick="evalOpenParticipate(currentSessionId, true)" class="flex-1 text-white text-[13px] font-bold py-2.5 rounded-lg hover:opacity-90 transition-opacity" style="background: var(--scm-blue);">참여 화면 미리보기</button>
                             <button onclick="evalOpenManage()" class="flex-1 text-[13px] font-bold py-2.5 rounded-lg border hover:bg-slate-50 transition-colors" style="border-color: var(--scm-border); color: var(--scm-text);">이수 현황 관리</button>
                         </div>
                     </div>
@@ -2038,8 +2038,8 @@
                     <!-- 단계별 패널 -->
                     <!-- Step 1: 본인 확인 -->
                     <div id="part-step-1" class="scm-card p-6 space-y-5">
-                        <button onclick="partStep1Back()" class="flex items-center gap-1 text-[12.5px] font-bold hover:opacity-70 transition-opacity" style="color: var(--scm-subtext);">
-                            <span>←</span><span>뒤로</span>
+                        <button onclick="partStep1Back()" id="part-step1-back-btn" class="flex items-center gap-1 text-[12.5px] font-bold hover:opacity-70 transition-opacity" style="color: var(--scm-subtext);">
+                            <span>←</span><span id="part-step1-back-label">뒤로</span>
                         </button>
                         <div>
                             <h3 class="text-base font-bold mb-1" style="color: var(--scm-text);">본인 확인</h3>
@@ -3062,6 +3062,12 @@
             if (activeBtn) activeBtn.classList.add('active');
 
             const doSwitch = () => {
+                // 교육 탭을 벗어날 때는 하위 화면(예: 참여 미리보기)을 세션 목록으로 리셋
+                // → 다음에 다시 교육 탭으로 돌아왔을 때 이전 화면이 그대로 남아있지 않도록 함
+                if (prev && prev.id === 'tab-education' && tabId !== 'education') {
+                    eduShowView('eval-admin');
+                }
+
                 // 이전 탭 숨기기
                 document.querySelectorAll('.tab-content').forEach(el => {
                     el.classList.add('hidden');
@@ -4803,10 +4809,15 @@
         }
 
         // --- 참여 화면 열기 ---
-        function evalOpenParticipate(sessionId) {
+        let evalIsPreviewMode = false;
+
+        function evalOpenParticipate(sessionId, isPreview) {
             const sid = sessionId || currentSessionId;
             if (!sid || !evalSessions[sid]) { showToast('⚠️ 세션을 찾을 수 없습니다.', 'warn'); return; }
             currentSessionId = sid;
+            evalIsPreviewMode = !!isPreview;
+            const backLabel = document.getElementById('part-step1-back-label');
+            if (backLabel) backLabel.textContent = evalIsPreviewMode ? '세션목록' : '뒤로';
             const session = evalSessions[sid];
 
             // 리셋
@@ -4911,9 +4922,13 @@
             }
         }
 
-        // --- Step 1 뒤로가기 (교육 메뉴로) ---
+        // --- Step 1 뒤로가기 (미리보기면 세션목록, 아니면 교육 메뉴로) ---
         function partStep1Back() {
-            eduShowView('menu');
+            if (evalIsPreviewMode) {
+                eduShowView('eval-admin');
+            } else {
+                eduShowView('menu');
+            }
         }
 
         // --- Step 1 → 2 (본인 확인) ---
@@ -5325,7 +5340,7 @@
                     </td>
                     <td class="px-4 py-3">
                         <div class="flex items-center gap-2">
-                            <button onclick="evalOpenParticipate('${s.sessionId}')" class="text-[11px] font-bold px-2.5 py-1.5 rounded-lg border hover:bg-blue-50 transition-colors" style="border-color:#93C5FD; color:#1D4ED8;">참여 미리보기</button>
+                            <button onclick="evalOpenParticipate('${s.sessionId}', true)" class="text-[11px] font-bold px-2.5 py-1.5 rounded-lg border hover:bg-blue-50 transition-colors" style="border-color:#93C5FD; color:#1D4ED8;">참여 미리보기</button>
                             <button onclick="evalOpenManage('${s.sessionId}')" class="text-[11px] font-bold px-2.5 py-1.5 rounded-lg border hover:bg-slate-50 transition-colors" style="border-color:var(--scm-border); color:var(--scm-text);">이수 현황</button>
                             <button onclick="evalDeleteSession('${s.sessionId}')" class="text-[11px] font-bold px-2.5 py-1.5 rounded-lg border hover:bg-red-50 transition-colors" style="border-color:#FECACA; color:#DC2626;">🗑 삭제</button>
                         </div>
