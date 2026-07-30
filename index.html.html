@@ -504,9 +504,9 @@
                 </div>
                 <div class="dash-card red p-5">
                     <div class="section-eyebrow mb-3">안전사고 발생</div>
-                    <div class="stat-num" style="color:#DC2626;">6건</div>
-                    <div style="font-size:12px;color:var(--scm-subtext);margin-top:5px;">목표 0건 — 주의 필요</div>
-                    <div style="margin-top:12px;height:5px;background:#FEE2E2;border-radius:99px;overflow:hidden;"><div class="progress-bar" style="height:100%;background:linear-gradient(90deg,#F87171,#DC2626);border-radius:99px;width:100%;"></div></div>
+                    <div class="stat-num" style="color:#DC2626;" id="kpi-safety-incidents">—</div>
+                    <div style="font-size:12px;color:var(--scm-subtext);margin-top:5px;" id="kpi-safety-incidents-sub">목표 0건</div>
+                    <div style="margin-top:12px;height:5px;background:#FEE2E2;border-radius:99px;overflow:hidden;"><div class="progress-bar" id="kpi-safety-incidents-bar" style="height:100%;background:linear-gradient(90deg,#F87171,#DC2626);border-radius:99px;width:0%;"></div></div>
                 </div>
             </div>
 
@@ -651,18 +651,11 @@
                             <div style="font-size:10.5px;color:var(--scm-subtext);">0건 발생</div>
                         </div>
                     </div>
-                    <!-- 법규준수 + 안전사고 -->
+                    <!-- 법규준수 -->
                     <div style="display:flex;flex-direction:column;gap:8px;">
                         <div style="display:flex;align-items:center;gap:10px;background:#F0FDF4;border-radius:10px;padding:10px 14px;">
                             <span style="font-size:13px;font-weight:700;color:#059669;flex:1;">✅ 법규 준수</span>
                             <span class="badge badge-green">달성</span>
-                        </div>
-                        <div id="home-safety-summary-box" style="display:flex;align-items:center;gap:10px;background:#F0FDF4;border-radius:10px;padding:10px 14px;">
-                            <div style="flex:1;">
-                                <div id="home-safety-summary-text" style="font-size:12.5px;font-weight:700;color:#059669;">✅ 안전사고 발생 (산재 0건, 아차사고 0건)</div>
-                                <div id="home-safety-summary-sub" style="font-size:11px;color:#059669;margin-top:2px;">목표 0건 달성 중</div>
-                            </div>
-                            <span id="home-safety-summary-badge" class="badge badge-green">양호</span>
                         </div>
                     </div>
                 </div>
@@ -7888,11 +7881,10 @@ ${extraText}
         // ── homeRenderRiskProgress 이전 ──
         // 모든 사용자에게 보이는 홈 대시보드 안전사고 발생 요약 (산재 + 아차사고, 실데이터 연동)
         function homeRenderSafetySummary() {
-            const textEl  = document.getElementById('home-safety-summary-text');
-            const subEl   = document.getElementById('home-safety-summary-sub');
-            const badgeEl = document.getElementById('home-safety-summary-badge');
-            const boxEl   = document.getElementById('home-safety-summary-box');
-            if (!textEl) return;
+            const numEl = document.getElementById('kpi-safety-incidents');
+            const subEl = document.getElementById('kpi-safety-incidents-sub');
+            const barEl = document.getElementById('kpi-safety-incidents-bar');
+            if (!numEl) return;
             try { incidentSeedIfNeeded(); } catch (e) {}
             const year = new Date().getFullYear();
             let incidentCount = 0, nearMissCount = 0, gongsangCount = 0, processCount = 0, totalCount = 0;
@@ -7902,17 +7894,13 @@ ${extraText}
                 gongsangCount  = yearRecords.filter(i => i.category === '공상').length;
                 nearMissCount  = yearRecords.filter(i => i.category === '아차사고').length;
                 processCount   = yearRecords.filter(i => i.category === '공정사고').length;
-                totalCount     = yearRecords.length; // 산재기록현황 대시보드의 "OO년 총 건수"와 항상 동일
+                totalCount     = yearRecords.length; // 산재기록현황(경영 > 산재기록현황)의 "OO년 총 건수"와 항상 동일
             } catch (e) {}
 
-            const hasIncident = incidentCount > 0;
-            textEl.innerHTML = `${hasIncident ? '⚠️' : '✅'} ${year}년 안전사고 발생 총 ${totalCount}건 (산재 ${incidentCount}건, 아차사고 ${nearMissCount}건)`;
-            textEl.style.color = hasIncident ? '#991B1B' : '#059669';
-            subEl.textContent = `산재 ${incidentCount} · 공상 ${gongsangCount} · 아차사고 ${nearMissCount} · 공정사고 ${processCount}` + (hasIncident ? ' — 산재 목표 0건, 즉각 원인 분석 필요' : ` — 산재 목표 0건 달성 중`);
-            subEl.style.color = hasIncident ? '#B91C1C' : '#059669';
-            boxEl.style.background = hasIncident ? '#FFF5F5' : '#F0FDF4';
-            badgeEl.textContent = hasIncident ? '주의' : '양호';
-            badgeEl.className = hasIncident ? 'badge badge-red' : 'badge badge-green';
+            const hasIncident = totalCount > 0;
+            numEl.textContent = `${totalCount}건`;
+            subEl.textContent = hasIncident ? '목표 0건 — 주의 필요' : '목표 0건 달성 중';
+            if (barEl) barEl.style.width = hasIncident ? '100%' : '0%';
         }
 
         function homeRenderRiskProgress() {
