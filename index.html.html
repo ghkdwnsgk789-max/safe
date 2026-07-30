@@ -1103,9 +1103,9 @@
 
                 <!-- 위험성평가표 등록 (실제 표 양식과 동일한 구조) -->
                 <div id="ra-form-card" class="scm-card p-4 mb-4">
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:6px;">
                         <h3 id="ra-form-title" style="font-size:13.5px;font-weight:800;color:var(--scm-navy);">+ 위험성평가표 등록</h3>
-                        <span style="font-size:11.5px;color:var(--scm-subtext);">사내 위험성평가 양식 기준</span>
+                        <span style="font-size:11.5px;color:var(--scm-subtext);">사내 위험성평가 양식 기준 · <span style="color:#4338CA;font-weight:700;">🤖 작업단계 및 내용 입력 후 [AI 추천] 버튼으로 유해위험요인·안전조치 자동 작성 가능</span></span>
                     </div>
                     <div style="overflow-x:auto;">
                         <table style="border-collapse:collapse; width:100%; min-width:1360px; font-size:12px;">
@@ -1136,8 +1136,9 @@
                                 <tr>
                                     <td id="ra-next-seq" style="border:1px solid var(--scm-border); padding:6px; text-align:center; color:var(--scm-subtext); font-weight:700;">자동</td>
                                     <td style="border:1px solid var(--scm-border); padding:5px; min-width:110px;">
-                                        <input id="ra-process" list="ra-process-list" placeholder="예: 샘플채취" style="width:100%; border:1px solid var(--scm-border); border-radius:6px; padding:6px 7px; font-size:12px; outline:none;">
+                                        <input id="ra-process" list="ra-process-list" placeholder="예: 샘플채취" style="width:100%; border:1px solid var(--scm-border); border-radius:6px; padding:6px 7px; font-size:12px; outline:none;" oninput="raAiSuggestUpdateButtonState()">
                                         <datalist id="ra-process-list"></datalist>
+                                        <button id="ra-ai-suggest-btn" onclick="raAiSuggest()" disabled title="작업단계 및 내용을 먼저 입력하세요" style="margin-top:4px; width:100%; font-size:10px; font-weight:700; padding:4px 2px; border-radius:5px; border:1px solid #C7D2FE; background:#EEF2FF; color:#4338CA; cursor:not-allowed; opacity:0.5; transition:opacity .15s;">🤖 AI 추천</button>
                                     </td>
                                     <td style="border:1px solid var(--scm-border); padding:5px; text-align:center;">
                                         <label style="display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;color:var(--scm-navy);font-size:10.5px;font-weight:600;">
@@ -8398,6 +8399,147 @@ ${extraText}
             renderGallery(item.afterPhotos, 'after', 'ra-detail-after-gallery');
         }
 
+        // ══════════════════════════════════════════════════════════════
+        //  위험성평가 AI 자동생성 (사내 위험성평가 데이터 기반 키워드 매칭)
+        //  ※ 외부 API 없이 오프라인에서 즉시 동작. "작업단계 및 내용"을
+        //     먼저 입력해야 [AI 추천] 버튼이 활성화된다.
+        // ══════════════════════════════════════════════════════════════
+        const RA_AI_KNOWLEDGE = [
+            { keywords: ['절단', '커팅', '커터', '베임', '샘플채취', '시편', '전단', '시어', 'shear', '샘플커팅'],
+              hazard:   p => `${p} 작업 중 절단날에 손가락 및 손이 베이는 위험`,
+              measure:  p => `절단 가드 설치, 작업 전 절단날 안전인터록 작동 확인`,
+              reduction:p => `방검장갑(PU 또는 방검) 착용, 절단부 방호덮개 설치, 작업 전 날 점검 실시` },
+
+            { keywords: ['프레스', '압연', '압착', '롤갭', '롤 교체', '롤교체', '롤 간격', '금형'],
+              hazard:   p => `${p} 작업 중 롤(프레스) 사이에 손 또는 신체가 협착되는 위험`,
+              measure:  p => `양수조작식 스위치 사용, 광전자식 방호장치 설치`,
+              reduction:p => `방호울 설치 및 인터록 스위치 정상 작동 확인, 작업 전 비상정지 스위치 위치 확인` },
+
+            { keywords: ['크레인', '호이스트', '인양', '리프팅', '천장크레인', '와이어로프', '줄걸이'],
+              hazard:   p => `${p} 작업 중 인양물 낙하 및 협착·충돌 위험`,
+              measure:  p => `줄걸이 상태 및 와이어로프 점검, 신호수 배치`,
+              reduction:p => `정격하중 준수, 인양경로 하부 출입통제, 줄걸이 작업자 자격 확인` },
+
+            { keywords: ['지게차', '포크리프트', '운반차량', '구내운반'],
+              hazard:   p => `${p} 작업 중 지게차와 작업자 간 충돌 또는 협착 위험`,
+              measure:  p => `유도자 배치, 후진경보장치 및 후사경 작동 확인`,
+              reduction:p => `지게차 이동경로와 보행자 통로 분리, 서행 및 경적 준수, 운전원 자격 확인` },
+
+            { keywords: ['고소', '사다리', '비계', '안전대', '지붕', '개구부', '높은 곳', '고소작업대'],
+              hazard:   p => `${p} 작업 중 고소에서 추락하는 위험`,
+              measure:  p => `안전대 착용, 안전난간 설치`,
+              reduction:p => `추락방지망 및 개구부 덮개 설치, 안전대 체결상태 확인 후 작업, 작업발판 고정상태 점검` },
+
+            { keywords: ['전기', '배전반', '분전반', '감전', '활선', '케이블', '결선', '전기정비'],
+              hazard:   p => `${p} 작업 중 감전 및 아크 화상 위험`,
+              measure:  p => `무전압 확인 후 작업, 절연장갑 착용`,
+              reduction:p => `전원 차단(LOTO) 후 작업, 검전기로 무전압 확인, 절연용 보호구 착용` },
+
+            { keywords: ['용접', '용단', '아크', '화기작업', '절단토치'],
+              hazard:   p => `${p} 작업 중 용접흄 흡입, 화상, 용접섬광에 의한 눈 손상 위험`,
+              measure:  p => `국소배기장치 가동, 용접보안면 착용`,
+              reduction:p => `방진마스크 및 용접보안면 착용, 화기작업 주변 가연물 제거, 소화기 비치` },
+
+            { keywords: ['컨베이어', '벨트', '롤러', '회전체', '커플링', '축', '모터', '말림', '설비정비', '기계정비'],
+              hazard:   p => `${p} 작업 중 회전체에 신체 일부(손, 옷자락 등)가 말려 들어가는 위험`,
+              measure:  p => `회전체 방호덮개 설치, 정지 후 작업 실시`,
+              reduction:p => `작업 전 전원 차단 및 잠금조치(LOTO) 실시, 방호덮개 미해체 상태 유지, 헐렁한 복장 착용 금지` },
+
+            { keywords: ['화학물질', '약품', '산세', '도금', '유해가스', '흄', 'msds', '알칼리', 'cgl'],
+              hazard:   p => `${p} 작업 중 화학물질 접촉 및 유해가스 흡입 위험`,
+              measure:  p => `보호장갑·보호안경 착용, 국소배기장치 가동`,
+              reduction:p => `MSDS 비치 및 취급수칙 준수, 방독마스크·화학보호구 착용, 세안장치·비상샤워 위치 확인` },
+
+            { keywords: ['밀폐공간', '탱크', '맨홀', '피트', '저장조', '질식'],
+              hazard:   p => `${p} 작업 중 산소결핍 및 유해가스로 인한 질식 위험`,
+              measure:  p => `작업 전 산소농도 측정, 환기 실시`,
+              reduction:p => `밀폐공간 작업허가제 시행, 감시인 배치, 공기호흡기 비치` },
+
+            { keywords: ['고온', '열처리', '소둔', '용탕', '열간', '화상'],
+              hazard:   p => `${p} 작업 중 고온설비 접촉으로 인한 화상 위험`,
+              measure:  p => `내열장갑 착용, 접근금지 표지 설치`,
+              reduction:p => `방열복 및 내열장갑 착용, 냉각 완료 확인 후 접근, 고온 구역 출입통제` },
+
+            { keywords: ['소음', '난청'],
+              hazard:   p => `${p} 작업 구역의 소음으로 인한 소음성 난청 위험`,
+              measure:  p => `방음보호구(귀마개) 착용`,
+              reduction:p => `청력보호구 착용 의무화, 소음 저감 대책 시행, 정기 청력검사 실시` },
+
+            { keywords: ['중량물', '인력운반', '적재', '하역', '코일', '자재 적재', '자재적재', '자재 이동'],
+              hazard:   p => `${p} 작업 중 중량물 취급·적재물 낙하로 인한 협착 및 근골격계 질환 위험`,
+              measure:  p => `보조기구(대차 등) 사용, 2인 1조 작업, 적재높이 준수`,
+              reduction:p => `중량물 취급 시 보조기구 사용 및 올바른 자세 교육, 적재기준 준수·결속상태 확인, 적재물 하부 출입통제` },
+
+            { keywords: ['통로', '바닥', '미끄러짐', '넘어짐', '유류', '기름', '보행'],
+              hazard:   p => `${p} 시 바닥 이물질(기름, 물 등)로 인한 미끄러짐·넘어짐 위험`,
+              measure:  p => `바닥 청소상태 유지, 미끄럼방지 매트 설치`,
+              reduction:p => `작업장 바닥 정리정돈, 미끄럼방지 신발 착용, 유출물 즉시 제거` },
+
+            { keywords: ['그라인더', '연마', '압축공기', '에어건', '절삭', '연삭'],
+              hazard:   p => `${p} 작업 중 비산 파편·분진으로 인한 눈·피부 손상 위험`,
+              measure:  p => `보안경 착용, 회전체 방호덮개 설치`,
+              reduction:p => `보안경 및 방진마스크 착용, 방호덮개 정상 부착 확인, 압축공기 인체 직접 사용 금지` },
+        ];
+
+        function raAiFindMatch(processText) {
+            const text = processText.toLowerCase();
+            let best = null, bestScore = 0;
+            RA_AI_KNOWLEDGE.forEach(cat => {
+                let score = 0;
+                cat.keywords.forEach(k => { if (text.includes(k.toLowerCase())) score++; });
+                if (score > bestScore) { bestScore = score; best = cat; }
+            });
+            if (best && bestScore > 0) {
+                return { matched: true, hazard: best.hazard(processText), measure: best.measure(processText), reduction: best.reduction(processText) };
+            }
+            return {
+                matched: false,
+                hazard:   `${processText} 작업 시 예상되는 유해위험요인을 현장 확인 후 구체적으로 작성해 주세요 (예: 협착·낙하·전도·화상 등)`,
+                measure:  `현재 시행 중인 안전조치를 확인 후 작성해 주세요`,
+                reduction:`개선이 필요한 위험성 감소대책을 현장 여건에 맞게 작성해 주세요`,
+            };
+        }
+
+        // "작업단계 및 내용"이 입력된 경우에만 [AI 추천] 버튼 활성화
+        function raAiSuggestUpdateButtonState() {
+            const btn = document.getElementById('ra-ai-suggest-btn');
+            const processInput = document.getElementById('ra-process');
+            if (!btn || !processInput) return;
+            const filled = processInput.value.trim().length > 0;
+            btn.disabled = !filled;
+            btn.style.opacity = filled ? '1' : '0.5';
+            btn.style.cursor = filled ? 'pointer' : 'not-allowed';
+            btn.style.background = filled ? '#4338CA' : '#EEF2FF';
+            btn.style.color = filled ? '#FFFFFF' : '#4338CA';
+            btn.title = filled ? 'AI 추천으로 유해위험요인·안전조치 자동 작성' : '작업단계 및 내용을 먼저 입력하세요';
+        }
+
+        function raAiSuggest() {
+            const processInput = document.getElementById('ra-process');
+            const p = processInput.value.trim();
+            if (!p) {
+                showToast('⚠️ 작업단계 및 내용을 먼저 입력해 주세요.', 'warn');
+                processInput.focus();
+                return;
+            }
+            const result = raAiFindMatch(p);
+            document.getElementById('ra-hazard').value    = result.hazard;
+            document.getElementById('ra-measure').value   = result.measure;
+            document.getElementById('ra-reduction').value = result.reduction;
+            ['ra-hazard', 'ra-measure', 'ra-reduction'].forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.style.background = '#EEF2FF';
+                setTimeout(() => { el.style.background = ''; }, 1200);
+            });
+            if (result.matched) {
+                showToast('🤖 AI 추천 문구가 입력되었습니다. 현장 여건에 맞게 검토 후 사용해 주세요.', 'success');
+            } else {
+                showToast('🤖 일치하는 항목을 찾지 못해 기본 가이드 문구를 입력했습니다. 현장에 맞게 직접 수정해 주세요.', 'warn');
+            }
+            raUpdateScorePreview();
+        }
+
         function raUpdateScorePreview() {
             const freq = Number(document.getElementById('ra-freq').value);
             const sev  = Number(document.getElementById('ra-sev').value);
@@ -8537,6 +8679,7 @@ ${extraText}
                 seqEl.textContent = nextSeq;
             }
             raUpdateScorePreview();
+            raAiSuggestUpdateButtonState();
         }
 
         function raEditStart(id) {
@@ -8556,6 +8699,7 @@ ${extraText}
             const seqEl = document.getElementById('ra-next-seq');
             if (seqEl) seqEl.textContent = item.seq ?? '-';
             raUpdateScorePreview();
+            raAiSuggestUpdateButtonState();
             document.getElementById('ra-form-title').textContent = '✏️ 위험성평가표 수정 (사진은 목록에서 직접 클릭해 수정)';
             document.getElementById('ra-submit-btn').textContent = '수정 완료';
             document.getElementById('ra-cancel-edit-btn').classList.remove('hidden');
