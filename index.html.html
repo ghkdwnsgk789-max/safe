@@ -890,6 +890,8 @@
                     <p class="text-[13px] mt-1.5" style="color: var(--scm-subtext);">산재·공상·아차사고·공정사고를 기록·관리합니다. 이 화면은 마스터에게만 보입니다.</p>
                 </div>
 
+                <div id="incident-year-chips" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
+
                 <div id="incident-stats" style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;"></div>
 
                 <!-- 연도별 / 유형별 / 라인별 현황 -->
@@ -906,6 +908,18 @@
                 <div class="scm-card p-5">
                     <h3 style="font-size:13px;font-weight:800;color:var(--scm-navy); margin-bottom:10px;">📊 재해유형별 사고건수</h3>
                     <div id="incident-type-bars" style="display:grid; grid-template-columns:repeat(5,1fr); gap:10px;"></div>
+                </div>
+
+                <!-- 요일별 / 시간대별 현황 -->
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+                    <div class="scm-card p-5">
+                        <h3 style="font-size:13px;font-weight:800;color:var(--scm-navy); margin-bottom:10px;">📆 요일별 사고건수</h3>
+                        <div id="incident-weekday-chart" style="display:flex; align-items:flex-end; gap:8px; height:140px; padding-top:10px;"></div>
+                    </div>
+                    <div class="scm-card p-5">
+                        <h3 style="font-size:13px;font-weight:800;color:var(--scm-navy); margin-bottom:10px;">🕐 시간대별 사고건수</h3>
+                        <div id="incident-hour-chart" style="display:flex; align-items:flex-end; gap:6px; height:140px; padding-top:10px;"></div>
+                    </div>
                 </div>
 
                 <div class="scm-card p-5">
@@ -12323,6 +12337,7 @@ ${extraText}
         const INCIDENT_SEEDED_FLAG = 'seahcm_incident_seeded_v2';
         const INCIDENT_LINES = ['CPL','CRM','CGL','1CCL','2CCL','3CCL','SSCL','R/S'];
         let incidentActiveFilter = '전체';
+        let incidentActiveYear = '전체';
 
         function incidentLoad() { try { return JSON.parse(localStorage.getItem(INCIDENT_STORAGE) || '[]'); } catch (e) { return []; } }
         function incidentSave(list) {
@@ -12450,6 +12465,23 @@ ${extraText}
             incidentRender();
         }
 
+        function incidentSetYear(year) {
+            incidentActiveYear = year;
+            incidentRender();
+        }
+
+        function incidentRenderYearChips(allItems) {
+            const el = document.getElementById('incident-year-chips');
+            if (!el) return;
+            const years = [...new Set(allItems.map(i => (i.date || '').slice(0, 4)).filter(Boolean))].sort((a, b) => b - a);
+            const chips = ['전체', ...years];
+            el.innerHTML = chips.map(y => {
+                const active = y === incidentActiveYear;
+                return `<button onclick="incidentSetYear('${y}')" class="text-[12.5px] font-bold px-3.5 py-1.5 rounded-full transition-colors"
+                    style="${active ? 'background: var(--scm-navy); color: white;' : 'background: white; border: 1px solid var(--scm-border); color: var(--scm-subtext);'}">${y === '전체' ? '전체' : y + '년'}</button>`;
+            }).join('');
+        }
+
         function incidentRenderFilterChips() {
             const el = document.getElementById('incident-filter-chips');
             if (!el) return;
@@ -12486,8 +12518,9 @@ ${extraText}
                     ${sortedYears.map(y => {
                         const v = years[y];
                         const total = v.산재 + v.공상 + v.아차사고 + v.공정사고;
-                        return `<tr>
-                            <td style="border:1px solid var(--scm-border); padding:6px; text-align:center; font-weight:700;">${y}</td>
+                        const active = y === incidentActiveYear;
+                        return `<tr onclick="incidentSetYear('${y}')" style="cursor:pointer; ${active ? 'background:#EFF6FF;' : ''}" title="클릭하면 ${y}년 대시보드로 이동">
+                            <td style="border:1px solid var(--scm-border); padding:6px; text-align:center; font-weight:700; ${active ? 'color:var(--scm-navy);' : ''}">${y}</td>
                             <td style="border:1px solid var(--scm-border); padding:6px; text-align:center;">${v.산재}</td>
                             <td style="border:1px solid var(--scm-border); padding:6px; text-align:center;">${v.공상}</td>
                             <td style="border:1px solid var(--scm-border); padding:6px; text-align:center;">${v.아차사고}</td>
@@ -12511,9 +12544,9 @@ ${extraText}
                 <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
                     <span style="width:44px; font-size:11px; font-weight:700; color:var(--scm-text);">${l}</span>
                     <div style="flex:1; background:#F1F5F9; border-radius:99px; height:14px; overflow:hidden;">
-                        <div style="width:${(counts[l]/maxV*100)}%; background:var(--scm-navy); height:100%;"></div>
+                        <div style="width:${(counts[l]/maxV*100)}%; background:${counts[l]===maxV ? '#DC2626' : 'var(--scm-navy)'}; height:100%;"></div>
                     </div>
-                    <span style="width:24px; font-size:11px; font-weight:700; color:var(--scm-text); text-align:right;">${counts[l]}</span>
+                    <span style="width:24px; font-size:11px; font-weight:700; color:${counts[l]===maxV ? '#DC2626' : 'var(--scm-text)'}; text-align:right;">${counts[l]}</span>
                 </div>`).join('');
         }
 
@@ -12531,29 +12564,81 @@ ${extraText}
                 </div>`).join('');
         }
 
+        // 세로 막대그래프 공통 렌더러
+        function incidentRenderVerticalBars(containerId, labels, counts, barColor) {
+            const el = document.getElementById(containerId);
+            if (!el) return;
+            const maxV = Math.max(1, ...counts);
+            const total = counts.reduce((a,b) => a+b, 0);
+            if (total === 0) { el.innerHTML = `<p style="font-size:12px; color:var(--scm-subtext);">데이터가 없습니다.</p>`; return; }
+            el.innerHTML = labels.map((label, idx) => {
+                const c = counts[idx];
+                const pctH = Math.round((c / maxV) * 90); // px, bar area ~90px tall
+                const isMax = c === maxV && c > 0;
+                return `<div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; min-width:0;">
+                    <span style="font-size:10.5px; font-weight:800; color:${isMax ? '#DC2626' : 'var(--scm-text)'}; margin-bottom:3px;">${c}</span>
+                    <div style="width:100%; max-width:28px; background:${isMax ? '#DC2626' : barColor}; border-radius:4px 4px 0 0; height:${Math.max(2,pctH)}px; transition:height .3s;"></div>
+                    <span style="font-size:10px; color:var(--scm-subtext); margin-top:5px; white-space:nowrap;">${label}</span>
+                </div>`;
+            }).join('');
+        }
+
+        function incidentRenderWeekdayChart(items) {
+            const order = ['월','화','수','목','금','토','일'];
+            const counts = order.map(w => items.filter(i => (i.weekday || incidentGetWeekday(i.date)) === w).length);
+            incidentRenderVerticalBars('incident-weekday-chart', order, counts, 'var(--scm-navy)');
+        }
+
+        function incidentRenderHourChart(items) {
+            const buckets = [
+                { label:'0~3시',   min:0,  max:3  },
+                { label:'4~6시',   min:4,  max:6  },
+                { label:'7~9시',   min:7,  max:9  },
+                { label:'10~12시', min:10, max:12 },
+                { label:'13~15시', min:13, max:15 },
+                { label:'16~18시', min:16, max:18 },
+                { label:'19~21시', min:19, max:21 },
+                { label:'22~23시', min:22, max:23 },
+            ];
+            const counts = buckets.map(b => items.filter(i => {
+                if (!i.time) return false;
+                const h = Number(i.time.split(':')[0]);
+                return !isNaN(h) && h >= b.min && h <= b.max;
+            }).length);
+            incidentRenderVerticalBars('incident-hour-chart', buckets.map(b => b.label), counts, '#0F766E');
+        }
+
         function incidentRender() {
             incidentSeedIfNeeded();
             const allItems = incidentLoad();
+            incidentRenderYearChips(allItems);
+
+            const yearItems = incidentActiveYear === '전체'
+                ? allItems
+                : allItems.filter(i => (i.date || '').slice(0, 4) === incidentActiveYear);
+
             const statsEl = document.getElementById('incident-stats');
             if (statsEl) {
-                const cnt = cat => allItems.filter(i => i.category === cat).length;
+                const cnt = cat => yearItems.filter(i => i.category === cat).length;
                 const card = (label, val, color) => `<div style="background:white; border:1px solid var(--scm-border); border-radius:10px; padding:12px 14px;">
                     <p style="font-size:11px; color:var(--scm-subtext); margin:0 0 4px;">${label}</p>
                     <p style="font-size:20px; font-weight:800; color:${color}; margin:0;">${val}</p>
                 </div>`;
-                statsEl.innerHTML = card('누적 총 건수', allItems.length, 'var(--scm-text)')
+                statsEl.innerHTML = card(incidentActiveYear === '전체' ? '누적 총 건수' : `${incidentActiveYear}년 총 건수`, yearItems.length, 'var(--scm-text)')
                     + card('산재', cnt('산재'), '#991B1B')
                     + card('공상', cnt('공상'), '#CA8A04')
                     + card('아차사고', cnt('아차사고'), '#0F766E')
                     + card('공정사고', cnt('공정사고'), '#6D28D9');
             }
 
-            incidentRenderYearlyTable(allItems);
-            incidentRenderLineBars(allItems);
-            incidentRenderTypeBars(allItems);
+            incidentRenderYearlyTable(allItems); // 연도별 비교표는 항상 전체 연도 기준
+            incidentRenderLineBars(yearItems);
+            incidentRenderTypeBars(yearItems);
+            incidentRenderWeekdayChart(yearItems);
+            incidentRenderHourChart(yearItems);
             incidentRenderFilterChips();
 
-            const items = incidentActiveFilter === '전체' ? allItems : allItems.filter(i => i.category === incidentActiveFilter);
+            const items = incidentActiveFilter === '전체' ? yearItems : yearItems.filter(i => i.category === incidentActiveFilter);
             const listEl = document.getElementById('incident-list');
             if (!listEl) return;
             if (!items.length) {
