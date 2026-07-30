@@ -7893,10 +7893,14 @@ ${extraText}
             const badgeEl = document.getElementById('home-safety-summary-badge');
             const boxEl   = document.getElementById('home-safety-summary-box');
             if (!textEl) return;
+            try { incidentSeedIfNeeded(); } catch (e) {}
             const year = new Date().getFullYear();
             let incidentCount = 0, nearMissCount = 0;
-            try { incidentCount = incidentLoad().filter(i => new Date(i.date).getFullYear() === year).length; } catch (e) {}
-            try { nearMissCount = nearLoad().filter(i => (i.date || i.createdAt || '').slice(0,4) == String(year)).length; } catch (e) {}
+            try {
+                const yearRecords = incidentLoad().filter(i => (i.date || '').slice(0, 4) === String(year));
+                incidentCount = yearRecords.filter(i => i.category === '산재').length;
+                nearMissCount = yearRecords.filter(i => i.category === '아차사고').length;
+            } catch (e) {}
 
             const hasIncident = incidentCount > 0;
             textEl.innerHTML = `${hasIncident ? '⚠️' : '✅'} 안전사고 발생 (산재 ${incidentCount}건, 아차사고 ${nearMissCount}건)`;
