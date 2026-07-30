@@ -7895,17 +7895,20 @@ ${extraText}
             if (!textEl) return;
             try { incidentSeedIfNeeded(); } catch (e) {}
             const year = new Date().getFullYear();
-            let incidentCount = 0, nearMissCount = 0;
+            let incidentCount = 0, nearMissCount = 0, gongsangCount = 0, processCount = 0, totalCount = 0;
             try {
                 const yearRecords = incidentLoad().filter(i => (i.date || '').slice(0, 4) === String(year));
-                incidentCount = yearRecords.filter(i => i.category === '산재').length;
-                nearMissCount = yearRecords.filter(i => i.category === '아차사고').length;
+                incidentCount  = yearRecords.filter(i => i.category === '산재').length;
+                gongsangCount  = yearRecords.filter(i => i.category === '공상').length;
+                nearMissCount  = yearRecords.filter(i => i.category === '아차사고').length;
+                processCount   = yearRecords.filter(i => i.category === '공정사고').length;
+                totalCount     = yearRecords.length; // 산재기록현황 대시보드의 "OO년 총 건수"와 항상 동일
             } catch (e) {}
 
             const hasIncident = incidentCount > 0;
-            textEl.innerHTML = `${hasIncident ? '⚠️' : '✅'} 안전사고 발생 (산재 ${incidentCount}건, 아차사고 ${nearMissCount}건)`;
+            textEl.innerHTML = `${hasIncident ? '⚠️' : '✅'} ${year}년 안전사고 발생 총 ${totalCount}건 (산재 ${incidentCount}건, 아차사고 ${nearMissCount}건)`;
             textEl.style.color = hasIncident ? '#991B1B' : '#059669';
-            subEl.textContent = hasIncident ? '산재 목표 0건 — 즉각 원인 분석 필요' : `${year}년 산재 목표 0건 달성 중`;
+            subEl.textContent = `산재 ${incidentCount} · 공상 ${gongsangCount} · 아차사고 ${nearMissCount} · 공정사고 ${processCount}` + (hasIncident ? ' — 산재 목표 0건, 즉각 원인 분석 필요' : ` — 산재 목표 0건 달성 중`);
             subEl.style.color = hasIncident ? '#B91C1C' : '#059669';
             boxEl.style.background = hasIncident ? '#FFF5F5' : '#F0FDF4';
             badgeEl.textContent = hasIncident ? '주의' : '양호';
