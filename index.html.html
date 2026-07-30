@@ -265,6 +265,7 @@
                                 <button class="mega-item-btn" onclick="showComingSoon('업무수행평가')">업무수행평가</button>
                                 <button class="mega-item-btn" onclick="showComingSoon('법규등록부')">법규등록부</button>
                                 <button class="mega-item-btn" onclick="showComingSoon('이행결과 분석')">이행결과 분석</button>
+                                <button id="mega-item-incident" class="mega-item-btn hidden" onclick="switchTab('management'); setTimeout(()=>mgmtShowView('incident'),80)">🔒 산재기록현황</button>
                             </div>
                         </div>
                     </div>
@@ -656,12 +657,12 @@
                             <span style="font-size:13px;font-weight:700;color:#059669;flex:1;">✅ 법규 준수</span>
                             <span class="badge badge-green">달성</span>
                         </div>
-                        <div style="display:flex;align-items:center;gap:10px;background:#FFF5F5;border-radius:10px;padding:10px 14px;">
+                        <div id="home-safety-summary-box" style="display:flex;align-items:center;gap:10px;background:#F0FDF4;border-radius:10px;padding:10px 14px;">
                             <div style="flex:1;">
-                                <div style="font-size:12.5px;font-weight:700;color:#991B1B;">⚠️ 안전사고 6건 발생</div>
-                                <div style="font-size:11px;color:#B91C1C;margin-top:2px;">목표 0건 — 즉각 원인 분석 필요</div>
+                                <div id="home-safety-summary-text" style="font-size:12.5px;font-weight:700;color:#059669;">✅ 안전사고 발생 (산재 0건, 아차사고 0건)</div>
+                                <div id="home-safety-summary-sub" style="font-size:11px;color:#059669;margin-top:2px;">목표 0건 달성 중</div>
                             </div>
-                            <span class="badge badge-red">주의</span>
+                            <span id="home-safety-summary-badge" class="badge badge-green">양호</span>
                         </div>
                     </div>
                 </div>
@@ -873,6 +874,120 @@
 
                 <!-- 최종 수정 정보 -->
                 <p class="text-[11px] text-right" style="color: var(--scm-subtext);" id="mgmt-last-updated"></p>
+            </div>
+
+            <!-- ═══════════════════════════════════════════
+                 산재기록현황 (마스터 전용)
+                 ═══════════════════════════════════════════ -->
+            <div id="mgmt-view-incident" class="hidden space-y-5">
+                <div class="flex items-center gap-3">
+                    <button onclick="mgmtShowView('menu')" class="text-[12.5px] font-bold flex items-center gap-1.5 hover:underline" style="color: var(--scm-subtext);">← 경영 관리</button>
+                    <span style="color: var(--scm-border);">/</span>
+                    <span class="text-[12.5px] font-bold" style="color: var(--scm-text);">산재기록현황</span>
+                </div>
+                <div>
+                    <h2 class="text-xl font-black flex items-center gap-2" style="color: var(--scm-text);">🔒 산재기록현황 <span class="text-[11px] font-bold px-2 py-1 rounded-full" style="background:#FEF2F2; color:#991B1B;">마스터 전용</span></h2>
+                    <p class="text-[13px] mt-1.5" style="color: var(--scm-subtext);">산재·공상·아차사고·공정사고를 기록·관리합니다. 이 화면은 마스터에게만 보입니다.</p>
+                </div>
+
+                <div id="incident-stats" style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;"></div>
+
+                <!-- 연도별 / 유형별 / 라인별 현황 -->
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+                    <div class="scm-card p-5">
+                        <h3 style="font-size:13px;font-weight:800;color:var(--scm-navy); margin-bottom:10px;">📅 연도별 발생현황</h3>
+                        <div id="incident-yearly-table" style="overflow-x:auto;"></div>
+                    </div>
+                    <div class="scm-card p-5">
+                        <h3 style="font-size:13px;font-weight:800;color:var(--scm-navy); margin-bottom:10px;">🏭 라인(장소)별 사고건수</h3>
+                        <div id="incident-line-bars"></div>
+                    </div>
+                </div>
+                <div class="scm-card p-5">
+                    <h3 style="font-size:13px;font-weight:800;color:var(--scm-navy); margin-bottom:10px;">📊 재해유형별 사고건수</h3>
+                    <div id="incident-type-bars" style="display:grid; grid-template-columns:repeat(5,1fr); gap:10px;"></div>
+                </div>
+
+                <div class="scm-card p-5">
+                    <h3 style="font-size:13.5px;font-weight:800;color:var(--scm-navy); margin-bottom:14px;">+ 사고 기록 등록</h3>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
+                        <div>
+                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">구분 *</label>
+                            <select id="incident-category" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;background:white;">
+                                <option value="산재">산재</option>
+                                <option value="공상">공상</option>
+                                <option value="아차사고">아차사고</option>
+                                <option value="공정사고">공정사고</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">발생일자 *</label>
+                            <input type="date" id="incident-date" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
+                        </div>
+                        <div>
+                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">발생시간</label>
+                            <input type="time" id="incident-time" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
+                        </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
+                        <div>
+                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">소속 *</label>
+                            <input id="incident-company" placeholder="예: 세아씨엠, 예일, 다다산업" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
+                        </div>
+                        <div>
+                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">재해자 *</label>
+                            <input id="incident-name" placeholder="이름 (미상 시 X)" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
+                        </div>
+                        <div>
+                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">발생장소 (라인) *</label>
+                            <input id="incident-location" list="incident-location-list" placeholder="예: CPL 입측" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
+                            <datalist id="incident-location-list">
+                                <option value="CPL"><option value="CRM"><option value="CGL">
+                                <option value="1CCL"><option value="2CCL"><option value="3CCL">
+                                <option value="SSCL"><option value="R/S">
+                            </datalist>
+                        </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+                        <div>
+                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">입사일자</label>
+                            <input type="date" id="incident-hiredate" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
+                        </div>
+                        <div>
+                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">근속년수</label>
+                            <input id="incident-tenure" placeholder="예: 1년3개월" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
+                        </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+                        <div>
+                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">작업내용</label>
+                            <input id="incident-work" placeholder="예: 코일 이송작업" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
+                        </div>
+                        <div>
+                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">재해분류</label>
+                            <input id="incident-injurytype" list="incident-injurytype-list" placeholder="예: 협착, 베임, 낙반, 충돌" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
+                            <datalist id="incident-injurytype-list">
+                                <option value="골절"><option value="낙반"><option value="누출"><option value="베임">
+                                <option value="찍힘"><option value="추락"><option value="충돌"><option value="협착">
+                                <option value="화상"><option value="화재">
+                            </datalist>
+                        </div>
+                    </div>
+                    <div style="margin-bottom:14px;">
+                        <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">재해발생내용 및 부상정도</label>
+                        <input id="incident-desc" placeholder="발생 경위 및 부상 정도" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
+                    </div>
+                    <input type="hidden" id="incident-edit-id">
+                    <div style="display:flex; gap:8px;">
+                        <button id="incident-submit-btn" onclick="incidentAdd()" class="text-white text-[12.5px] font-bold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity" style="background: var(--scm-navy);">기록 등록</button>
+                        <button id="incident-cancel-btn" onclick="incidentResetForm()" class="hidden text-[12.5px] font-bold px-5 py-2.5 rounded-lg border hover:bg-slate-50 transition-colors" style="border-color: var(--scm-border); color: var(--scm-subtext);">취소</button>
+                    </div>
+                </div>
+
+                <!-- 구분 필터 -->
+                <div id="incident-filter-chips" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
+
+                <div id="incident-list"></div>
             </div>
 
         </section>
@@ -3083,7 +3198,7 @@
                 if (tabId === 'iso') isoShowView('select');
 
                 // 홈 탭 → 위험요인 진행률 갱신
-                if (tabId === 'home') homeRenderRiskProgress();
+                if (tabId === 'home') { homeRenderRiskProgress(); homeRenderSafetySummary(); }
 
                 // 모바일 드롭다운 닫기
                 const sidebar = document.getElementById('sidebar');
@@ -7757,6 +7872,28 @@ ${extraText}
         }
 
         // ── homeRenderRiskProgress 이전 ──
+        // 모든 사용자에게 보이는 홈 대시보드 안전사고 발생 요약 (산재 + 아차사고, 실데이터 연동)
+        function homeRenderSafetySummary() {
+            const textEl  = document.getElementById('home-safety-summary-text');
+            const subEl   = document.getElementById('home-safety-summary-sub');
+            const badgeEl = document.getElementById('home-safety-summary-badge');
+            const boxEl   = document.getElementById('home-safety-summary-box');
+            if (!textEl) return;
+            const year = new Date().getFullYear();
+            let incidentCount = 0, nearMissCount = 0;
+            try { incidentCount = incidentLoad().filter(i => new Date(i.date).getFullYear() === year).length; } catch (e) {}
+            try { nearMissCount = nearLoad().filter(i => (i.date || i.createdAt || '').slice(0,4) == String(year)).length; } catch (e) {}
+
+            const hasIncident = incidentCount > 0;
+            textEl.innerHTML = `${hasIncident ? '⚠️' : '✅'} 안전사고 발생 (산재 ${incidentCount}건, 아차사고 ${nearMissCount}건)`;
+            textEl.style.color = hasIncident ? '#991B1B' : '#059669';
+            subEl.textContent = hasIncident ? '산재 목표 0건 — 즉각 원인 분석 필요' : `${year}년 산재 목표 0건 달성 중`;
+            subEl.style.color = hasIncident ? '#B91C1C' : '#059669';
+            boxEl.style.background = hasIncident ? '#FFF5F5' : '#F0FDF4';
+            badgeEl.textContent = hasIncident ? '주의' : '양호';
+            badgeEl.className = hasIncident ? 'badge badge-red' : 'badge badge-green';
+        }
+
         function homeRenderRiskProgress() {
             const el = document.getElementById('home-risk-progress');
             if (!el) return;
@@ -7821,7 +7958,7 @@ ${extraText}
 
 
         // 페이지 로드 시 홈이 기본 탭이므로 즉시 실행
-        document.addEventListener('DOMContentLoaded', () => { homeRenderRiskProgress(); });
+        document.addEventListener('DOMContentLoaded', () => { homeRenderRiskProgress(); homeRenderSafetySummary(); });
 
         function riskShowTab(tab) {
             ['assess','fix','patrol','joint','near','climate'].forEach(t => {
@@ -12036,8 +12173,12 @@ ${extraText}
         }
 
         // --- 경영방침/목표 뷰 전환 ---
-        const MGMT_VIEWS = ['mgmt-view-menu', 'mgmt-view-policy'];
+        const MGMT_VIEWS = ['mgmt-view-menu', 'mgmt-view-policy', 'mgmt-view-incident'];
         function mgmtShowView(view) {
+            if (view === 'incident' && !IS_MASTER) {
+                showToast('⚠️ 산재기록현황은 마스터만 접근할 수 있습니다.', 'warn');
+                view = 'menu';
+            }
             scmShowView(`mgmt-view-${view}`, MGMT_VIEWS, () => {
                 if (view === 'policy') {
                     const uploadSection = document.getElementById('mgmt-admin-upload-section');
@@ -12050,8 +12191,421 @@ ${extraText}
                         if (delBtn) delBtn.style.display = (IS_ADMIN && hasFile) ? '' : 'none';
                     });
                 }
+                if (view === 'incident') incidentRender();
             });
         }
+
+        const INCIDENT_SEED_DATA = [
+        {"id": 1700000000000, "category": "공정사고", "company": "세아씨엠", "name": "X", "hireDate": "X", "date": "2026-05-23", "weekday": "토", "tenure": "X", "time": "09:10", "location": "CPL 스크러버", "work": "", "injuryType": "", "desc": ""},
+        {"id": 1700000000001, "category": "공상", "company": "아이엠텍", "name": "박기득", "hireDate": "2025-01-01", "date": "2026-04-25", "weekday": "토", "tenure": "1년3개월", "time": "19:40", "location": "1CCL 출측 포장", "work": "이동 도중 측판에 베임", "injuryType": "베임", "desc": "다른 작업자가 측판을 바닥에 놓는 순간 재해자가 지나가면서 측판이 흔들거리다 재해자 아킬레스건쪽을 베임."},
+        {"id": 1700000000002, "category": "아차사고", "company": "세아씨엠", "name": "전준형", "hireDate": "2019-02-21", "date": "2026-04-20", "weekday": "월", "tenure": "7년1개월", "time": "11:00", "location": "1CCL COATER실", "work": "크롬 토트 이송 중 후드 충돌", "injuryType": "충돌", "desc": "1CCL Chemical COATER 앞 크롬 토트를 방유벽 내로 넣는 도중 후드와 충돌함."},
+        {"id": 1700000000003, "category": "산재", "company": "광명운수", "name": "곽숙희", "hireDate": "X", "date": "2026-03-05", "weekday": "목", "tenure": "X", "time": "08:47", "location": "BG2 출하장", "work": "운전석에서 내려오면서 추락", "injuryType": "추락", "desc": "2CCL BG2 출하장에서 상차를 위해 운전석에서 내려오는 도중 발을 헛디뎌 추락하는 사고가 발생함."},
+        {"id": 1700000000004, "category": "아차사고", "company": "세아씨엠", "name": "박주범", "hireDate": "2025-09-22", "date": "2026-03-02", "weekday": "월", "tenure": "0년5개월", "time": "04:50", "location": "1CCL 코터실", "work": "드럼 이송 중 전선 및 지지대 충돌 ", "injuryType": "충돌", "desc": "작업할 드럼을 지게차로 작업하기 위헤 지게발을 높게 유지한채로 옮기던 도중 지지대 및 전선트레이쪽을 충돌함."},
+        {"id": 1700000000005, "category": "아차사고", "company": "예일", "name": "박한별", "hireDate": "2024-09-25", "date": "2026-02-21", "weekday": "토", "tenure": "1년4개월", "time": "22:10", "location": "CGL 입측", "work": "코일 오조작으로 인한 시브파손", "injuryType": "충돌", "desc": "투입할 코일을 리프트로 들어올려 옮기려던 도중 크레인 오조작으로 인해 크레인시브에 와이어로프가 꼬여 동작불능사고가 남."},
+        {"id": 1700000000006, "category": "아차사고", "company": "예일", "name": "이성만", "hireDate": "2005-10-21", "date": "2026-02-15", "weekday": "일", "tenure": "20년3개월", "time": "16:30", "location": "3CCL 입측", "work": "코일 적재 중 코일 구름으로 충돌", "injuryType": "충돌 ", "desc": "코일을 적재장소에 놓는 도중 고임목이 제대로 되어 있지 않아 코일이 구르면서 입측 코일카 안전커버를 파손시킴."},
+        {"id": 1700000000007, "category": "아차사고", "company": "대업통운", "name": "이덕현", "hireDate": "X", "date": "2026-01-14", "weekday": "수", "tenure": "X", "time": "09:10", "location": "2CCL 입측", "work": "차량 후진 중 코일 충돌", "injuryType": "충돌", "desc": "Al 코일 하차를 위해 BG6로 후진하던 중 적재되어 있는 AL코일과 충돌함."},
+        {"id": 1700000000008, "category": "아차사고", "company": "시스코", "name": "이건민", "hireDate": "2025-03-10", "date": "2026-01-07", "weekday": "수", "tenure": "0년9개월", "time": "10:00", "location": "1CCL 출측", "work": "지게차로 코일 이송 중 낙반", "injuryType": "낙반", "desc": "버티컬 코일을 지게차로 회전하며 옮기던 중 중심을 잃고 낙반함."},
+        {"id": 1700000000009, "category": "아차사고", "company": "예일", "name": "김동일", "hireDate": "2024-03-28", "date": "2025-12-02", "weekday": "화", "tenure": "1년8개월", "time": "08:30", "location": "3CCL 제품동", "work": "코일 정리 중 코일 낙반", "injuryType": "낙반", "desc": "인출코일을 정리하고 임시로 2단으로 쌓아놓던 도중 코일이 밀려나가 2단 적재되있던 코일이 밑으로 떨어지면서 낙반됨."},
+        {"id": 1700000000010, "category": "아차사고", "company": "화물기사", "name": "정호식", "hireDate": "X", "date": "2025-11-25", "weekday": "화", "tenure": "X", "time": "14:53", "location": "B2 게이트 앞", "work": "후진 도중 야적코일과 충돌", "injuryType": "충돌", "desc": "화물차량 후진도중 B2앞에 야적되어 있는 코일과 충돌하여 제품이 손상됨."},
+        {"id": 1700000000011, "category": "아차사고", "company": "예일", "name": "박경진", "hireDate": "2023-02-09", "date": "2025-10-30", "weekday": "목", "tenure": "2년8개월", "time": "21:00", "location": "CPL 출측", "work": "코일 이송 중 낙반", "injuryType": "낙반", "desc": "CPL 출측 코일을 리프트로 들어올리려는 순간 리프트발이 빠지면서 코일이 낙반함."},
+        {"id": 1700000000012, "category": "공정사고", "company": "예일", "name": "이현민", "hireDate": "2017-06-22", "date": "2025-10-01", "weekday": "수", "tenure": "8년3개월", "time": "09:00", "location": "공드럼보관장", "work": "공드럼 보관장 이송 중 누출", "injuryType": "누출", "desc": "폐신나 드럼통 이송 중 지게차 집게발이 페신나에 걸려 넘어졌는데 고무패킹이 없어 폐신나가 누출됨"},
+        {"id": 1700000000013, "category": "아차사고", "company": "다다산업", "name": "임성재", "hireDate": "2025-06-18", "date": "2025-09-22", "weekday": "월", "tenure": "0년3개월", "time": "09:30", "location": "2CCL 포장반", "work": "포장 중 보호판 베임", "injuryType": "베임", "desc": "내권부 포장을 위해 보호판을 말아 넣으려던 중 보호판이 풀려 탄성으로 인해 재해자 턱부분이 베이는 사고가 발생함. (2cm)"},
+        {"id": 1700000000014, "category": "아차사고", "company": "다다산업", "name": "김희철", "hireDate": "2022-09-13", "date": "2025-09-15", "weekday": "월", "tenure": "3년0개월", "time": "21:00", "location": "CGL포장반", "work": "반제품 이송 중 충돌 ", "injuryType": "충돌", "desc": "코일 적재 중 크레인방향 조작실수로 옆코일과 충돌함."},
+        {"id": 1700000000015, "category": "아차사고", "company": "다다산업", "name": "신흥철", "hireDate": "2025-08-13", "date": "2025-08-30", "weekday": "토", "tenure": "0년0개월", "time": "14:00", "location": "CGL포장반", "work": "반제품 이송 중 충돌 ", "injuryType": "낙반", "desc": "포장완료한 코일을 반제품동으로 이동하려는 도중 크레인이 흔들리는 과정중에 체결하다 코일이 한방향만 걸려 코일이 전도된 사고임."},
+        {"id": 1700000000016, "category": "아차사고", "company": "다다산업", "name": "김희철", "hireDate": "2022-09-13", "date": "2025-07-29", "weekday": "화", "tenure": "2년10개월", "time": "17:00", "location": "CGL포장반", "work": "반제품 이송 중 충돌 ", "injuryType": "충돌", "desc": "반제품을 이동하는 과정 중에 크레인을 최대로 권상하지 않은 상태로 이동하여 다른코일을 충돌함"},
+        {"id": 1700000000017, "category": "아차사고", "company": "세아씨엠", "name": "X", "hireDate": "X", "date": "2025-07-01", "weekday": "화", "tenure": "X", "time": "08:30", "location": "태양광 자가설비실", "work": "판넬화재 발생", "injuryType": "화재", "desc": "태양광 자가설비실 내 일부 판넬에서 화재가 발생함. 발생원인은 미세접전으로 인한 과부하로 인해 화재가 발생함"},
+        {"id": 1700000000018, "category": "아차사고", "company": "예일", "name": "이동효", "hireDate": "2023-03-01", "date": "2025-06-30", "weekday": "월", "tenure": "2년3개월", "time": "14:00", "location": "2CCL 입측", "work": "롤 이송 중 H빔과 충돌", "injuryType": "충돌", "desc": "전동지게차를 이용하여 롤을 이송하던 도중 H빔과 충돌하여 롤 3EA가 파손됨"},
+        {"id": 1700000000019, "category": "공정사고", "company": "세아씨엠", "name": "X", "hireDate": "X", "date": "2025-06-17", "weekday": "화", "tenure": "X", "time": "12:27", "location": "2CCL아농탱크", "work": "아농탱크 플랜지 노후화 누출", "injuryType": "누출", "desc": "아농탱크 플랜지 가스켓 노후화로 인하여 아농신나가 누출됨"},
+        {"id": 1700000000020, "category": "아차사고", "company": "예일", "name": "박한별", "hireDate": "2024-09-25", "date": "2025-06-16", "weekday": "월", "tenure": "0년8개월", "time": "09:35", "location": "CRM", "work": "FH COIL 낙반", "injuryType": "낙반", "desc": "작업코일을 이동하는 과정 중 크레인 리모콘이 작동되지 않아 작업자가 오작동을 하여 코일이 낙반함."},
+        {"id": 1700000000021, "category": "아차사고", "company": "다다산업", "name": "박성원", "hireDate": "2025-03-16", "date": "2025-06-06", "weekday": "금", "tenure": "0년2개월", "time": "16:30", "location": "CGL 포장", "work": "측면판 조립 중 베임", "injuryType": "베임", "desc": "코일 측면판을 조립하는 과정에서 오른손 검지가 베이는 사고가 발생함."},
+        {"id": 1700000000022, "category": "아차사고", "company": "예일", "name": "이종혁", "hireDate": "2023-10-16", "date": "2025-06-03", "weekday": "화", "tenure": "1년7개월", "time": "10:30", "location": "CPL출측 ", "work": "크레인 이송 중 공실충돌", "injuryType": "충돌", "desc": "크레인 이동 중 CPL 출측 공실에 부딪히는 충돌사고가 발생함."},
+        {"id": 1700000000023, "category": "아차사고", "company": "기영물류", "name": "화물기사", "hireDate": "X", "date": "2025-05-30", "weekday": "금", "tenure": "X", "time": "15:00", "location": "2CCL BG3 출하", "work": "코일 이송중 낙반", "injuryType": "낙반", "desc": "화물기사는 화물차에 코일상차가 완료되어 출발하던 도중 맨뒷코일이 체인고리 미실시로 인해 낙반한 사고임"},
+        {"id": 1700000000024, "category": "산재", "company": "세아씨엠", "name": "김성진", "hireDate": "2024-01-08", "date": "2025-05-30", "weekday": "금", "tenure": "1년4개월", "time": "04:25", "location": "3CCL 출축", "work": "전단기 끼임", "injuryType": "협착", "desc": "Sample을 채취하려던 중 Strip이 걸려 빼내던 중에 조장이 Cutting을 실시하여 전단기에 의해 오른손 4개 손가락이 절단됨"},
+        {"id": 1700000000025, "category": "아차사고", "company": "다다산업", "name": "서두빈", "hireDate": "2024-01-26", "date": "2025-03-17", "weekday": "월", "tenure": "1년1개월", "time": "22:00", "location": "CGL 출측 포장반", "work": "코일 적재 후 이송 중 충돌", "injuryType": "충돌", "desc": "포장코일을 2단 적재 후 크레인을 빼내는 과정에서 그 앞에 적재되어 있던 코일의 윗면에 충돌함"},
+        {"id": 1700000000026, "category": "아차사고", "company": "3CCL", "name": "X", "hireDate": "X", "date": "2025-02-28", "weekday": "금", "tenure": "X", "time": "21:00", "location": "3CCL 출측 코일카", "work": "코일 이송 중 낙반", "injuryType": "낙반", "desc": "출측에서 코일카를 이용해 코일을 이송 중 기계적 오류로 인해 코일이 코일카 개구부로 낙반함"},
+        {"id": 1700000000027, "category": "아차사고", "company": "예일", "name": "조권영", "hireDate": "2024-03-28", "date": "2025-02-08", "weekday": "토", "tenure": "0년10개월", "time": "15:00", "location": "CGL 출측 포장반", "work": "코일 이송 중 충돌", "injuryType": "충돌", "desc": "A동 원재료동 코일 이송 중 공정수가 시야를 확보하지 않아 코일 충돌로 인해 11EA가 충돌 및 낙반 함"},
+        {"id": 1700000000028, "category": "아차사고", "company": "예일", "name": "박경진", "hireDate": "2023-02-09", "date": "2025-02-05", "weekday": "화", "tenure": "1년11개월", "time": "00:30", "location": "CPL 출측", "work": "출측코일 이송", "injuryType": "충돌", "desc": "PO코일을 적재장으로 이송 중 이송과정을 주시하지 않아 크레인이 출측공실쪽으로 충돌하여 판넬 및 유리가 파손됨."},
+        {"id": 1700000000029, "category": "아차사고", "company": "예일", "name": "김지환", "hireDate": "2009-10-12", "date": "2025-01-23", "weekday": "목", "tenure": "15년3개월", "time": "09:20", "location": "위험물저장소", "work": "작업페인트 이송 중 낙반", "injuryType": "낙반", "desc": "작업할 페인트를 전동지게차로 이동중 걸이대에서 페인트통이 낙반되고 지게차와 부딫치며 페인트가 파손되어 페인트가 소량 유출됨."},
+        {"id": 1700000000030, "category": "아차사고", "company": "예일", "name": "이동효", "hireDate": "2023-03-13", "date": "2025-01-20", "weekday": "월", "tenure": "1년10개월", "time": "11:10", "location": "위험물저장소", "work": "페인트 이송 중 충돌", "injuryType": "충돌", "desc": "작업할 페인트를 전동지게차로 이동중 위험물저장소 셔터 보호커버와 충돌하여 파손됨"},
+        {"id": 1700000000031, "category": "아차사고", "company": "시스코", "name": "허승준", "hireDate": "2016-02-16", "date": "2024-10-07", "weekday": "금", "tenure": "8년7개월", "time": "09:00", "location": "SSCL", "work": "보호판 이송 중 낙반", "injuryType": "낙반", "desc": "포장자재 보호판을 이송하던 중 방지턱을 지나면서 벤딩이 풀려 보호판이 낙반함."},
+        {"id": 1700000000032, "category": "아차사고", "company": "시스코", "name": "허승준", "hireDate": "2016-02-16", "date": "2024-10-11", "weekday": "월", "tenure": "8년7개월", "time": "16:40", "location": "SSCL", "work": "제품 이송 중 낙반", "injuryType": "낙반", "desc": "화물차량으로 코일을 이송 중 지게발에서 코일이 낙반함."},
+        {"id": 1700000000033, "category": "아차사고", "company": "다다산업", "name": "서두빈", "hireDate": "2024-01-26", "date": "2024-10-03", "weekday": "목", "tenure": "0년8개월", "time": "20:40", "location": "CGL 출측 포장반", "work": "코일 이송 중 충돌", "injuryType": "충돌", "desc": "코일 적재를 위해 C1 크레인으로 이동 중 리모콘 오조작으로 인해 적재되어 있던 코일과 충돌함"},
+        {"id": 1700000000034, "category": "아차사고", "company": "예일", "name": "정은빈", "hireDate": "2023-11-06", "date": "2024-09-18", "weekday": "수", "tenure": "0년10개월", "time": "10:00", "location": "CRM 입측", "work": "크레인 이송 중 설비충돌", "injuryType": "충돌", "desc": "작업코일을 코일카에 놓고 다음 코일을 준비하는 과정중에 CRM 덕트에 크레인 리프트가 충돌함"},
+        {"id": 1700000000035, "category": "아차사고", "company": "다다산업", "name": "김희철", "hireDate": "2022-09-13", "date": "2024-09-18", "weekday": "수", "tenure": "2년0개월", "time": "17:40", "location": "CGL 출측 포장반", "work": "코일 이송 중 충돌", "injuryType": "충돌", "desc": "코일을 내려놓기 위해 코일과 코일 사이에 적재하는 중 스크레치가 발생함"},
+        {"id": 1700000000036, "category": "아차사고", "company": "예일", "name": "조민호", "hireDate": "2015-07-01", "date": "2024-09-13", "weekday": "금", "tenure": "9년2개월", "time": "11:30", "location": "위험물저장소", "work": "페인트 하차 중 페인트 낙반", "injuryType": "낙반", "desc": "전동지게차를 이용하여 윙바디 차량에 있는 페인트를 체결 후 후진 하는 중에 옆페인트가 낙반함 "},
+        {"id": 1700000000037, "category": "아차사고", "company": "다다산업", "name": "한상진", "hireDate": "2024-01-08", "date": "2024-09-12", "weekday": "목", "tenure": "0년8개월", "time": "09:30", "location": "CGL 출측 포장반", "work": "리모콘 오조작으로 인한 찍힘", "injuryType": "충돌", "desc": "제품 포장 후 리프트로 인양하기 위해 견착 과정 중 코일 내권부 찍힘 발생"},
+        {"id": 1700000000038, "category": "아차사고", "company": "다다산업", "name": "유성호", "hireDate": "2022-09-13", "date": "2024-09-02", "weekday": "월", "tenure": "1년11개월", "time": "10:20", "location": "CGL 출측 포장반", "work": "코일 이송 중 낙반", "injuryType": "낙반", "desc": "포장코일을 인양하는 과정 중에 리프트 견착상태를 미 확인하여 코일이 낙반 함"},
+        {"id": 1700000000039, "category": "아차사고", "company": "다다산업", "name": "송익수", "hireDate": "2023-04-24", "date": "2024-08-28", "weekday": "수", "tenure": "1년4개월", "time": "04:30", "location": "2CCL 출측", "work": "리모콘 오조작으로 안전바 충돌", "injuryType": "충돌", "desc": "AL 제품 포장 후 C3크레인으로 제품 결속 후 이동 중에 리모콘 오조작으로 인해 상부 안전난간대와 충돌함"},
+        {"id": 1700000000040, "category": "아차사고", "company": "강명운수", "name": "김동식", "hireDate": "X", "date": "2024-08-27", "weekday": "화", "tenure": "X", "time": "11:00", "location": "2CCL 출측", "work": "차량 충돌", "injuryType": "충돌", "desc": "코일 상차 후 차량을 빼기위해 후진 중 야적된 코일에 충돌함"},
+        {"id": 1700000000041, "category": "아차사고", "company": "세롤텍", "name": "한준서", "hireDate": "2022-01-02", "date": "2024-07-26", "weekday": "금", "tenure": "2년6개월", "time": "09:15", "location": "R/S", "work": "롤 이송 중 전선이 끊어짐", "injuryType": "충돌", "desc": "롤을 적재대로 옮기는 중 오른족 보행자 이동 차단기에 크레인 전기 선로가 감기며 정전사고가 발생"},
+        {"id": 1700000000042, "category": "아차사고", "company": "다다산업", "name": "김경섭", "hireDate": "2022-09-26", "date": "2024-07-10", "weekday": "수", "tenure": "1년9개월", "time": "05:40", "location": "CGL 출측 포장반", "work": "코일 이송 중 와이어 로프파단", "injuryType": "낙반", "desc": "포장코일을 R4 크레인으로 옮기던 중 와이어로프가 파단되어 리프트 및 코일이 낙반함."},
+        {"id": 1700000000043, "category": "공정사고", "company": "세아씨엠", "name": "X", "hireDate": "X", "date": "2024-08-16", "weekday": "금", "tenure": "X", "time": "07:00", "location": "2CCL 아농탱크", "work": "폐아농 누출", "injuryType": "누출", "desc": "폐아농 탱크에 탱크게이지 수치를 넘어서 페인트가 들어와 누출사고가 발생함  "},
+        {"id": 1700000000044, "category": "공상", "company": "세아씨엠", "name": "강병민", "hireDate": "2024-02-26", "date": "2024-06-12", "weekday": "수", "tenure": "0년3개월", "time": "15:00", "location": "3CCL 3F #10 STR부근", "work": "안전체인 및 표지 부착 중 베임", "injuryType": "베임", "desc": "3CCL 3F #10 STR 부근에 안전체인 및 깃발 설치 후 강판 밑으로 돌아오던 중 STRIP EDGE 면에 인중이 베임."},
+        {"id": 1700000000045, "category": "공상", "company": "세아씨엠", "name": "임승환", "hireDate": "2023-03-29", "date": "2024-06-19", "weekday": "수", "tenure": "1년2개월", "time": "19:30", "location": "1CCL FINISH COATER실", "work": "페인트 뚜껑 링 조임 중 끼임", "injuryType": "협착", "desc": "페인트 뚜껑을 닫고 링을 조이던 도중 볼트마모로 인해 체결이 되지 않아 다시 풀던 중 왼손장갑이 말려들어가면서 끼임사고가 발생함"},
+        {"id": 1700000000046, "category": "아차사고", "company": "세아씨엠", "name": "서경태", "hireDate": "2023-08-07", "date": "2024-01-31", "weekday": "수", "tenure": "0년5개월", "time": "16:00", "location": "3CCL 입측", "work": "코일 장입 및 JOIN작업", "injuryType": "베임", "desc": "강판과 강판을 JOIN한 후 후프장입 중 스크랩에 오른손을 미약하게 베임"},
+        {"id": 1700000000047, "category": "공상", "company": "세아씨엠", "name": "박상원", "hireDate": "2023-08-04", "date": "2024-01-28", "weekday": "일", "tenure": "0년5개월", "time": "00:25", "location": "1CCL", "work": "BACK COATER 청소작업", "injuryType": "베임", "desc": "BACK ROLL 청소를 위해 이동하는 중 강판을 인지못하여 미간쪽 충돌로 인한 베임"},
+        {"id": 1700000000048, "category": "아차사고", "company": "예일", "name": "이현민", "hireDate": "2017-06-22", "date": "2024-01-25", "weekday": "목", "tenure": "6년7개월", "time": "14:30", "location": "2CCL 입측", "work": "롤 이송(운반)", "injuryType": "충돌", "desc": "지게차로 연마롤을 이송하는도중 2CCL 입측 H빔과 충돌하여 ROLL이 낙반함"},
+        {"id": 1700000000049, "category": "공상", "company": "세아씨엠", "name": "박헌빈", "hireDate": "2023-08-04", "date": "2024-01-21", "weekday": "일", "tenure": "0년5개월", "time": "07:30", "location": "2CCL PRIMER COATER", "work": "COATING ROLL 이송작업", "injuryType": "낙반", "desc": "코팅롤 이송작업 도중 리프트와 2층지면과의 단차로 인한 롤대차 위에 올려진 ROLL이 떨어지며 재해자 오른발에 떨어짐"},
+        {"id": 1700000000050, "category": "아차사고", "company": "예일", "name": "정은빈", "hireDate": "2023-11-06", "date": "2024-01-10", "weekday": "수", "tenure": "0년2개월", "time": "15:30", "location": "CRM 출측", "work": "코일이송작업", "injuryType": "낙반", "desc": "CRM코일을 적재공간으로 옮기기 위하여 크레인리프트를 견착하는도중 견착이 잘 안되 옆면이 긁힘"},
+        {"id": 1700000000051, "category": "아차사고", "company": "예일", "name": "X", "hireDate": "X", "date": "2024-01-04", "weekday": "목", "tenure": "X", "time": "14:35", "location": "CGL 입측", "work": "코일이송작업", "injuryType": "낙반", "desc": "코일을 CGL입측코일카 2번에 놓은 코일이 1번에 놓인 코일을 밀치며 1번코일이 레일에 낙반함"},
+        {"id": 1700000000052, "category": "아차사고", "company": "예일", "name": "박경진", "hireDate": "2023-02-09", "date": "2024-01-02", "weekday": "화", "tenure": "0년10개월", "time": "09:50", "location": "3CCL 입측", "work": "페인트 이송작업", "injuryType": "충돌", "desc": "지게차로 페인트드럼통 이송중 3CCL 도어를 미인지하여 지게차 백레스트와 충돌"},
+        {"id": 1700000000053, "category": "공상", "company": "세아씨엠", "name": "최정호", "hireDate": "2004-08-16", "date": "2023-10-18", "weekday": "화", "tenure": "19년2개월", "time": "22:48", "location": "CGL 입측", "work": "판검사 작업", "injuryType": "베임", "desc": "설비 내 테이블 위에 올려져 있는 스트립(철판)이 이동과정에 대기하고 있던 재해자의 왼손 엄지 손가락을 베임"},
+        {"id": 1700000000054, "category": "공상", "company": "세아씨엠", "name": "김승환", "hireDate": "2022-07-18", "date": "2023-10-18", "weekday": "화", "tenure": "1년3개월", "time": "04:40", "location": "3CCL 출측", "work": "판 물성 검사작업", "injuryType": "베임", "desc": "강판 물성 검사를 수행하는도중 손이 미끄러지면서 좌수 엄지와 검지 사이가 베임"},
+        {"id": 1700000000055, "category": "공상", "company": "세아씨엠", "name": "조용근", "hireDate": "2000-04-10", "date": "2023-10-17", "weekday": "화", "tenure": "23년6개월", "time": "13:15", "location": "3CCL 입측", "work": "코일 외권부 정리", "injuryType": "찍힘", "desc": "코일 외권부 정리를 위해 POR로 이동하는중 바닥 개구부를 확인하지 못해 미끄러지며 설비 모서리쪽에 찍힘"},
+        {"id": 1700000000056, "category": "공상", "company": "예일", "name": "이성만", "hireDate": "2005-10-30", "date": "2023-10-10", "weekday": "화", "tenure": "17년11개월", "time": "14:40", "location": "1CCL 입측 공정반", "work": "포장코일 해체작업", "injuryType": "베임", "desc": "포장코일을 풀던 중 끝단부가 풀려나가면서 재해자 오른발 무릎쪽이 베임"},
+        {"id": 1700000000057, "category": "공상", "company": "세아씨엠", "name": "문지훈", "hireDate": "2020-03-23", "date": "2023-09-25", "weekday": "월", "tenure": "3년6개월", "time": "09:25", "location": "CGL 입측", "work": "스크랩 정리", "injuryType": "베임", "desc": "CGL 입측 불량샘플을 채취 및 확인하던 중 스크랩에 의한 얼굴(좌측 관자놀이) 찰과상 발생"},
+        {"id": 1700000000058, "category": "아차사고", "company": "예일", "name": "김현성", "hireDate": "2017-05-01", "date": "2023-09-16", "weekday": "토", "tenure": "6년4개월", "time": "06:00", "location": "1CCL 입측", "work": "코일이송작업", "injuryType": "낙반", "desc": "크레인으로 코일을 옮겨 2단 적재하는도중 1단의 코일이 점점 벌어져 2단코일이 낙반"},
+        {"id": 1700000000059, "category": "공상", "company": "세아씨엠", "name": "김형준", "hireDate": "2013-04-08", "date": "2023-09-12", "weekday": "화", "tenure": "10년5개월", "time": "19:10", "location": "CGL 입측", "work": "스크랩 정리", "injuryType": "베임", "desc": "코일 스크랩 정리를 위해 스크랩박스로 들어가 정리하는도중 세워둔 코일이 전도로 인해 우측 정강이 찰과상 발생"},
+        {"id": 1700000000060, "category": "공상", "company": "다다산업", "name": "송익수", "hireDate": "2023-04-24", "date": "2023-08-23", "weekday": "수", "tenure": "0년3개월", "time": "04:20", "location": "2CCL 출측포장", "work": "코일 포장작업", "injuryType": "베임", "desc": "2CCL 출측에서 나온 코일을 테이프로 고정하기 위해 크레인으로 들고 작업하려는 도중 앞부분이 풀려 코일을 잡는도중 왼손중지 자상 발생"},
+        {"id": 1700000000061, "category": "공상", "company": "아이엠텍", "name": "최경환", "hireDate": "2023-05-23", "date": "2023-08-23", "weekday": "수", "tenure": "0년3개월", "time": "10:30", "location": "3CCL 출측포장", "work": "코일 포장작업", "injuryType": "베임", "desc": "3CCL 코일 포장을 위해 코일을 작업하던 도중 측면 포장재에 찰과상을 입음"},
+        {"id": 1700000000062, "category": "아차사고", "company": "세아씨엠", "name": "X", "hireDate": "X", "date": "2023-08-10", "weekday": "목", "tenure": "X", "time": "14:40", "location": "CRM ", "work": "코일이송작업", "injuryType": "낙반", "desc": "코일을 이송하기 위해 리프트로 들어올리려는 도중 한쪽이 내권부에 들어가지 않은 상태로 들어올려 코일이 낙반함"},
+        {"id": 1700000000063, "category": "아차사고", "company": "예일", "name": "이부동", "hireDate": "2022-09-26", "date": "2023-07-30", "weekday": "일", "tenure": "0년10개월", "time": "07:30", "location": "1CCL 포장", "work": "코일 포장작업", "injuryType": "낙반", "desc": "크레인 리프트를 이용하여 코일을 들어올리는 중 운전미숙으로 리프트 한쪽이 내권부에 들어가지 않은 상태로 들어올려 코일이 낙반함."},
+        {"id": 1700000000064, "category": "아차사고", "company": "시스코", "name": "이송현", "hireDate": "2022-09-05", "date": "2023-07-24", "weekday": "월", "tenure": "0년10개월", "time": "10:30", "location": "AG6 앞(1CCL 출하장)", "work": "코일이송작업(지게차)", "injuryType": "낙반", "desc": "지게차를 이용하여 수직코일을 싣고 회전하며 후진하는도중 수직코일이 무게중심을 잃고 전도됨."},
+        {"id": 1700000000065, "category": "아차사고", "company": "예일", "name": "송재호", "hireDate": "2018-12-11", "date": "2023-04-19", "weekday": "수", "tenure": "4년4개월", "time": "04:30", "location": "CPL 출측포장", "work": "코일이송작업", "injuryType": "낙반", "desc": "CPL출측코일을 이송하는도중 상,하스위치와 좌,우스위치를 동시에 작동시키며 적재하려는도중 코일이 낙반함."},
+        {"id": 1700000000066, "category": "공상", "company": "세아씨엠", "name": "조민구", "hireDate": "2023-01-01", "date": "2023-02-14", "weekday": "화", "tenure": "0년1개월", "time": "14:10", "location": "1CCL NO.4 T/B Roll", "work": "롤 정비, 보수작업", "injuryType": "베임", "desc": "1CCL NO.4 TBR SNUBBER ROLL BEARING 파손보수 중 라인에 강판이 있었으나, 이를 확인하지 못하고 이동중 왼쪽 눈 상부 베임 "},
+        {"id": 1700000000067, "category": "산재", "company": "세아씨엠", "name": "김진섭", "hireDate": "2022-05-16", "date": "2022-10-27", "weekday": "목", "tenure": "0년5개월", "time": "21:50", "location": "2CCL 입측", "work": "DENT 확인 작업", "injuryType": "협착", "desc": "좌수 손목/팔 골절상과 팔꿈치까지 피부가 벗겨짐, 우수 손목 골절상"},
+        {"id": 1700000000068, "category": "아차사고", "company": "다다산업", "name": "정호인", "hireDate": "2022-07-01", "date": "2022-10-22", "weekday": "토", "tenure": "0년3개월", "time": "06:55", "location": "2CCL 포장", "work": "코일포장작업", "injuryType": "충돌", "desc": "코일을 SSCL로 옮긴 후 C2크레인을 이동하는 도중 오작동으로 C4크레인 안전시설물 및 C2크레인 컨트롤박스에 총돌하여 파손됨."},
+        {"id": 1700000000069, "category": "공상", "company": "세아씨엠", "name": "한태호", "hireDate": "2020-11-23", "date": "2022-10-09", "weekday": "금", "tenure": "1년10개월", "time": "14:00", "location": "2CCL PRIMER COATER", "work": "코팅롤 이송작업", "injuryType": "낙반", "desc": "코팅롤 이송작업 도중 리프트와 2층지면과의 단차로 인한 롤대차 위에 올려진 ROLL이 떨어지며 재해자 왼발에 떨어짐"},
+        {"id": 1700000000070, "category": "공상", "company": "세아씨엠", "name": "문지훈", "hireDate": "2020-03-23", "date": "2022-10-09", "weekday": "금", "tenure": "2년6개월", "time": "10:44", "location": "CGL 입측", "work": "스크랩 정리", "injuryType": "골절", "desc": "TAG를 확인하기 위해 CGL 입측 스크랩카 내로 들어가 강판들을 들어올려 옆으로 세워두고 확인하는도중 세워둔 강판들이 전도되며 빠져나오는도중 왼쪽발이 골절됨"},
+        {"id": 1700000000071, "category": "산재", "company": "세아씨엠", "name": "양승정", "hireDate": "2022-02-14", "date": "2022-07-22", "weekday": "금", "tenure": "0년5개월", "time": "22:50", "location": "2CCL PRIMER COATER", "work": "페인트 교체 작업", "injuryType": "협착", "desc": "우측손(중지,약지,새끼) 1마디 절단"},
+        {"id": 1700000000072, "category": "공상", "company": "세아씨엠", "name": "한석희", "hireDate": "2022-03-29", "date": "2022-07-10", "weekday": "일", "tenure": "0년3개월", "time": "09:00", "location": "1CCL 입측", "work": "코일 외권부 정리", "injuryType": "베임", "desc": "코일 외권부에 테이핑작업 진행 중 테이프 단락으로 인해 끝단부가 튕겨져 미간부위가 찢어지는 베임사고가 일어남"},
+        {"id": 1700000000073, "category": "아차사고", "company": "파코엔지니어링", "name": "김두선", "hireDate": "X", "date": "2022-05-21", "weekday": "토", "tenure": "X", "time": "14:00", "location": "3CCL 증설", "work": "STRUCTURE 시공", "injuryType": "충돌", "desc": "천정 크레인을 이동하는 도중 다른위치에서 공사중이던 카고크레인 BASKET과 충돌함."},
+        {"id": 1700000000074, "category": "산재", "company": "파코엔지니어링", "name": "마이", "hireDate": "X", "date": "2022-05-10", "weekday": "화", "tenure": "X", "time": "08:15", "location": "3CCL 프린터룸 ", "work": "진기피트커버작업", "injuryType": "추락", "desc": "개구부를 폐쇄하기전 기존에 설치된 피트커버를 이동하려고 이동 중 개구부에 추락함."},
+        {"id": 1700000000075, "category": "공상", "company": "세아네트웍스", "name": "XU XINGZHE", "hireDate": "X", "date": "2022-04-04", "weekday": "토", "tenure": "X", "time": "16:30", "location": "3CCL", "work": "우수맨홀 연결구 천공작업", "injuryType": "충돌", "desc": "우수맨홀 천공작업 중 드릴비트날로 오른손등을 타격함."},
+        {"id": 1700000000076, "category": "공상", "company": "세아씨엠", "name": "조용근", "hireDate": "2000-04-10", "date": "2022-02-26", "weekday": "토", "tenure": "21년10개월", "time": "20:20", "location": "1CCL", "work": "토트이송작업", "injuryType": "낙반", "desc": "토트이송작업 후 지게차를 충전하기 위하여 지게차에서 내리려는 도중 미끄러져 왼팔로 바닥을 짚으며 골절됨"},
+        {"id": 1700000000077, "category": "아차사고", "company": "개인운송자", "name": "김경열", "hireDate": "X", "date": "2022-02-04", "weekday": "금", "tenure": "X", "time": "10:00", "location": "3CCL 입측", "work": "천장크레인 운송작업", "injuryType": "충돌", "desc": "신호수 신호에 따르지 않고 혼자 운전하다 건물기둥과 충돌"},
+        {"id": 1700000000078, "category": "아차사고", "company": "금오중공업", "name": "김경열", "hireDate": "X", "date": "2022-02-04", "weekday": "금", "tenure": "X", "time": "10:00", "location": "3CCL 증설", "work": "천정크레인 운송 업무", "injuryType": "충돌", "desc": "천정크레인 자재 운송작업 도중 관리자와 신호수의 신호를 무시하고 혼자 공장 내로 진입을 시도하다 건물 H빔과 충돌"},
+        {"id": 1700000000079, "category": "공상", "company": "세아씨엠", "name": "이지헌", "hireDate": "2018-10-10", "date": "2021-11-15", "weekday": "월", "tenure": "3년1개월", "time": "16:30", "location": "CGL 출측", "work": "출측 롤 교체작업", "injuryType": "협착", "desc": "TENSION LEVELLER ROLL 교체 장입을 위해 왼손을 설비에 지지하고 내부를 확인하는 도중 다른 작업자가 Changing Device를 작동시켜 왼손이 협착됨"},
+        {"id": 1700000000080, "category": "공상", "company": "세아씨엠", "name": "서지훈", "hireDate": "2019-08-20", "date": "2020-06-12", "weekday": "금", "tenure": "0년9개월", "time": "10:00", "location": "CPL 입측", "work": "코일 조정작업", "injuryType": "협착", "desc": "코일 꺽임부분이 있어 재해자가 이를 조치하기 위해 상부로 올라가 발로 조정작업을 하는도중 다른 입측수의 임의 가동으로 우측 발 골절 및 화상"},
+        {"id": 1700000000081, "category": "아차사고", "company": "세아씨엠", "name": "서홍석", "hireDate": "2020-03-23", "date": "2020-04-08", "weekday": "수", "tenure": "0년0개월", "time": "17:50", "location": "CGL 출측", "work": "PO코일 이송작업", "injuryType": "낙반", "desc": "PO코일 권하작업 실시도중 COIL SKID에 제대로 안착하지 아니한 상태에서 LIFT를 OPEN하여 코일이 한쪽으로 쏠려 낙반함."},
+        {"id": 1700000000082, "category": "아차사고", "company": "대정제이엔비", "name": "김희철", "hireDate": "2012-05-25", "date": "2019-09-28", "weekday": "토", "tenure": "7년4개월", "time": "05:00", "location": "CGL 출측포장", "work": "코일 포장", "injuryType": "낙반", "desc": "R4크레인으로 코일 권하작업 중 와이어 파단으로 코일 낙반"},
+        {"id": 1700000000083, "category": "공상", "company": "세아씨엠", "name": "조용근", "hireDate": "2000-04-10", "date": "2019-05-21", "weekday": "화", "tenure": "19년1개월", "time": "10:00", "location": "1CCL 코터실", "work": "코팅롤 이송작업", "injuryType": "협착", "desc": "교체한 코팅롤을 화물용 승강기를 이용하여 ROLL 이송하는과정에 롤대차와 코터 디스플레이 판넬 사이에 우수가 협착됨."},
+        {"id": 1700000000084, "category": "산재", "company": "인성I&S", "name": "박윤호", "hireDate": "2019-01-01", "date": "2019-04-12", "weekday": "금", "tenure": "0년3개월", "time": "13:50", "location": "SSCL", "work": "나이프 교체작업", "injuryType": "협착", "desc": "슬리터 나이프 교체 전 상부너트를 풀기 위해 치구를 거는 도중 팬던트 스위치로 동작하는 순간 치구와 하부너트 사이에 오른손 검지가 협착됨"},
+        {"id": 1700000000085, "category": "공상", "company": "세아씨엠", "name": "김지훈", "hireDate": "2015-11-09", "date": "2019-03-15", "weekday": "금", "tenure": "3년4개월", "time": "20:00", "location": "CGL 출측", "work": "샘플시트 이송작업", "injuryType": "베임", "desc": "일반 면장갑을 착용한 재해자는 빠른 작업진행을 위해 샘플시트를 옮기는 작업도중 우수중지가 베임"},
+        {"id": 1700000000086, "category": "공상", "company": "세아씨엠", "name": "정종선", "hireDate": "2018-07-02", "date": "2018-11-23", "weekday": "금", "tenure": "0년4개월", "time": "05:00", "location": "2CCL 입측", "work": "스크랩박스 정리", "injuryType": "충돌", "desc": "2POR 스크랩박스를 BG6 앞으로 옮기기 위해 원거리에서 2C1 크레인으로 슬링벨트 체결한 상태로 사용하는 도중 로터리 조인트 실린더가 파손됨."},
+        {"id": 1700000000087, "category": "공상", "company": "대정제이엔비", "name": "석범식", "hireDate": "2017-01-19", "date": "2018-11-14", "weekday": "수", "tenure": "1년9개월", "time": "18:15", "location": "1CCL 포장", "work": "포장자재 이송", "injuryType": "충돌", "desc": "갈비뼈 실금"},
+        {"id": 1700000000088, "category": "공상", "company": "세아씨엠", "name": "김진현", "hireDate": "2005-06-07", "date": "2018-11-12", "weekday": "월", "tenure": "13년5개월", "time": "15:00", "location": "2CCL", "work": "필름지 공기포 제거작업", "injuryType": "협착", "desc": "필름작업 중 공기포 제거를 위해 PINCH ROLL과 SQUEEZE ROLL 사이에 우수가 협착됨"},
+        {"id": 1700000000089, "category": "공상", "company": "대정제이엔비", "name": "임종현", "hireDate": "2008-07-18", "date": "2018-10-10", "weekday": "수", "tenure": "10년2개월", "time": "11:10", "location": "1CCL 포장자재 ", "work": "포장자재 생산", "injuryType": "베임", "desc": "우수 엄지손가락 찢어짐"},
+        {"id": 1700000000090, "category": "아차사고", "company": "대정제이엔비", "name": "이상호", "hireDate": "2018-03-01", "date": "2018-07-26", "weekday": "목", "tenure": "0년4개월", "time": "01:30", "location": "CGL 포장", "work": "코일 포장", "injuryType": "낙반", "desc": "코일 내권부 미확인으로 크레인 상승 시  코일 낙반"},
+        {"id": 1700000000091, "category": "아차사고", "company": "세아씨엠", "name": "장창기", "hireDate": "3년미만", "date": "2018-05-28", "weekday": "월", "tenure": "3년미만", "time": "15:00", "location": "CPL", "work": "정비보수", "injuryType": "충돌", "desc": "지게차 이동 중 LNG배관 파손"},
+        {"id": 1700000000092, "category": "공상", "company": "세아씨엠", "name": "박연수", "hireDate": "2017-04-03", "date": "2017-09-05", "weekday": "화", "tenure": "0년5개월", "time": "05:40", "location": "CGL", "work": "STRIP JOIN작업", "injuryType": "베임", "desc": "JOINER로 이동하는 STRIP에 좌수 손목 베임"},
+        {"id": 1700000000093, "category": "아차사고", "company": "세아씨엠", "name": "이광남", "hireDate": "2005-05-26", "date": "2017-06-15", "weekday": "목", "tenure": "12년0개월", "time": "22:30", "location": "CRM ", "work": "롤 이송(운반)", "injuryType": "낙반", "desc": "BUR전용 슬링벨트 사용중 무게중심 미확인으로 낙반"},
+        {"id": 1700000000094, "category": "아차사고", "company": "세아씨엠", "name": "박지호", "hireDate": "2011-05-09", "date": "2017-06-12", "weekday": "월", "tenure": "6년1개월", "time": "08:40", "location": "CRM ", "work": "CRM 정수, BUR이동", "injuryType": "낙반", "desc": "BUR Chock 모서리 마찰로 인한 BUR 떨어짐"},
+        {"id": 1700000000095, "category": "아차사고", "company": "신진산업", "name": "김현성", "hireDate": "2017-05-01", "date": "2017-05-08", "weekday": "월", "tenure": "0년0개월", "time": "09:20", "location": "CGL입측", "work": "코일이송", "injuryType": "낙반", "desc": "코일 내권부 미확인으로 크레인 상승 시  코일 낙반"},
+        {"id": 1700000000096, "category": "아차사고", "company": "제이와이로지스", "name": "박건오", "hireDate": "X", "date": "2017-04-07", "weekday": "금", "tenure": "X", "time": "09:44", "location": "AG6 앞(1CCL 출하장)", "work": "CPL 스크랩 이송", "injuryType": "충돌", "desc": "집게차 출입금지구역내로 들어와 MAIN 전기케이블과 충돌"},
+        {"id": 1700000000097, "category": "아차사고", "company": "신진산업", "name": "박왕규", "hireDate": "3년미만", "date": "2016-10-25", "weekday": "화", "tenure": "3년미만", "time": "10:00", "location": "1CCL 원재료동", "work": "코일 이송", "injuryType": "낙반", "desc": "C1 크레인으로 코일을 이송중 WIRE 파단으로 코일 낙반"},
+        {"id": 1700000000098, "category": "아차사고", "company": "경원에스티", "name": "정승현", "hireDate": "3년미만", "date": "2016-10-01", "weekday": "토", "tenure": "3년미만", "time": "10:25", "location": "CPL 출측", "work": "ROLL교체 이송작업", "injuryType": "충돌", "desc": "P3크레인 이동 중 W/S에서 공사중인 카고크레인을 보지못해 충돌"},
+        {"id": 1700000000099, "category": "아차사고", "company": "이룸", "name": "김희철", "hireDate": "2012-05-25", "date": "2016-09-29", "weekday": "수", "tenure": "4년4개월", "time": "14:40", "location": "1CCL 포장", "work": "코일 포장", "injuryType": "낙반", "desc": "크레인 WIRE 절손으로 인한 코일 낙반"},
+        {"id": 1700000000100, "category": "아차사고", "company": "신진산업", "name": "강대길", "hireDate": "2014-04-10", "date": "2016-08-29", "weekday": "월", "tenure": "2년4개월", "time": "10:30", "location": "2CCL포장", "work": "코일이송", "injuryType": "낙반", "desc": "낮은 높이로 코일 이송 중 코일 충돌로 인한 코일 낙반"},
+        {"id": 1700000000101, "category": "공상", "company": "세아씨엠", "name": "이기주", "hireDate": "2005-09-21", "date": "2016-08-22", "weekday": "월", "tenure": "10년11개월", "time": "05:00", "location": "2CCL 출측", "work": "보호필름 교체 작업", "injuryType": "충돌", "desc": "오른쪽 눈 위쪽 찢어짐"},
+        {"id": 1700000000102, "category": "산재", "company": "경원에스티", "name": "정규상", "hireDate": "X", "date": "2016-08-07", "weekday": "일", "tenure": "X", "time": "22:15", "location": "CPL 입측", "work": "스그먼트 커플링 체결 작업", "injuryType": "협착", "desc": "우측 엄지 손가락 골절"},
+        {"id": 1700000000103, "category": "공상", "company": "인성", "name": "홍동현", "hireDate": "3년미만", "date": "2016-07-25", "weekday": "월", "tenure": "3년미만", "time": "21:10", "location": "SSCL", "work": "SSCL 권취 확인", "injuryType": "협착", "desc": "권취중인 코일을 확인하다 Reel과 Strip사이에 왼속이 협착됨"},
+        {"id": 1700000000104, "category": "아차사고", "company": "이룸", "name": "김성일", "hireDate": "2005-10-12", "date": "2016-07-16", "weekday": "토", "tenure": "10년9개월", "time": "04:00", "location": "1CCL 포장", "work": "코일 이송", "injuryType": "낙반", "desc": "슬링벨트를 낮은 위치에서 이동 중 스키드에 걸려 코일낙반"},
+        {"id": 1700000000105, "category": "공상", "company": "이룸", "name": "고주현", "hireDate": "2015-03-25", "date": "2016-03-18", "weekday": "금", "tenure": "0년11개월", "time": "14:00", "location": "포장자재(1CCL 입측)", "work": "포장자재 생산", "injuryType": "베임", "desc": "좌수 손목 4cm 자상"},
+        {"id": 1700000000106, "category": "공상", "company": "세아씨엠", "name": "한상준A", "hireDate": "1997-11-10", "date": "2016-03-07", "weekday": "월", "tenure": "18년3개월", "time": "07:40", "location": "CRM", "work": "판검사 작업", "injuryType": "화상", "desc": "얼굴 좌측 귀 전면과 뺨 화상"},
+        {"id": 1700000000107, "category": "아차사고", "company": "신진산업", "name": "박진구", "hireDate": "2012-12-04", "date": "2015-11-02", "weekday": "월", "tenure": "2년10개월", "time": "15:40", "location": "CPL출측 ", "work": "코일 이송", "injuryType": "충돌", "desc": "P3크레인 이동 중 스위치 작동 실수로 인한 크레인과 공실과의 충돌"},
+        {"id": 1700000000108, "category": "공상", "company": "경원에스티", "name": "최   환", "hireDate": "3년미만", "date": "2015-10-31", "weekday": "토", "tenure": "3년미만", "time": "07:30", "location": "CPL", "work": "CPL 라인 스타크 작업", "injuryType": "누출", "desc": "염산이 누산되어 두눈에 노출됨."},
+        {"id": 1700000000109, "category": "공상", "company": "세아씨엠", "name": "이광득", "hireDate": "2011-11-01", "date": "2015-10-31", "weekday": "토", "tenure": "3년11개월", "time": "07:30", "location": "CPL", "work": "CPL 라인 스타크 작업", "injuryType": "누출", "desc": "염산이 누산되어 두눈에 노출됨."},
+        {"id": 1700000000110, "category": "산재", "company": "세아씨엠", "name": "임채훈", "hireDate": "2010-10-19", "date": "2015-10-30", "weekday": "금", "tenure": "5년0개월", "time": "07:40", "location": "2CCL FINISH COATER", "work": "페인트 교체 작업", "injuryType": "협착", "desc": "우측손 약지 탈골 및 찢어짐"},
+        {"id": 1700000000111, "category": "공상", "company": "대덕기계", "name": "심준희", "hireDate": "X", "date": "2015-09-08", "weekday": "화", "tenure": "X", "time": "16:05", "location": "ROLL SHOP", "work": "CRM BUR CHOCK 분해작업", "injuryType": "협착", "desc": "좌수 엄지 손가락 골절"},
+        {"id": 1700000000112, "category": "공상", "company": "세아씨엠", "name": "김용현", "hireDate": "1998-01-05", "date": "2015-07-05", "weekday": "일", "tenure": "17년6개월", "time": "13:30", "location": "2CCL PRIMER COATER", "work": "PRIMER COATING 작업", "injuryType": "협착", "desc": "NO.1 TENSION BRIDLE ROLL EDGE에 벌레가 있어 사각걸레로 제거하려는 순간 STRIP과 ROLL사이에 오른손 엄지 손가락이 협착됨"},
+        {"id": 1700000000113, "category": "산재", "company": "세아씨엠", "name": "최선웅", "hireDate": "2010-09-06", "date": "2015-06-14", "weekday": "화", "tenure": "4년9개월", "time": "18:40", "location": "CGL 출측", "work": "출측 권취작업", "injuryType": "협착", "desc": "왼손 중지/약지 골절 및 피부가 찢어짐"},
+        {"id": 1700000000114, "category": "공상", "company": "신진산업", "name": "박선영", "hireDate": "2015-02-16", "date": "2015-05-31", "weekday": "일", "tenure": "0년3개월", "time": "16:00", "location": "1CCL 출하", "work": "수직 스키드 고정작업", "injuryType": "협착", "desc": "좌수 중지,약지 찰과상 및 골절"},
+        {"id": 1700000000115, "category": "산재", "company": "세아씨엠", "name": "조용근", "hireDate": "2000-04-10", "date": "2015-05-04", "weekday": "월", "tenure": "15년0개월", "time": "11:18", "location": "1CCL PRIMER QUENCH", "work": "DENT 확인 작업", "injuryType": "협착", "desc": "우측손 협착 손가락 피부가 찢어짐"},
+        {"id": 1700000000116, "category": "산재", "company": "세아씨엠", "name": "김용현", "hireDate": "1998-01-05", "date": "2015-05-04", "weekday": "월", "tenure": "17년3개월", "time": "13:30", "location": "2CCL 입측", "work": "DENT 확인 작업", "injuryType": "협착", "desc": "우측 엄지손가락 찢어짐"},
+        {"id": 1700000000117, "category": "아차사고", "company": "세아씨엠", "name": "김용현", "hireDate": "1998-01-05", "date": "2015-04-19", "weekday": "일", "tenure": "17년3개월", "time": "10:00", "location": "2CCL 입측", "work": "SCRAP SKID 운반", "injuryType": "충돌", "desc": "지게차 이동 중 건물 X빔에 충돌하여 지게차 라이트 및 앞유리 파손"}
+        ];
+
+        // ══════════════════════════════════════════════════════════════
+        //  산재기록현황 (마스터 전용) — 실제 산재통계현황 양식 기준
+        // ══════════════════════════════════════════════════════════════
+        const INCIDENT_STORAGE = 'seahcm_incident_records_v1';
+        const INCIDENT_SEEDED_FLAG = 'seahcm_incident_seeded_v2';
+        const INCIDENT_LINES = ['CPL','CRM','CGL','1CCL','2CCL','3CCL','SSCL','R/S'];
+        let incidentActiveFilter = '전체';
+
+        function incidentLoad() { try { return JSON.parse(localStorage.getItem(INCIDENT_STORAGE) || '[]'); } catch (e) { return []; } }
+        function incidentSave(list) {
+            try { localStorage.setItem(INCIDENT_STORAGE, JSON.stringify(list)); }
+            catch (e) { showToast('⚠️ 저장에 실패했습니다.', 'warn'); }
+        }
+
+        // 최초 1회, 업로드해주신 산재통계현황 엑셀 데이터(118건)를 누적 데이터로 시딩
+        function incidentSeedIfNeeded() {
+            if (localStorage.getItem(INCIDENT_SEEDED_FLAG)) return;
+            try {
+                const existing = incidentLoad();
+                const merged = existing.concat(INCIDENT_SEED_DATA.filter(seed => !existing.some(e => e.id === seed.id)));
+                incidentSave(merged);
+                localStorage.setItem(INCIDENT_SEEDED_FLAG, '1');
+            } catch (e) { console.error('산재 데이터 시딩 실패', e); }
+        }
+
+        function incidentGetLine(location) {
+            if (!location) return '기타';
+            const found = INCIDENT_LINES.find(l => location.toUpperCase().includes(l));
+            return found || '기타';
+        }
+
+        function incidentGetWeekday(dateStr) {
+            if (!dateStr) return '';
+            const days = ['일','월','화','수','목','금','토'];
+            const d = new Date(dateStr);
+            return isNaN(d) ? '' : days[d.getDay()];
+        }
+
+        function incidentAdd() {
+            if (!IS_MASTER) { showToast('⚠️ 마스터만 등록할 수 있습니다.', 'warn'); return; }
+            const editId      = document.getElementById('incident-edit-id').value;
+            const category    = document.getElementById('incident-category').value;
+            const date        = document.getElementById('incident-date').value;
+            const time        = document.getElementById('incident-time').value;
+            const company     = document.getElementById('incident-company').value.trim();
+            const name        = document.getElementById('incident-name').value.trim();
+            const location    = document.getElementById('incident-location').value.trim();
+            const hireDate     = document.getElementById('incident-hiredate').value;
+            const tenure       = document.getElementById('incident-tenure').value.trim();
+            const work         = document.getElementById('incident-work').value.trim();
+            const injuryType   = document.getElementById('incident-injurytype').value.trim();
+            const desc         = document.getElementById('incident-desc').value.trim();
+
+            const missing = [];
+            if (!date) missing.push('발생일자');
+            if (!company) missing.push('소속');
+            if (!name) missing.push('재해자');
+            if (!location) missing.push('발생장소');
+            if (missing.length) {
+                showToast(`⚠️ 다음 항목을 입력해 주세요: ${missing.join(', ')}`, 'warn');
+                return;
+            }
+            const weekday = incidentGetWeekday(date);
+
+            const items = incidentLoad();
+            if (editId) {
+                const idx = items.findIndex(x => x.id === Number(editId));
+                if (idx !== -1) {
+                    items[idx] = { ...items[idx], category, date, time, weekday, company, name, location, hireDate, tenure, work, injuryType, desc };
+                    incidentSave(items);
+                    showToast('✅ 사고 기록이 수정되었습니다.', 'success');
+                }
+            } else {
+                items.unshift({ id: Date.now(), category, date, time, weekday, company, name, location, hireDate, tenure, work, injuryType, desc, createdAt: new Date().toISOString() });
+                incidentSave(items);
+                showToast('✅ 사고 기록이 등록되었습니다.', 'success');
+            }
+            incidentResetForm();
+            incidentRender();
+            homeRenderSafetySummary();
+        }
+
+        function incidentResetForm() {
+            ['incident-date','incident-time','incident-company','incident-name','incident-location','incident-hiredate','incident-tenure','incident-work','incident-injurytype','incident-desc'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('incident-category').value = '산재';
+            document.getElementById('incident-edit-id').value = '';
+            document.getElementById('incident-submit-btn').textContent = '기록 등록';
+            document.getElementById('incident-cancel-btn').classList.add('hidden');
+        }
+
+        function incidentEditStart(id) {
+            const item = incidentLoad().find(x => x.id === id);
+            if (!item) return;
+            document.getElementById('incident-edit-id').value = item.id;
+            document.getElementById('incident-category').value = item.category || '산재';
+            document.getElementById('incident-date').value = item.date || '';
+            document.getElementById('incident-time').value = item.time || '';
+            document.getElementById('incident-company').value = item.company || '';
+            document.getElementById('incident-name').value = item.name || '';
+            document.getElementById('incident-location').value = item.location || '';
+            document.getElementById('incident-hiredate').value = item.hireDate || '';
+            document.getElementById('incident-tenure').value = item.tenure || '';
+            document.getElementById('incident-work').value = item.work || '';
+            document.getElementById('incident-injurytype').value = item.injuryType || '';
+            document.getElementById('incident-desc').value = item.desc || '';
+            document.getElementById('incident-submit-btn').textContent = '수정 완료';
+            document.getElementById('incident-cancel-btn').classList.remove('hidden');
+            document.getElementById('incident-date').scrollIntoView?.({ behavior: 'smooth', block: 'center' });
+        }
+
+        let incidentDeleteArmedId = null;
+        let incidentDeleteArmTimer = null;
+        function incidentDelete(id) {
+            const btn = document.getElementById(`incident-delete-btn-${id}`);
+            if (incidentDeleteArmedId !== id) {
+                incidentDeleteArmedId = id;
+                if (btn) { btn.textContent = '정말 삭제?'; btn.style.background = '#991B1B'; btn.style.color = 'white'; }
+                clearTimeout(incidentDeleteArmTimer);
+                incidentDeleteArmTimer = setTimeout(() => { incidentDeleteArmedId = null; incidentRender(); }, 4000);
+                return;
+            }
+            clearTimeout(incidentDeleteArmTimer);
+            incidentDeleteArmedId = null;
+            incidentSave(incidentLoad().filter(x => x.id !== id));
+            incidentRender();
+            homeRenderSafetySummary();
+            showToast('🗑 삭제되었습니다.', 'success');
+        }
+
+        function incidentSetFilter(cat) {
+            incidentActiveFilter = cat;
+            incidentRender();
+        }
+
+        function incidentRenderFilterChips() {
+            const el = document.getElementById('incident-filter-chips');
+            if (!el) return;
+            const cats = ['전체', '산재', '공상', '아차사고', '공정사고'];
+            el.innerHTML = cats.map(c => {
+                const active = c === incidentActiveFilter;
+                return `<button onclick="incidentSetFilter('${c}')" class="text-[12px] font-bold px-3 py-1.5 rounded-full transition-colors"
+                    style="${active ? 'background: var(--scm-navy); color: white;' : 'background: white; border: 1px solid var(--scm-border); color: var(--scm-subtext);'}">${c}</button>`;
+            }).join('');
+        }
+
+        function incidentRenderYearlyTable(items) {
+            const el = document.getElementById('incident-yearly-table');
+            if (!el) return;
+            const years = {};
+            items.forEach(i => {
+                const y = (i.date || '').slice(0, 4);
+                if (!y) return;
+                if (!years[y]) years[y] = { 산재: 0, 공상: 0, 아차사고: 0, 공정사고: 0 };
+                if (years[y][i.category] !== undefined) years[y][i.category]++;
+            });
+            const sortedYears = Object.keys(years).sort((a, b) => b - a);
+            if (!sortedYears.length) { el.innerHTML = `<p style="font-size:12px; color:var(--scm-subtext);">데이터가 없습니다.</p>`; return; }
+            el.innerHTML = `<table style="border-collapse:collapse; width:100%; font-size:11.5px; min-width:360px;">
+                <thead><tr style="background:#F8FAFC;">
+                    <th style="border:1px solid var(--scm-border); padding:6px; color:var(--scm-subtext);">연도</th>
+                    <th style="border:1px solid var(--scm-border); padding:6px; color:#991B1B;">산재</th>
+                    <th style="border:1px solid var(--scm-border); padding:6px; color:#CA8A04;">공상</th>
+                    <th style="border:1px solid var(--scm-border); padding:6px; color:#0F766E;">아차사고</th>
+                    <th style="border:1px solid var(--scm-border); padding:6px; color:#6D28D9;">공정사고</th>
+                    <th style="border:1px solid var(--scm-border); padding:6px; color:var(--scm-text);">합계</th>
+                </tr></thead>
+                <tbody>
+                    ${sortedYears.map(y => {
+                        const v = years[y];
+                        const total = v.산재 + v.공상 + v.아차사고 + v.공정사고;
+                        return `<tr>
+                            <td style="border:1px solid var(--scm-border); padding:6px; text-align:center; font-weight:700;">${y}</td>
+                            <td style="border:1px solid var(--scm-border); padding:6px; text-align:center;">${v.산재}</td>
+                            <td style="border:1px solid var(--scm-border); padding:6px; text-align:center;">${v.공상}</td>
+                            <td style="border:1px solid var(--scm-border); padding:6px; text-align:center;">${v.아차사고}</td>
+                            <td style="border:1px solid var(--scm-border); padding:6px; text-align:center;">${v.공정사고}</td>
+                            <td style="border:1px solid var(--scm-border); padding:6px; text-align:center; font-weight:800;">${total}</td>
+                        </tr>`;
+                    }).join('')}
+                </tbody>
+            </table>`;
+        }
+
+        function incidentRenderLineBars(items) {
+            const el = document.getElementById('incident-line-bars');
+            if (!el) return;
+            const counts = {};
+            items.forEach(i => { const l = incidentGetLine(i.location); counts[l] = (counts[l] || 0) + 1; });
+            const maxV = Math.max(1, ...Object.values(counts));
+            const lines = [...INCIDENT_LINES, '기타'].filter(l => counts[l]);
+            if (!lines.length) { el.innerHTML = `<p style="font-size:12px; color:var(--scm-subtext);">데이터가 없습니다.</p>`; return; }
+            el.innerHTML = lines.sort((a,b) => (counts[b]||0)-(counts[a]||0)).map(l => `
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                    <span style="width:44px; font-size:11px; font-weight:700; color:var(--scm-text);">${l}</span>
+                    <div style="flex:1; background:#F1F5F9; border-radius:99px; height:14px; overflow:hidden;">
+                        <div style="width:${(counts[l]/maxV*100)}%; background:var(--scm-navy); height:100%;"></div>
+                    </div>
+                    <span style="width:24px; font-size:11px; font-weight:700; color:var(--scm-text); text-align:right;">${counts[l]}</span>
+                </div>`).join('');
+        }
+
+        function incidentRenderTypeBars(items) {
+            const el = document.getElementById('incident-type-bars');
+            if (!el) return;
+            const counts = {};
+            items.forEach(i => { if (i.injuryType) counts[i.injuryType] = (counts[i.injuryType] || 0) + 1; });
+            const types = Object.keys(counts).sort((a,b) => counts[b]-counts[a]);
+            if (!types.length) { el.innerHTML = `<p style="font-size:12px; color:var(--scm-subtext);">데이터가 없습니다.</p>`; return; }
+            el.innerHTML = types.map(t => `
+                <div style="background:#F8FAFC; border-radius:8px; padding:10px; text-align:center;">
+                    <p style="font-size:11px; color:var(--scm-subtext); margin:0 0 2px;">${t}</p>
+                    <p style="font-size:16px; font-weight:800; color:var(--scm-navy); margin:0;">${counts[t]}</p>
+                </div>`).join('');
+        }
+
+        function incidentRender() {
+            incidentSeedIfNeeded();
+            const allItems = incidentLoad();
+            const statsEl = document.getElementById('incident-stats');
+            if (statsEl) {
+                const cnt = cat => allItems.filter(i => i.category === cat).length;
+                const card = (label, val, color) => `<div style="background:white; border:1px solid var(--scm-border); border-radius:10px; padding:12px 14px;">
+                    <p style="font-size:11px; color:var(--scm-subtext); margin:0 0 4px;">${label}</p>
+                    <p style="font-size:20px; font-weight:800; color:${color}; margin:0;">${val}</p>
+                </div>`;
+                statsEl.innerHTML = card('누적 총 건수', allItems.length, 'var(--scm-text)')
+                    + card('산재', cnt('산재'), '#991B1B')
+                    + card('공상', cnt('공상'), '#CA8A04')
+                    + card('아차사고', cnt('아차사고'), '#0F766E')
+                    + card('공정사고', cnt('공정사고'), '#6D28D9');
+            }
+
+            incidentRenderYearlyTable(allItems);
+            incidentRenderLineBars(allItems);
+            incidentRenderTypeBars(allItems);
+            incidentRenderFilterChips();
+
+            const items = incidentActiveFilter === '전체' ? allItems : allItems.filter(i => i.category === incidentActiveFilter);
+            const listEl = document.getElementById('incident-list');
+            if (!listEl) return;
+            if (!items.length) {
+                listEl.innerHTML = `<div class="scm-card p-8 text-center" style="color: var(--scm-subtext);">
+                    <p class="text-3xl mb-2">📋</p>
+                    <p class="text-[13px]">등록된 기록이 없습니다.</p>
+                </div>`;
+                return;
+            }
+            const catColor = { '산재': '#991B1B', '공상': '#CA8A04', '아차사고': '#0F766E', '공정사고': '#6D28D9' };
+            const sorted = [...items].sort((a,b) => (b.date||'').localeCompare(a.date||''));
+            listEl.innerHTML = `<div class="scm-card p-0" style="overflow-x:auto;">
+                <table style="border-collapse:collapse; width:100%; min-width:1200px; font-size:11.5px;">
+                    <thead><tr style="background:#F8FAFC;">
+                        <th style="border-bottom:1px solid var(--scm-border); padding:8px; text-align:center; color:var(--scm-subtext); font-weight:700;">구분</th>
+                        <th style="border-bottom:1px solid var(--scm-border); padding:8px; text-align:center; color:var(--scm-subtext); font-weight:700;">발생일자</th>
+                        <th style="border-bottom:1px solid var(--scm-border); padding:8px; text-align:center; color:var(--scm-subtext); font-weight:700;">요일</th>
+                        <th style="border-bottom:1px solid var(--scm-border); padding:8px; text-align:center; color:var(--scm-subtext); font-weight:700;">소속</th>
+                        <th style="border-bottom:1px solid var(--scm-border); padding:8px; text-align:center; color:var(--scm-subtext); font-weight:700;">재해자</th>
+                        <th style="border-bottom:1px solid var(--scm-border); padding:8px; text-align:center; color:var(--scm-subtext); font-weight:700;">발생장소</th>
+                        <th style="border-bottom:1px solid var(--scm-border); padding:8px; text-align:left; color:var(--scm-subtext); font-weight:700;">작업내용</th>
+                        <th style="border-bottom:1px solid var(--scm-border); padding:8px; text-align:center; color:var(--scm-subtext); font-weight:700;">재해분류</th>
+                        <th style="border-bottom:1px solid var(--scm-border); padding:8px; text-align:left; color:var(--scm-subtext); font-weight:700;">부상정도</th>
+                        <th style="border-bottom:1px solid var(--scm-border); padding:8px;"></th>
+                    </tr></thead>
+                    <tbody>
+                        ${sorted.map(i => `<tr>
+                            <td style="border-bottom:1px solid var(--scm-border); padding:8px; text-align:center;"><span style="font-weight:800; color:${catColor[i.category] || 'var(--scm-text)'};">${i.category}</span></td>
+                            <td style="border-bottom:1px solid var(--scm-border); padding:8px; text-align:center; color:var(--scm-text); white-space:nowrap;">${i.date}</td>
+                            <td style="border-bottom:1px solid var(--scm-border); padding:8px; text-align:center; color:var(--scm-text);">${i.weekday || incidentGetWeekday(i.date)}</td>
+                            <td style="border-bottom:1px solid var(--scm-border); padding:8px; text-align:center; color:var(--scm-text);">${i.company || '-'}</td>
+                            <td style="border-bottom:1px solid var(--scm-border); padding:8px; text-align:center; font-weight:700; color:var(--scm-text);">${i.name || '-'}</td>
+                            <td style="border-bottom:1px solid var(--scm-border); padding:8px; text-align:center; color:var(--scm-text); white-space:nowrap;">${i.location || '-'}</td>
+                            <td style="border-bottom:1px solid var(--scm-border); padding:8px; color:var(--scm-text);">${i.work || '-'}</td>
+                            <td style="border-bottom:1px solid var(--scm-border); padding:8px; text-align:center; color:var(--scm-text);">${i.injuryType || '-'}</td>
+                            <td style="border-bottom:1px solid var(--scm-border); padding:8px; color:var(--scm-subtext); max-width:260px;">${i.desc || '-'}</td>
+                            <td style="border-bottom:1px solid var(--scm-border); padding:8px; text-align:center; white-space:nowrap;">
+                                <button onclick="incidentEditStart(${i.id})" style="font-size:10.5px; font-weight:700; color:var(--scm-navy); background:none; border:1px solid var(--scm-border); border-radius:6px; padding:2px 6px; cursor:pointer; margin-right:3px;">수정</button>
+                                <button id="incident-delete-btn-${i.id}" onclick="incidentDelete(${i.id})" style="font-size:10.5px; font-weight:700; color:#DC2626; background:none; border:1px solid #FECACA; border-radius:6px; padding:2px 6px; cursor:pointer;">삭제</button>
+                            </td>
+                        </tr>`).join('')}
+                    </tbody>
+                </table>
+            </div>`;
+        }
+
+        // 마스터 전용 메뉴 노출
+        (function () {
+            const el = document.getElementById('mega-item-incident');
+            if (el && IS_MASTER) el.classList.remove('hidden');
+        })();
+
 
         // --- 업로드 섹션 아코디언 토글 ---
         function mgmtToggleUpload() {
