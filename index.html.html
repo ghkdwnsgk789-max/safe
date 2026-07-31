@@ -8032,8 +8032,8 @@ ${extraText}
                     <div style="font-size:11px;color:var(--scm-subtext);margin-top:5px;">${isHeatMonth?curMonth+'월 일별 점검률':'5~9월만 측정'}</div>
                 </div>`;
 
-            // 무재해 일수
-            const safeDays=Math.floor((new Date()-new Date('2026-01-01'))/86400000);
+            // 무재해 일수 (기준일: 2022-10-29 → 2026-07-31 기준 1371일, 이후 자동 증가)
+            const safeDays=Math.floor((new Date()-new Date('2022-10-29'))/86400000);
             const kdEl=document.getElementById('kpi-safe-days');
             if(kdEl)kdEl.textContent=safeDays.toLocaleString()+'일';
         }
