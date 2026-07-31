@@ -2055,13 +2055,25 @@
 
                     <div class="scm-card p-6 space-y-4">
                         <h3 class="text-base font-black" style="color: var(--scm-text);">② 교육 자료</h3>
-                        <p class="text-[12.5px]" style="color: var(--scm-subtext);">교육생이 시험 전 열람할 자료를 등록합니다. URL 또는 직접 입력 중 하나를 사용하세요.</p>
+                        <p class="text-[12.5px]" style="color: var(--scm-subtext);">교육생이 시험 전 열람할 자료를 등록합니다. URL 또는 PC 파일 첨부, 직접 입력을 함께 사용할 수 있습니다.</p>
                         <div>
+                            <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">등록 방식</label>
+                            <div class="flex gap-2">
+                                <button type="button" id="eval-mat-mode-url-btn" onclick="evalMatSetMode('url')" class="flex-1 text-[12.5px] font-bold py-2.5 rounded-lg border transition-colors">🔗 URL 링크</button>
+                                <button type="button" id="eval-mat-mode-file-btn" onclick="evalMatSetMode('file')" class="flex-1 text-[12.5px] font-bold py-2.5 rounded-lg border transition-colors">📎 PC 파일 첨부</button>
+                            </div>
+                        </div>
+                        <div id="eval-material-url-row">
                             <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">자료 URL (유튜브, PDF, 문서 링크 등)</label>
                             <input id="eval-material-url" type="url" placeholder="https://..." class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); color: var(--scm-text);">
                         </div>
+                        <div class="hidden" id="eval-material-file-row">
+                            <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">첨부 파일 (PDF, 이미지, 문서 등)</label>
+                            <input id="eval-material-file" type="file" onchange="evalMatHandleFile(this)" class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); color: var(--scm-text); background:white;">
+                            <p id="eval-material-file-hint" class="text-[11px] mt-1" style="color: var(--scm-subtext);">최대 8MB 권장 (브라우저 저장공간에 직접 저장됩니다)</p>
+                        </div>
                         <div>
-                            <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">자료 직접 입력 (URL과 함께 또는 단독 사용)</label>
+                            <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">자료 직접 입력 (다른 방식과 함께 또는 단독 사용)</label>
                             <textarea id="eval-material-text" rows="5" placeholder="교육 내용을 여기에 직접 입력하세요. (핵심 수칙, 주의사항 등)" class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2 resize-none" style="border-color: var(--scm-border); color: var(--scm-text);"></textarea>
                         </div>
                     </div>
@@ -2218,6 +2230,13 @@
                             <a id="part-material-url-link" href="#" target="_blank" rel="noopener" class="flex items-center gap-2.5 p-4 rounded-xl border hover:shadow-sm transition-all font-bold text-[13px]" style="border-color: var(--scm-blue); color: var(--scm-blue); background: #EFF6FF;">
                                 <span class="text-lg">🔗</span>
                                 <span id="part-material-url-text">자료 링크 열기</span>
+                                <span class="ml-auto text-[11px] opacity-70">새 탭에서 열림 ↗</span>
+                            </a>
+                        </div>
+                        <div id="part-material-file-box" class="hidden">
+                            <a id="part-material-file-link" href="#" target="_blank" rel="noopener" class="flex items-center gap-2.5 p-4 rounded-xl border hover:shadow-sm transition-all font-bold text-[13px]" style="border-color: var(--scm-blue); color: var(--scm-blue); background: #EFF6FF;">
+                                <span class="text-lg">📎</span>
+                                <span id="part-material-file-text">첨부파일 열기</span>
                                 <span class="ml-auto text-[11px] opacity-70">새 탭에서 열림 ↗</span>
                             </a>
                         </div>
@@ -4374,6 +4393,50 @@
             document.getElementById('mat-form-card').dataset.mode = mode;
         }
 
+        // 교육평가시스템(안전평가) — 교육 자료 URL/PC파일 첨부 모드 전환 및 파일 처리
+        let evalMaterialPendingFile = null;
+        function evalMatSetMode(mode) {
+            const urlRow = document.getElementById('eval-material-url-row');
+            const fileRow = document.getElementById('eval-material-file-row');
+            const urlBtn = document.getElementById('eval-mat-mode-url-btn');
+            const fileBtn = document.getElementById('eval-mat-mode-file-btn');
+            const navy = 'var(--scm-navy)';
+            if (mode === 'file') {
+                fileRow.classList.remove('hidden');
+                urlRow.classList.add('hidden');
+                fileBtn.style.background = navy; fileBtn.style.color = 'white'; fileBtn.style.borderColor = navy;
+                urlBtn.style.background = 'white'; urlBtn.style.color = 'var(--scm-subtext)'; urlBtn.style.borderColor = 'var(--scm-border)';
+            } else {
+                urlRow.classList.remove('hidden');
+                fileRow.classList.add('hidden');
+                urlBtn.style.background = navy; urlBtn.style.color = 'white'; urlBtn.style.borderColor = navy;
+                fileBtn.style.background = 'white'; fileBtn.style.color = 'var(--scm-subtext)'; fileBtn.style.borderColor = 'var(--scm-border)';
+            }
+            document.getElementById('eval-panel-create').dataset.matMode = mode;
+        }
+
+        function evalMatHandleFile(input) {
+            const file = input.files && input.files[0];
+            const hint = document.getElementById('eval-material-file-hint');
+            if (!file) { evalMaterialPendingFile = null; return; }
+            if (file.size > 8 * 1024 * 1024) {
+                showToast('⚠️ 파일이 너무 큽니다. 8MB 이하 파일을 사용하거나 URL 링크를 이용해 주세요.', 'warn');
+                input.value = '';
+                evalMaterialPendingFile = null;
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = () => {
+                evalMaterialPendingFile = { name: file.name, mimeType: file.type, dataUrl: reader.result };
+                if (hint) hint.textContent = `선택됨: ${file.name} (${(file.size/1024).toFixed(0)}KB)`;
+            };
+            reader.onerror = () => {
+                showToast('⚠️ 파일을 읽는 데 실패했습니다.', 'warn');
+                evalMaterialPendingFile = null;
+            };
+            reader.readAsDataURL(file);
+        }
+
         function matHandleFile(input) {
             const file = input.files && input.files[0];
             const hint = document.getElementById('mat-file-hint');
@@ -4872,10 +4935,23 @@
             const passScore = parseInt(document.getElementById('eval-pass-score').value) || 60;
             const matUrl = document.getElementById('eval-material-url').value.trim();
             const matText = document.getElementById('eval-material-text').value.trim();
+            const matMode = document.getElementById('eval-panel-create').dataset.matMode || 'url';
 
             if (!title) { showToast('⚠️ 교육명을 입력해 주세요.', 'warn'); return; }
             if (!dateStart) { showToast('⚠️ 교육 시작일을 선택해 주세요.', 'warn'); return; }
             if (dateEnd && dateEnd < dateStart) { showToast('⚠️ 종료일이 시작일보다 빠릅니다.', 'warn'); return; }
+
+            let matFileData = null, matFileName = null, matFileMime = null, finalMatUrl = matUrl;
+            if (matMode === 'file') {
+                if (evalMaterialPendingFile) {
+                    matFileData = evalMaterialPendingFile.dataUrl;
+                    matFileName = evalMaterialPendingFile.name;
+                    matFileMime = evalMaterialPendingFile.mimeType;
+                    finalMatUrl = '';
+                } else if (!matText) {
+                    showToast('⚠️ 첨부할 파일을 선택하거나 자료를 직접 입력해 주세요.', 'warn'); return;
+                }
+            }
 
             // 문제 수집 (배점 포함)
             const questions = [];
@@ -4902,11 +4978,13 @@
             evalSessions[sessionId] = {
                 sessionId, manageKey,
                 info: { title, dateStart, dateEnd: dateEnd || dateStart, instructor, passScore },
-                material: { url: matUrl, text: matText },
+                material: { url: finalMatUrl, text: matText, fileData: matFileData, fileName: matFileName, fileMime: matFileMime },
                 questions,
                 results: [],
                 createdAt: new Date().toISOString()
             };
+
+            evalMaterialPendingFile = null;
 
             currentSessionId = sessionId;
             evalSaveToStorage();
@@ -4965,6 +5043,17 @@
                 urlText.textContent = session.material.url.length > 50 ? session.material.url.substring(0, 50) + '...' : session.material.url;
             } else {
                 document.getElementById('part-material-url-box').classList.add('hidden');
+            }
+            if (session.material.fileData) {
+                const fileBox = document.getElementById('part-material-file-box');
+                const fileLink = document.getElementById('part-material-file-link');
+                const fileText = document.getElementById('part-material-file-text');
+                fileBox.classList.remove('hidden');
+                fileLink.href = session.material.fileData;
+                fileLink.setAttribute('download', session.material.fileName || 'material');
+                fileText.textContent = session.material.fileName || '첨부파일 열기';
+            } else {
+                document.getElementById('part-material-file-box').classList.add('hidden');
             }
             if (session.material.text) {
                 document.getElementById('part-material-text-box').classList.remove('hidden');
@@ -8040,7 +8129,7 @@ ${extraText}
 
 
         // 페이지 로드 시 홈이 기본 탭이므로 즉시 실행
-        document.addEventListener('DOMContentLoaded', () => { homeRenderRiskProgress(); homeRenderSafetySummary(); homeRenderIncidentInsight(); });
+        document.addEventListener('DOMContentLoaded', () => { homeRenderRiskProgress(); homeRenderSafetySummary(); homeRenderIncidentInsight(); evalMatSetMode('url'); });
 
         function riskShowTab(tab) {
             ['assess','fix','patrol','joint','near','climate'].forEach(t => {
