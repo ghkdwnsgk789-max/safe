@@ -238,6 +238,64 @@
 <body class="text-slate-800 min-h-screen flex flex-col overflow-x-hidden" style="background: var(--scm-bg);">
 
     <!-- ============================================
+         로그인(작업자 식별) 오버레이 — 실제 보안 인증이 아닌
+         "지금 누가 조작 중인지"를 기록하기 위한 간이 식별 장치
+         ============================================ -->
+    <div id="login-overlay" class="hidden" style="position:fixed; inset:0; background:linear-gradient(135deg,#0F172A,#1E293B); z-index:100000; align-items:center; justify-content:center; padding:20px;">
+        <div style="background:white; border-radius:16px; padding:32px 28px; width:100%; max-width:380px; box-shadow:0 20px 60px rgba(0,0,0,.4);">
+            <div style="text-align:center; margin-bottom:20px;">
+                <p style="font-size:11px; font-weight:800; color:#64748B; letter-spacing:.08em;">SEAH CM</p>
+                <h1 style="font-size:17px; font-weight:900; color:#0F172A; margin-top:2px;">세아씨엠 안전 AI 플랫폼</h1>
+                <p style="font-size:12px; color:#64748B; margin-top:6px;">사용 전, 작업자 본인을 선택해 주세요.</p>
+            </div>
+
+            <div id="login-form-box">
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">이름</label>
+                        <select id="login-name-select" style="width:100%; border:1.5px solid #E2E8F0; border-radius:8px; padding:9px 10px; font-size:13px; outline:none; background:white;">
+                            <option value="">이름을 선택하세요</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">PIN (4자리)</label>
+                        <input id="login-pin-input" type="password" inputmode="numeric" maxlength="4" placeholder="••••" style="width:100%; border:1.5px solid #E2E8F0; border-radius:8px; padding:9px 10px; font-size:16px; letter-spacing:.3em; outline:none; text-align:center;">
+                    </div>
+                    <p id="login-error-msg" class="hidden" style="font-size:11.5px; color:#DC2626; font-weight:700; margin:0;"></p>
+                    <button onclick="loginSubmit()" style="width:100%; background:#0F172A; color:white; font-weight:800; font-size:13.5px; padding:11px; border-radius:8px; border:none; cursor:pointer;">로그인</button>
+                </div>
+                <div style="text-align:center; margin-top:14px;">
+                    <button onclick="loginShowRegister()" style="font-size:11.5px; color:#2563EB; font-weight:700; background:none; border:none; cursor:pointer;">+ 처음이신가요? 신규 팀원 등록</button>
+                </div>
+            </div>
+
+            <!-- 신규 팀원 등록 폼 -->
+            <div id="login-register-form" class="hidden" style="margin-top:14px; padding-top:14px; border-top:1px solid #E2E8F0; display:flex; flex-direction:column; gap:10px;">
+                <div>
+                    <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">이름 <span style="color:#DC2626;">*</span></label>
+                    <input id="login-reg-name" type="text" placeholder="이름 입력" style="width:100%; border:1.5px solid #E2E8F0; border-radius:8px; padding:9px 10px; font-size:13px; outline:none;">
+                </div>
+                <div>
+                    <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">직책/부서 (선택)</label>
+                    <input id="login-reg-position" type="text" placeholder="예: 안전환경팀" style="width:100%; border:1.5px solid #E2E8F0; border-radius:8px; padding:9px 10px; font-size:13px; outline:none;">
+                </div>
+                <div>
+                    <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">PIN(4자리) 설정 <span style="color:#DC2626;">*</span></label>
+                    <input id="login-reg-pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••" style="width:100%; border:1.5px solid #E2E8F0; border-radius:8px; padding:9px 10px; font-size:16px; letter-spacing:.3em; outline:none; text-align:center;">
+                </div>
+                <p id="login-reg-error-msg" class="hidden" style="font-size:11.5px; color:#DC2626; font-weight:700; margin:0;"></p>
+                <p style="font-size:10.5px; color:#94A3B8; line-height:1.5; margin:0;">⚠️ 이 PIN은 실수 방지를 위한 간단한 구분 장치이며 보안 비밀번호가 아닙니다. 신규 등록 시 권한은 "일반"으로 시작하며, 마스터 계정이 팀원 관리에서 권한을 조정할 수 있습니다.</p>
+                <div style="display:flex; gap:8px;">
+                    <button onclick="loginHideRegister()" style="flex:1; font-size:12.5px; font-weight:700; color:#64748B; background:white; border:1px solid #E2E8F0; border-radius:8px; padding:9px; cursor:pointer;">취소</button>
+                    <button onclick="loginRegisterSubmit()" style="flex:1; font-size:12.5px; font-weight:800; color:white; background:#0F172A; border:none; border-radius:8px; padding:9px; cursor:pointer;">등록 후 로그인</button>
+                </div>
+            </div>
+
+            <p style="font-size:10px; color:#CBD5E1; text-align:center; margin-top:16px; line-height:1.5;">※ 사내 공용 안전관리 시스템의 본인 확인용 간이 로그인입니다.<br>실제 보안 인증이 아니므로 별도 계정 비밀번호로 사용하지 마세요.</p>
+        </div>
+    </div>
+
+    <!-- ============================================
          상단 메인 헤더: 로고 + 가로 메인 메뉴 (7개) + 사용자 정보
          ============================================ -->
     <header class="scm-navy sticky top-0 z-50 shadow-md">
@@ -266,6 +324,7 @@
                                 <button class="mega-item-btn" onclick="showComingSoon('법규등록부')">법규등록부</button>
                                 <button class="mega-item-btn" onclick="showComingSoon('이행결과 분석')">이행결과 분석</button>
                                 <button id="mega-item-incident" class="mega-item-btn hidden" onclick="switchTab('management'); setTimeout(()=>mgmtShowView('incident'),80)">🔒 산재기록현황</button>
+                                <button id="mega-item-account" class="mega-item-btn hidden" onclick="switchTab('management'); setTimeout(()=>mgmtShowView('account'),80)">🔒 계정·이력관리</button>
                             </div>
                         </div>
                     </div>
@@ -424,7 +483,8 @@
                         <svg class="w-4 h-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                         </svg>
-                        <span class="text-[13px] font-bold whitespace-nowrap">황준하 <span class="font-medium text-blue-200/80">(관리자)</span></span>
+                        <span class="text-[13px] font-bold whitespace-nowrap" id="header-user-label">-</span>
+                        <button onclick="loginLogout()" title="사용자 전환" style="font-size:11px; font-weight:700; color:#BFDBFE; background:rgba(255,255,255,0.08); border:none; border-radius:6px; padding:3px 7px; margin-left:4px; cursor:pointer;">전환</button>
                     </div>
                     <button onclick="toggleSidebar()" id="mobile-menu-btn" class="lg:hidden p-2 text-blue-100 hover:text-white">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -445,7 +505,8 @@
                 <svg class="w-4 h-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                 </svg>
-                <span class="text-[13px] font-bold">황준하 <span class="font-medium text-blue-200/80">(관리자)</span></span>
+                <span class="text-[13px] font-bold" id="header-user-label-mobile">-</span>
+                <button onclick="loginLogout()" title="사용자 전환" style="font-size:11px; font-weight:700; color:#BFDBFE; background:rgba(255,255,255,0.08); border:none; border-radius:6px; padding:3px 7px; margin-left:4px; cursor:pointer;">전환</button>
             </div>
             <button onclick="switchTab('home')" class="mobile-tab-btn w-full px-3 py-2.5 rounded-lg text-[13px] font-bold text-left text-blue-50 hover:bg-white/10">홈</button>
             <button onclick="switchTab('management')" class="mobile-tab-btn w-full px-3 py-2.5 rounded-lg text-[13px] font-bold text-left text-blue-50 hover:bg-white/10">경영</button>
@@ -1002,6 +1063,78 @@
                 <div id="incident-list"></div>
             </div>
 
+            <!-- 계정·이력관리 -->
+            <div id="mgmt-view-account" class="hidden space-y-5">
+                <div class="flex items-center gap-3">
+                    <button onclick="mgmtShowView('menu')" class="text-[12.5px] font-bold flex items-center gap-1.5 hover:underline" style="color: var(--scm-subtext);">← 경영 관리</button>
+                    <span style="color: var(--scm-border);">/</span>
+                    <span class="text-[12.5px] font-bold" style="color: var(--scm-text);">계정·이력관리</span>
+                </div>
+                <div>
+                    <h2 class="text-xl font-black flex items-center gap-2" style="color: var(--scm-text);">🔒 계정·이력관리 <span class="text-[11px] font-bold px-2 py-1 rounded-full" style="background:#FEF2F2; color:#991B1B;">관리자 전용</span></h2>
+                    <p class="text-[13px] mt-1.5" style="color: var(--scm-subtext);">팀원 계정과 등록/수정/삭제 이력을 관리합니다. 실제 보안 인증이 아닌 사내 공용 시스템의 간이 식별·기록 장치입니다.</p>
+                </div>
+
+                <!-- 서브탭 -->
+                <div style="display:flex;gap:0;border-bottom:2px solid var(--scm-border);">
+                    <button id="acct-tab-log" onclick="acctShowTab('log')" class="rtab-btn" style="padding:8px 16px;font-size:12.5px;font-weight:700;border:none;background:none;cursor:pointer;border-bottom:3px solid #1B3A6B;color:#1B3A6B;margin-bottom:-2px;white-space:nowrap;">📜 이력로그</button>
+                    <button id="acct-tab-team" onclick="acctShowTab('team')" class="rtab-btn" style="padding:8px 16px;font-size:12.5px;font-weight:700;border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;color:var(--scm-subtext);margin-bottom:-2px;white-space:nowrap;">👥 팀원 관리</button>
+                </div>
+
+                <!-- 이력로그 -->
+                <div id="acct-panel-log" class="space-y-4">
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                        <select id="log-filter-actor" onchange="logRender()" style="border:1.5px solid var(--scm-border); border-radius:8px; padding:7px 10px; font-size:12px; outline:none; background:white;">
+                            <option value="">전체 작성자</option>
+                        </select>
+                        <select id="log-filter-module" onchange="logRender()" style="border:1.5px solid var(--scm-border); border-radius:8px; padding:7px 10px; font-size:12px; outline:none; background:white;">
+                            <option value="">전체 모듈</option>
+                        </select>
+                        <select id="log-filter-action" onchange="logRender()" style="border:1.5px solid var(--scm-border); border-radius:8px; padding:7px 10px; font-size:12px; outline:none; background:white;">
+                            <option value="">전체 동작</option>
+                            <option value="등록">등록</option>
+                            <option value="수정">수정</option>
+                            <option value="삭제">삭제</option>
+                            <option value="로그인">로그인</option>
+                        </select>
+                        <input id="log-filter-search" type="text" placeholder="내용 검색" oninput="logRender()" style="border:1.5px solid var(--scm-border); border-radius:8px; padding:7px 10px; font-size:12px; outline:none; flex:1; min-width:140px;">
+                        <span id="log-count-label" style="font-size:11.5px; color:var(--scm-subtext); font-weight:700; white-space:nowrap;"></span>
+                    </div>
+                    <div id="log-list"></div>
+                </div>
+
+                <!-- 팀원 관리 -->
+                <div id="acct-panel-team" class="hidden space-y-4">
+                    <div class="scm-card p-5">
+                        <h3 style="font-size:13.5px;font-weight:800;color:var(--scm-navy); margin-bottom:12px;">+ 팀원 직접 추가</h3>
+                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr auto; gap:10px; align-items:end;">
+                            <div>
+                                <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">이름 *</label>
+                                <input id="team-add-name" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
+                            </div>
+                            <div>
+                                <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">직책/부서</label>
+                                <input id="team-add-position" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
+                            </div>
+                            <div>
+                                <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">PIN(4자리) *</label>
+                                <input id="team-add-pin" maxlength="4" inputmode="numeric" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
+                            </div>
+                            <div>
+                                <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">권한</label>
+                                <select id="team-add-role" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;background:white;">
+                                    <option value="user">일반</option>
+                                    <option value="admin">관리자</option>
+                                    <option value="master">마스터</option>
+                                </select>
+                            </div>
+                            <button onclick="teamAddMember()" style="background:var(--scm-navy);color:white;font-weight:700;font-size:12.5px;padding:8px 16px;border-radius:8px;border:none;cursor:pointer;white-space:nowrap;">추가</button>
+                        </div>
+                    </div>
+                    <div id="team-list"></div>
+                </div>
+            </div>
+
         </section>
 
         <!-- ==============================================
@@ -1196,11 +1329,16 @@
                                     <td style="border:1px solid var(--scm-border); padding:5px; text-align:center; min-width:56px;">
                                         <div id="ra-after-score-preview" style="border-radius:6px; padding:6px 3px; font-size:12.5px; font-weight:800;"></div>
                                     </td>
-                                    <td style="border:1px solid var(--scm-border); padding:5px; min-width:64px;">
+                                    <td style="border:1px solid var(--scm-border); padding:5px; min-width:76px;">
                                         <select id="ra-nearmiss" style="width:100%; border:1px solid var(--scm-border); border-radius:6px; padding:6px 3px; font-size:12px; outline:none; background:white;">
                                             <option value="X" selected>X</option>
                                             <option value="O">O</option>
                                         </select>
+                                        <label style="display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;color:var(--scm-navy);font-size:10px;font-weight:600;margin-top:4px;border:1px dashed var(--scm-border);border-radius:6px;padding:4px 2px;">
+                                            📎 첨부
+                                            <input type="file" id="ra-attach-input" multiple style="display:none;" onchange="raPreviewAttachments()">
+                                        </label>
+                                        <div id="ra-attach-preview" style="display:flex;flex-direction:column;gap:2px;margin-top:3px;"></div>
                                     </td>
                                     <td style="border:1px solid var(--scm-border); padding:5px; min-width:80px;">
                                         <input id="ra-code" placeholder="23A-1" style="width:100%; border:1px solid var(--scm-border); border-radius:6px; padding:6px 7px; font-size:12px; outline:none;">
@@ -3119,10 +3257,316 @@
 
     <script>
         // ============================================
-        // 권한 플래그 — 스크립트 최상단에 선언 (아래 코드에서 어디서든 안전하게 참조 가능하도록)
+        // 팀원(작업자) 관리 + 로그인 세션
+        // — 실제 서버 인증이 아닌, "지금 누가 조작 중인지"를
+        //   식별하기 위한 간이 로그인(브라우저 내 저장)
         // ============================================
-        const IS_ADMIN  = true;   // 일반 관리자 이상 (개선 후 사진 등록 가능)
-        const IS_MASTER = true;   // 마스터(=안전팀장) — 위험요인 등록 + 개선 전 사진 등록 가능
+        const TEAM_STORAGE = 'seahcm_team_members_v1';
+        const SESSION_KEY = 'seahcm_session_v1'; // sessionStorage: 탭/창을 닫으면 만료 → 공용 PC에서 안전
+
+        function teamLoad() {
+            try { return JSON.parse(localStorage.getItem(TEAM_STORAGE) || '[]'); } catch (e) { return []; }
+        }
+        function teamSave(list) {
+            localStorage.setItem(TEAM_STORAGE, JSON.stringify(list));
+        }
+        function teamSeedIfNeeded() {
+            if (teamLoad().length) return;
+            teamSave([
+                { id: 1, name: '황준하', position: '안전환경팀장', pin: '0000', role: 'master' },
+            ]);
+        }
+        teamSeedIfNeeded();
+
+        // 현재 로그인 세션 (sessionStorage — 새 탭/새로고침 후에도 유지되지만, 브라우저를 완전히 닫으면 만료)
+        let CURRENT_SESSION = null;
+        try { CURRENT_SESSION = JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null'); } catch (e) { CURRENT_SESSION = null; }
+
+        // ============================================
+        // 권한 플래그 — 로그인 세션의 역할(role)에서 파생
+        // role: 'master' | 'admin' | 'user'
+        // ============================================
+        let IS_ADMIN  = !!CURRENT_SESSION && (CURRENT_SESSION.role === 'admin' || CURRENT_SESSION.role === 'master');   // 일반 관리자 이상 (개선 후 사진 등록 가능)
+        let IS_MASTER = !!CURRENT_SESSION && CURRENT_SESSION.role === 'master';   // 마스터(=안전팀장) — 위험요인 등록 + 개선 전 사진 등록 가능
+
+        const ROLE_LABEL = { master: '마스터', admin: '관리자', user: '일반' };
+
+        function loginPopulateNames() {
+            const sel = document.getElementById('login-name-select');
+            if (!sel) return;
+            const members = teamLoad().slice().sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+            sel.innerHTML = '<option value="">이름을 선택하세요</option>' +
+                members.map(m => `<option value="${m.id}">${m.name}${m.position ? ' · ' + m.position : ''}</option>`).join('');
+        }
+
+        function loginShowError(msg) {
+            const el = document.getElementById('login-error-msg');
+            if (!el) return;
+            el.textContent = msg;
+            el.classList.remove('hidden');
+        }
+
+        function loginSubmit() {
+            const sel = document.getElementById('login-name-select');
+            const pinInput = document.getElementById('login-pin-input');
+            const memberId = Number(sel.value);
+            const pin = pinInput.value.trim();
+            document.getElementById('login-error-msg').classList.add('hidden');
+            if (!memberId) { loginShowError('⚠️ 이름을 선택해 주세요.'); return; }
+            if (!pin) { loginShowError('⚠️ PIN을 입력해 주세요.'); return; }
+            const member = teamLoad().find(m => m.id === memberId);
+            if (!member || member.pin !== pin) {
+                loginShowError('⚠️ PIN이 일치하지 않습니다.');
+                pinInput.value = '';
+                pinInput.focus();
+                return;
+            }
+            sessionStorage.setItem(SESSION_KEY, JSON.stringify({ id: member.id, name: member.name, position: member.position || '', role: member.role || 'user' }));
+            logActivity('로그인', '로그인', `${member.name}님 로그인`, member.name);
+            location.reload();
+        }
+
+        function loginShowRegister() {
+            document.getElementById('login-form-box').classList.add('hidden');
+            document.getElementById('login-register-form').classList.remove('hidden');
+        }
+        function loginHideRegister() {
+            document.getElementById('login-register-form').classList.add('hidden');
+            document.getElementById('login-form-box').classList.remove('hidden');
+        }
+
+        function loginRegisterSubmit() {
+            const name = document.getElementById('login-reg-name').value.trim();
+            const position = document.getElementById('login-reg-position').value.trim();
+            const pin = document.getElementById('login-reg-pin').value.trim();
+            const errEl = document.getElementById('login-reg-error-msg');
+            errEl.classList.add('hidden');
+            if (!name) { errEl.textContent = '⚠️ 이름을 입력해 주세요.'; errEl.classList.remove('hidden'); return; }
+            if (!/^\d{4}$/.test(pin)) { errEl.textContent = '⚠️ PIN은 숫자 4자리로 입력해 주세요.'; errEl.classList.remove('hidden'); return; }
+            const members = teamLoad();
+            if (members.some(m => m.name === name)) { errEl.textContent = '⚠️ 이미 등록된 이름입니다. 로그인 화면에서 선택해 주세요.'; errEl.classList.remove('hidden'); return; }
+            const newMember = { id: Date.now(), name, position, pin, role: 'user' };
+            members.push(newMember);
+            teamSave(members);
+            sessionStorage.setItem(SESSION_KEY, JSON.stringify({ id: newMember.id, name: newMember.name, position: newMember.position, role: 'user' }));
+            logActivity('로그인', '등록', `신규 팀원 "${name}" 등록 및 로그인`, name);
+            location.reload();
+        }
+
+        function loginLogout() {
+            if (CURRENT_SESSION) logActivity('로그인', '로그아웃', `${CURRENT_SESSION.name}님 로그아웃`, CURRENT_SESSION.name);
+            sessionStorage.removeItem(SESSION_KEY);
+            location.reload();
+        }
+
+        function loginInit() {
+            const overlay = document.getElementById('login-overlay');
+            const labelDesktop = document.getElementById('header-user-label');
+            const labelMobile = document.getElementById('header-user-label-mobile');
+            if (CURRENT_SESSION) {
+                const labelHtml = `${CURRENT_SESSION.name} <span class="font-medium text-blue-200/80">(${ROLE_LABEL[CURRENT_SESSION.role] || '일반'})</span>`;
+                if (labelDesktop) labelDesktop.innerHTML = labelHtml;
+                if (labelMobile) labelMobile.innerHTML = labelHtml;
+                if (overlay) { overlay.classList.add('hidden'); overlay.style.display = 'none'; }
+            } else {
+                if (overlay) { overlay.classList.remove('hidden'); overlay.style.display = 'flex'; }
+                loginPopulateNames();
+            }
+        }
+        loginInit(); // 스크립트가 body 최하단에 위치 → DOM 요소가 이미 준비되어 있으므로 즉시 실행
+
+        // ============================================
+        // 이력로그 (등록/수정/삭제/로그인 등 활동 기록)
+        // ============================================
+        const LOG_STORAGE = 'seahcm_activity_log_v1';
+        const LOG_MAX = 2000; // 저장공간 보호를 위한 최대 보관 건수
+
+        function logLoad() { try { return JSON.parse(localStorage.getItem(LOG_STORAGE) || '[]'); } catch (e) { return []; } }
+        function logSaveAll(list) { localStorage.setItem(LOG_STORAGE, JSON.stringify(list)); }
+
+        // moduleName: '위험성평가' 등 화면 단위 이름, action: '등록'|'수정'|'삭제'|'로그인'|'로그아웃'
+        function logActivity(moduleName, action, description, actorOverride) {
+            try {
+                const list = logLoad();
+                list.unshift({
+                    id: Date.now() + Math.random(),
+                    ts: new Date().toISOString(),
+                    actor: actorOverride || (CURRENT_SESSION ? CURRENT_SESSION.name : '알수없음'),
+                    role: CURRENT_SESSION ? CURRENT_SESSION.role : '',
+                    module: moduleName,
+                    action,
+                    description: description || ''
+                });
+                if (list.length > LOG_MAX) list.length = LOG_MAX;
+                logSaveAll(list);
+            } catch (e) { console.error('활동 로그 저장 실패', e); }
+        }
+
+        function logPopulateFilters() {
+            const list = logLoad();
+            const actorSel = document.getElementById('log-filter-actor');
+            const moduleSel = document.getElementById('log-filter-module');
+            if (!actorSel || !moduleSel) return;
+            const actors = [...new Set(list.map(l => l.actor))].sort((a, b) => a.localeCompare(b, 'ko'));
+            const modules = [...new Set(list.map(l => l.module))].sort((a, b) => a.localeCompare(b, 'ko'));
+            const curActor = actorSel.value, curModule = moduleSel.value;
+            actorSel.innerHTML = '<option value="">전체 작성자</option>' + actors.map(a => `<option value="${a}">${a}</option>`).join('');
+            moduleSel.innerHTML = '<option value="">전체 모듈</option>' + modules.map(m => `<option value="${m}">${m}</option>`).join('');
+            actorSel.value = curActor; moduleSel.value = curModule;
+        }
+
+        function logRender() {
+            logPopulateFilters();
+            const list = logLoad();
+            const actorF = document.getElementById('log-filter-actor')?.value || '';
+            const moduleF = document.getElementById('log-filter-module')?.value || '';
+            const actionF = document.getElementById('log-filter-action')?.value || '';
+            const searchF = (document.getElementById('log-filter-search')?.value || '').trim().toLowerCase();
+            const filtered = list.filter(l =>
+                (!actorF || l.actor === actorF) &&
+                (!moduleF || l.module === moduleF) &&
+                (!actionF || l.action === actionF) &&
+                (!searchF || (l.description || '').toLowerCase().includes(searchF) || (l.actor || '').toLowerCase().includes(searchF))
+            );
+            const countEl = document.getElementById('log-count-label');
+            if (countEl) countEl.textContent = `총 ${filtered.length}건`;
+            const listEl = document.getElementById('log-list');
+            if (!listEl) return;
+            if (!filtered.length) {
+                listEl.innerHTML = `<div class="scm-card p-8 text-center" style="color:var(--scm-subtext);"><p class="text-3xl mb-2">📜</p><p class="text-[13px]">기록된 이력이 없습니다.</p></div>`;
+                return;
+            }
+            const actionColor = { '등록': '#16A34A', '수정': '#CA8A04', '삭제': '#DC2626', '로그인': '#2563EB', '로그아웃': '#64748B' };
+            listEl.innerHTML = `<div class="scm-card p-0" style="overflow-x:auto;">
+                <table style="border-collapse:collapse; width:100%; min-width:720px; font-size:12px;">
+                    <thead><tr>
+                        <th style="border:1px solid var(--scm-border); padding:8px; background:#F8FAFC; color:var(--scm-subtext); white-space:nowrap;">일시</th>
+                        <th style="border:1px solid var(--scm-border); padding:8px; background:#F8FAFC; color:var(--scm-subtext); white-space:nowrap;">작성자</th>
+                        <th style="border:1px solid var(--scm-border); padding:8px; background:#F8FAFC; color:var(--scm-subtext); white-space:nowrap;">모듈</th>
+                        <th style="border:1px solid var(--scm-border); padding:8px; background:#F8FAFC; color:var(--scm-subtext); white-space:nowrap;">동작</th>
+                        <th style="border:1px solid var(--scm-border); padding:8px; background:#F8FAFC; color:var(--scm-subtext);">내용</th>
+                    </tr></thead>
+                    <tbody>
+                        ${filtered.slice(0, 500).map(l => `<tr>
+                            <td style="border:1px solid var(--scm-border); padding:7px; white-space:nowrap; color:var(--scm-subtext);">${new Date(l.ts).toLocaleString('ko-KR')}</td>
+                            <td style="border:1px solid var(--scm-border); padding:7px; font-weight:700; color:var(--scm-text); white-space:nowrap;">${l.actor}</td>
+                            <td style="border:1px solid var(--scm-border); padding:7px; color:var(--scm-text); white-space:nowrap;">${l.module}</td>
+                            <td style="border:1px solid var(--scm-border); padding:7px; text-align:center; white-space:nowrap;"><span style="font-weight:800; color:${actionColor[l.action] || 'var(--scm-text)'};">${l.action}</span></td>
+                            <td style="border:1px solid var(--scm-border); padding:7px; color:var(--scm-text);">${l.description || '-'}</td>
+                        </tr>`).join('')}
+                    </tbody>
+                </table>
+                ${filtered.length > 500 ? `<p style="font-size:11px;color:var(--scm-subtext);padding:8px;">최근 500건만 표시됩니다. 검색/필터로 좁혀보세요.</p>` : ''}
+            </div>`;
+        }
+
+        // ============================================
+        // 계정·이력관리 화면 — 서브탭 전환 + 팀원 관리
+        // ============================================
+        function acctShowTab(tab) {
+            const panels = { log: 'acct-panel-log', team: 'acct-panel-team' };
+            Object.keys(panels).forEach(k => {
+                const panelEl = document.getElementById(panels[k]);
+                const btnEl = document.getElementById(`acct-tab-${k}`);
+                if (panelEl) panelEl.classList.toggle('hidden', k !== tab);
+                if (btnEl) { btnEl.style.borderBottomColor = k === tab ? '#1B3A6B' : 'transparent'; btnEl.style.color = k === tab ? '#1B3A6B' : 'var(--scm-subtext)'; }
+            });
+            if (tab === 'log') logRender();
+            if (tab === 'team') teamRender();
+        }
+
+        function teamRender() {
+            const listEl = document.getElementById('team-list');
+            if (!listEl) return;
+            const members = teamLoad().slice().sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+            const roleColor = { master: '#DC2626', admin: '#CA8A04', user: '#64748B' };
+            listEl.innerHTML = `<div class="scm-card p-0" style="overflow-x:auto;">
+                <table style="border-collapse:collapse;width:100%;min-width:560px;font-size:12.5px;">
+                    <thead><tr>
+                        <th style="border:1px solid var(--scm-border);padding:8px;background:#F8FAFC;color:var(--scm-subtext);">이름</th>
+                        <th style="border:1px solid var(--scm-border);padding:8px;background:#F8FAFC;color:var(--scm-subtext);">직책/부서</th>
+                        <th style="border:1px solid var(--scm-border);padding:8px;background:#F8FAFC;color:var(--scm-subtext);">권한</th>
+                        <th style="border:1px solid var(--scm-border);padding:8px;background:#F8FAFC;color:var(--scm-subtext);">관리</th>
+                    </tr></thead>
+                    <tbody>
+                        ${members.map(m => `<tr>
+                            <td style="border:1px solid var(--scm-border);padding:7px;font-weight:700;color:var(--scm-text);">${m.name}${CURRENT_SESSION && CURRENT_SESSION.id === m.id ? ' <span style="font-size:10px;color:var(--scm-navy);">(나)</span>' : ''}</td>
+                            <td style="border:1px solid var(--scm-border);padding:7px;color:var(--scm-text);">${m.position || '-'}</td>
+                            <td style="border:1px solid var(--scm-border);padding:7px;text-align:center;">
+                                ${IS_MASTER ? `<select onchange="teamChangeRole(${m.id}, this.value)" style="border:1px solid var(--scm-border);border-radius:6px;padding:3px 6px;font-size:11.5px;background:white;">
+                                    <option value="user" ${m.role === 'user' ? 'selected' : ''}>일반</option>
+                                    <option value="admin" ${m.role === 'admin' ? 'selected' : ''}>관리자</option>
+                                    <option value="master" ${m.role === 'master' ? 'selected' : ''}>마스터</option>
+                                </select>` : `<span style="font-weight:800;color:${roleColor[m.role] || '#64748B'};">${ROLE_LABEL[m.role] || '일반'}</span>`}
+                            </td>
+                            <td style="border:1px solid var(--scm-border);padding:7px;text-align:center;">
+                                ${IS_MASTER ? `<button onclick="teamDeleteMember(${m.id})" style="font-size:11px;font-weight:700;color:#DC2626;background:none;border:1px solid #FECACA;border-radius:6px;padding:3px 8px;cursor:pointer;">삭제</button>` : '-'}
+                            </td>
+                        </tr>`).join('')}
+                    </tbody>
+                </table>
+            </div>`;
+        }
+
+        function teamAddMember() {
+            if (!IS_MASTER) { showToast('⚠️ 팀원 추가는 마스터만 가능합니다.', 'warn'); return; }
+            const name = document.getElementById('team-add-name').value.trim();
+            const position = document.getElementById('team-add-position').value.trim();
+            const pin = document.getElementById('team-add-pin').value.trim();
+            const role = document.getElementById('team-add-role').value;
+            if (!name) { showToast('⚠️ 이름을 입력해 주세요.', 'warn'); return; }
+            if (!/^\d{4}$/.test(pin)) { showToast('⚠️ PIN은 숫자 4자리로 입력해 주세요.', 'warn'); return; }
+            const members = teamLoad();
+            if (members.some(m => m.name === name)) { showToast('⚠️ 이미 등록된 이름입니다.', 'warn'); return; }
+            members.push({ id: Date.now(), name, position, pin, role });
+            teamSave(members);
+            logActivity('계정관리', '등록', `팀원 "${name}"(${ROLE_LABEL[role]}) 추가`);
+            document.getElementById('team-add-name').value = '';
+            document.getElementById('team-add-position').value = '';
+            document.getElementById('team-add-pin').value = '';
+            document.getElementById('team-add-role').value = 'user';
+            teamRender();
+            showToast('✅ 팀원이 추가되었습니다.', 'success');
+        }
+
+        function teamChangeRole(id, role) {
+            if (!IS_MASTER) return;
+            const members = teamLoad();
+            const idx = members.findIndex(m => m.id === id);
+            if (idx === -1) return;
+            const masterCount = members.filter(m => m.role === 'master').length;
+            if (members[idx].role === 'master' && role !== 'master' && masterCount <= 1) {
+                showToast('⚠️ 마지막 남은 마스터의 권한은 변경할 수 없습니다.', 'warn');
+                teamRender();
+                return;
+            }
+            const oldRole = members[idx].role;
+            members[idx].role = role;
+            teamSave(members);
+            logActivity('계정관리', '수정', `팀원 "${members[idx].name}" 권한 변경: ${ROLE_LABEL[oldRole]} → ${ROLE_LABEL[role]}`);
+            if (CURRENT_SESSION && CURRENT_SESSION.id === id) {
+                CURRENT_SESSION.role = role;
+                sessionStorage.setItem(SESSION_KEY, JSON.stringify(CURRENT_SESSION));
+            }
+            teamRender();
+            showToast('✅ 권한이 변경되었습니다.', 'success');
+        }
+
+        function teamDeleteMember(id) {
+            if (!IS_MASTER) return;
+            const members = teamLoad();
+            const target = members.find(m => m.id === id);
+            if (!target) return;
+            const masterCount = members.filter(m => m.role === 'master').length;
+            if (target.role === 'master' && masterCount <= 1) {
+                showToast('⚠️ 마지막 남은 마스터 계정은 삭제할 수 없습니다.', 'warn');
+                return;
+            }
+            teamSave(members.filter(m => m.id !== id));
+            logActivity('계정관리', '삭제', `팀원 "${target.name}" 삭제`);
+            teamRender();
+            showToast('🗑 팀원이 삭제되었습니다.', 'success');
+        }
 
         // ============================================
         // 메뉴 구조 데이터 (플랫폼 구성 다이어그램의 하위 항목 기반)
@@ -3445,6 +3889,7 @@
             const items = reminderLoad();
             items.push({ id: Date.now(), date: reminderSelectedDate, endDate, time, content, createdAt: new Date().toISOString() });
             reminderSave(items);
+            logActivity('업무알리미', '등록', `"${content}" (${reminderSelectedDate}) 알림 등록`);
             showToast('✅ 알림이 등록되었습니다.', 'success');
             reminderSelectDay(reminderSelectedDate);
             reminderRenderCalendar();
@@ -3452,10 +3897,12 @@
         }
 
         function reminderDelete(id) {
+            const target = reminderLoad().find(it => it.id === id);
             reminderSave(reminderLoad().filter(it => it.id !== id));
             if (reminderSelectedDate) reminderSelectDay(reminderSelectedDate);
             reminderRenderCalendar();
             reminderRenderHomeWidget();
+            logActivity('업무알리미', '삭제', target ? `"${target.content}" (${target.date}) 알림 삭제` : `알림 삭제 (id:${id})`);
             showToast('🗑 알림이 삭제되었습니다.', 'success');
         }
 
@@ -4526,9 +4973,11 @@
                 if (idx !== -1) {
                     matList[idx] = { ...matList[idx], title, category, url: finalUrl, desc, fileData, fileName, fileMime };
                 }
+                logActivity('교육자료실', '수정', `"${title}" 자료 수정`);
                 showToast('✅ 자료가 수정되었습니다.', 'success');
             } else {
                 matList.unshift({ id: Date.now(), title, category, url: finalUrl, desc, fileData, fileName, fileMime, views: 0, createdAt: new Date().toISOString() });
+                logActivity('교육자료실', '등록', `"${title}" 자료 등록 (${mode === 'file' ? '파일첨부' : 'URL'})`);
                 showToast('✅ 자료가 등록되었습니다.', 'success');
             }
             try {
@@ -4562,10 +5011,12 @@
         }
         function matConfirmDelete() {
             if (!IS_MASTER || matDeleteTargetId == null) { matCancelDelete(); return; }
+            const target = matList.find(x => x.id === matDeleteTargetId);
             matList = matList.filter(x => x.id !== matDeleteTargetId);
             matSave();
             matCancelDelete();
             matRender();
+            logActivity('교육자료실', '삭제', target ? `"${target.title}" 자료 삭제` : `자료 삭제 (id:${matDeleteTargetId})`);
             showToast('🗑 자료가 삭제되었습니다.', 'success');
         }
 
@@ -4998,6 +5449,7 @@
             document.getElementById('eval-manage-link').textContent = manageUrl;
             document.getElementById('eval-result-box').classList.remove('hidden');
             document.getElementById('eval-result-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            logActivity('교육평가시스템', '등록', `"${title}" 교육 세션 생성`);
             showToast('✅ 교육 세션이 생성되었습니다!', 'success');
         }
 
@@ -5460,6 +5912,7 @@
             if (roster.find(r => r.empno === empno)) { showToast('⚠️ 이미 등록된 사번입니다.', 'warn'); return; }
             roster.push({ empno, name, line });
             rosterSave(roster);
+            logActivity('교육관리(명부)', '등록', `${name}(${empno}, ${line}) 명부 추가`);
             ['roster-add-empno','roster-add-name'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
             document.getElementById('roster-add-line').value = '';
             eduRosterRenderTable();
@@ -5468,15 +5921,18 @@
 
         function eduRosterDelete(idx) {
             const roster = rosterLoad();
+            const target = roster[idx];
             if (!confirm(`${roster[idx]?.name}을(를) 명부에서 삭제하시겠습니까?`)) return;
             roster.splice(idx, 1);
             rosterSave(roster);
             eduRosterRenderTable();
+            logActivity('교육관리(명부)', '삭제', target ? `${target.name}(${target.empno}) 명부 삭제` : `명부 삭제 (idx:${idx})`);
         }
 
         function eduRosterClear() {
             rosterSave([]);
             eduRosterRenderTable();
+            logActivity('교육관리(명부)', '삭제', '전체 명부 초기화');
             showToast('🗑 명부가 초기화되었습니다.', 'success');
         }
 
@@ -5577,6 +6033,7 @@
             if (!confirm(msg)) return;
             delete evalSessions[sessionId];
             evalSaveToStorage();
+            logActivity('교육평가시스템', '삭제', `"${title}" 교육 세션 삭제`);
             showToast(`🗑 "${title}" 세션이 삭제되었습니다.`, 'success');
             evalLoadSessionList();
         }
@@ -7059,6 +7516,7 @@
             }[status];
             const badge = document.getElementById('hbr-status-badge');
             if (badge) { badge.textContent = statusCfg.label; badge.style.background = statusCfg.bg; badge.style.color = statusCfg.color; }
+            logActivity('중대재해반기보고', status === 'done' ? '등록' : '수정', `[${hbrCurrentId}] ${status === 'done' ? '이행완료' : '임시저장'}`);
             showToast(status === 'done' ? '✅ 이행완료로 저장되었습니다.' : '💾 임시저장되었습니다.', status === 'done' ? 'success' : 'info');
 
             // 이행완료 시 전자서명 패드 표시
@@ -8883,6 +9341,97 @@ ${extraText}
         // 작업사진 — 등록 폼 미리보기용 임시 저장
         let _raPhotos = []; // [{name, dataUrl}]
 
+        // 아차사고 여부 첨부란 — 등록 폼 미리보기용 임시 저장
+        let _raAttachments = []; // [{name, mime, dataUrl}]
+
+        function raPreviewAttachments() {
+            const input     = document.getElementById('ra-attach-input');
+            const previewEl = document.getElementById('ra-attach-preview');
+            if (!input || !previewEl) return;
+            _raAttachments = [];
+            const files = Array.from(input.files);
+            if (!files.length) { previewEl.innerHTML = ''; return; }
+            const MAX_SIZE = 8 * 1024 * 1024;
+            const oversized = files.filter(f => f.size > MAX_SIZE);
+            if (oversized.length) {
+                showToast('⚠️ 8MB를 초과하는 파일은 첨부할 수 없습니다.', 'warn');
+            }
+            const validFiles = files.filter(f => f.size <= MAX_SIZE);
+            previewEl.innerHTML = '';
+            validFiles.forEach((file, i) => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    _raAttachments[i] = { name: file.name, mime: file.type, dataUrl: e.target.result };
+                    const chip = document.createElement('div');
+                    chip.style.cssText = 'font-size:9.5px;font-weight:600;color:var(--scm-text);background:#F1F5F9;border-radius:4px;padding:2px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;';
+                    chip.textContent = '📄 ' + file.name;
+                    chip.title = file.name;
+                    previewEl.appendChild(chip);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // 목록에서 바로 첨부파일 추가/삭제 (등록 후에도 아차사고 첨부란 관리 가능)
+        let raAttachPickerTargetId = null;
+        function raOpenAttachPicker(itemId) {
+            raAttachPickerTargetId = itemId;
+            let input = document.getElementById('ra-attach-picker-hidden');
+            if (!input) {
+                input = document.createElement('input');
+                input.type = 'file';
+                input.id = 'ra-attach-picker-hidden';
+                input.multiple = true;
+                input.style.display = 'none';
+                input.addEventListener('change', raHandleAttachPicked);
+                document.body.appendChild(input);
+            }
+            input.value = '';
+            input.click();
+        }
+
+        function raHandleAttachPicked(e) {
+            const itemId = raAttachPickerTargetId;
+            if (itemId == null) return;
+            const files = Array.from(e.target.files || []);
+            if (!files.length) return;
+            const MAX_SIZE = 8 * 1024 * 1024;
+            const validFiles = files.filter(f => f.size <= MAX_SIZE);
+            const rejectedCount = files.length - validFiles.length;
+            if (!validFiles.length) {
+                showToast('⚠️ 8MB를 초과하는 파일은 첨부할 수 없습니다.', 'warn');
+                return;
+            }
+            const items = raLoad();
+            const idx = items.findIndex(x => x.id === itemId);
+            if (idx === -1) return;
+            if (!items[idx].attachments) items[idx].attachments = [];
+            let pending = validFiles.length;
+            validFiles.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = ev => {
+                    items[idx].attachments.push({ name: file.name, mime: file.type, dataUrl: ev.target.result });
+                    pending--;
+                    if (pending === 0) {
+                        raSave(items);
+                        raRender();
+                        showToast(rejectedCount ? '⚠️ 첨부되었습니다 (8MB 초과 파일 제외됨).' : '✅ 첨부파일이 추가되었습니다.', rejectedCount ? 'warn' : 'success');
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function raRemoveAttachment(itemId, idx) {
+            const items = raLoad();
+            const i = items.findIndex(x => x.id === itemId);
+            if (i === -1 || !items[i].attachments) return;
+            items[i].attachments.splice(idx, 1);
+            raSave(items);
+            raRender();
+            showToast('🗑 첨부파일이 삭제되었습니다.', 'success');
+        }
+
         function raPreviewPhotos() {
             const input     = document.getElementById('ra-photo-input');
             const previewEl = document.getElementById('ra-photo-preview');
@@ -8942,6 +9491,7 @@ ${extraText}
                 } else {
                     items[idx] = { ...items[idx], process, hazard, measure, freq, sev, score: scoreVal, grade, afterFreq, afterSev, afterScore: afterScoreVal, afterGrade, reduction, nearMiss, code };
                     raSave(items);
+                    logActivity('위험성평가', '수정', `[${raSelectedLine}] "${process}" 항목 수정`);
                     showToast('✅ 위험성평가표가 수정되었습니다.', 'success');
                     if (afterScoreVal >= 8) {
                         setTimeout(() => showToast(`⚠️ 개선 후 위험도가 여전히 ${afterScoreVal}점(${afterGrade})입니다. 추가 감소대책이 필요합니다.`, 'warn'), 600);
@@ -8956,6 +9506,7 @@ ${extraText}
                     afterFreq, afterSev, afterScore: afterScoreVal, afterGrade,
                     reduction, nearMiss, code,
                     photos: _raPhotos.filter(p => p && p.dataUrl).map(p => ({ name: p.name, dataUrl: p.dataUrl })),
+                    attachments: _raAttachments.filter(a => a && a.dataUrl).map(a => ({ name: a.name, mime: a.mime, dataUrl: a.dataUrl })),
                     // 개선실행계획서 항목 (담당자/기한/진행상태는 상세 모달에서 관리)
                     owner: '', dueDate: '', planStatus: '미착수',
                     // 사진대지용 개선 전/후 사진 (상세 모달의 "사진대지" 탭에서 관리)
@@ -8963,6 +9514,7 @@ ${extraText}
                     createdAt: new Date().toISOString()
                 });
                 raSave(items);
+                logActivity('위험성평가', '등록', `[${raSelectedLine}] "${process}" 항목 등록`);
                 showToast('✅ 위험성평가표가 등록되었습니다. 아래 목록에서 확인하세요.', 'success');
                 if (afterScoreVal >= 8) {
                     setTimeout(() => showToast(`⚠️ 개선 후 위험도가 여전히 ${afterScoreVal}점(${afterGrade})입니다. 추가 감소대책이 필요합니다.`, 'warn'), 600);
@@ -8984,6 +9536,9 @@ ${extraText}
             document.getElementById('ra-photo-input').value = '';
             document.getElementById('ra-photo-preview').innerHTML = '';
             _raPhotos = [];
+            document.getElementById('ra-attach-input').value = '';
+            document.getElementById('ra-attach-preview').innerHTML = '';
+            _raAttachments = [];
             document.getElementById('ra-edit-id').value = '';
             document.getElementById('ra-form-title').textContent = '+ 위험성평가표 등록';
             document.getElementById('ra-submit-btn').textContent = '평가표 등록';
@@ -9043,8 +9598,10 @@ ${extraText}
             }
             clearTimeout(raDeleteArmTimer);
             raDeleteArmedId = null;
+            const targetItem = raLoad().find(i => i.id === id);
             raSave(raLoad().filter(i => i.id !== id));
             raRender();
+            logActivity('위험성평가', '삭제', `[${raSelectedLine}] "${targetItem ? targetItem.process : id}" 항목 삭제`);
             showToast('🗑 삭제되었습니다.', 'success');
         }
 
@@ -9091,6 +9648,17 @@ ${extraText}
                     <button class="ra-photo-x" onclick="event.stopPropagation(); raQuickDeletePhoto(${itemId}, '${type}', 0);" title="이 사진 삭제" style="position:absolute; top:-6px; right:-6px; width:17px; height:17px; border-radius:99px; background:#DC2626; color:white; border:1.5px solid white; font-size:10px; line-height:1; cursor:pointer; opacity:0; transition:opacity .12s; display:flex; align-items:center; justify-content:center; padding:0;">✕</button>
                 </div>`;
             };
+            const attachCell = (attachments, itemId) => {
+                const list = attachments || [];
+                const chips = list.map((a, idx) => `
+                    <div style="display:flex;align-items:center;gap:2px;background:#F1F5F9;border-radius:4px;padding:1px 3px;max-width:100%;">
+                        <a href="${a.dataUrl}" download="${a.name}" target="_blank" title="${a.name}" style="font-size:9px;color:var(--scm-navy);text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:52px;display:inline-block;">📄${a.name}</a>
+                        <button onclick="raRemoveAttachment(${itemId}, ${idx})" title="첨부 삭제" style="font-size:8px;color:#DC2626;background:none;border:none;cursor:pointer;padding:0;flex-shrink:0;">✕</button>
+                    </div>`).join('');
+                return `<div style="display:flex;flex-direction:column;gap:2px;align-items:stretch;">${chips}
+                    <button onclick="raOpenAttachPicker(${itemId})" title="첨부파일 추가" style="width:100%;font-size:9px;font-weight:700;color:var(--scm-navy);background:white;border:1px dashed var(--scm-border);border-radius:4px;padding:1px 2px;cursor:pointer;">📎 첨부</button>
+                </div>`;
+            };
             const th = (label, opts) => `<th style="border:1px solid var(--scm-border); padding:8px 6px; text-align:center; color:var(--scm-subtext); font-weight:700; background:#F8FAFC;" ${opts||''}>${label}</th>`;
             const td = (content, align, extra) => `<td style="border:1px solid var(--scm-border); padding:7px 6px; text-align:${align||'center'}; white-space:normal; word-break:break-word; overflow-wrap:break-word; ${extra||''}">${content}</td>`;
 
@@ -9103,7 +9671,7 @@ ${extraText}
                         <col style="width:38px;"><col style="width:38px;"><col style="width:48px;">
                         <col style="width:150px;">
                         <col style="width:38px;"><col style="width:38px;"><col style="width:48px;">
-                        <col style="width:48px;"><col style="width:62px;">
+                        <col style="width:70px;"><col style="width:62px;">
                         ${IS_ADMIN ? '<col style="width:112px;">' : ''}
                     </colgroup>
                     <thead>
@@ -9143,7 +9711,10 @@ ${extraText}
                                 ${td(i.afterFreq ?? '-', 'center', 'color:var(--scm-text);')}
                                 ${td(i.afterSev ?? '-', 'center', 'color:var(--scm-text);')}
                                 ${td(i.afterScore != null ? `<span style="display:inline-block; padding:3px 7px; border-radius:99px; font-weight:800; background:${ag.bg}; color:${ag.color};">${i.afterScore}${afterWarn ? ' ⚠' : ''}</span>` : '-')}
-                                ${td(i.nearMiss === 'O' ? `<span style="font-weight:800; color:#0F766E;">O</span>` : `<span style="color:var(--scm-subtext);">X</span>`)}
+                                ${td(`<div style="display:flex;flex-direction:column;gap:3px;align-items:center;">
+                                    <span style="${i.nearMiss === 'O' ? 'font-weight:800; color:#0F766E;' : 'color:var(--scm-subtext);'}">${i.nearMiss === 'O' ? 'O' : 'X'}</span>
+                                    ${attachCell(i.attachments, i.id)}
+                                </div>`)}
                                 ${td(i.code || '-', 'center', 'color:var(--scm-text);')}
                                 ${IS_ADMIN ? `<td style="border:1px solid var(--scm-border); padding:7px 6px; text-align:center;">
                                     <div style="display:flex; flex-direction:column; gap:3px; align-items:stretch;">
@@ -9641,6 +10212,7 @@ ${extraText}
                 createdAt   : new Date().toISOString()
             });
             patrolSave(data);
+            logActivity('매월 패트롤', '등록', `[${patrolCurMonth}] "${loc}" ${content} 등록`);
             ['patrol-loc','patrol-content','patrol-owner','patrol-action'].forEach(id=>{
                 const el=document.getElementById(id); if(el) el.value='';
             });
@@ -9690,6 +10262,7 @@ ${extraText}
             };
             data[month] = arr;
             patrolSave(data);
+            logActivity('매월 패트롤', '수정', `[${month}] "${arr[idx].loc || ''}" ${content} 수정`);
             showToast('✅ 수정 내용이 저장되었습니다.', 'success');
             patrolRenderDetail();
         }
@@ -9720,8 +10293,11 @@ ${extraText}
 
         function patrolDelete(id) {
             if(!confirm('삭제하시겠습니까?'))return;
-            const data=patrolLoad(); data[patrolCurMonth]=(data[patrolCurMonth]||[]).filter(i=>i.id!==id);
+            const data=patrolLoad();
+            const target = (data[patrolCurMonth]||[]).find(i=>i.id===id);
+            data[patrolCurMonth]=(data[patrolCurMonth]||[]).filter(i=>i.id!==id);
             patrolSave(data); patrolRenderDetail();
+            logActivity('매월 패트롤', '삭제', target ? `[${patrolCurMonth}] "${target.loc}" ${target.content} 삭제` : `삭제 (id:${id})`);
         }
 
         function patrolOpenPhoto(id, idx, type) {
@@ -10095,6 +10671,7 @@ ${extraText}
                 createdAt:new Date().toISOString()
             });
             jointSave(data);
+            logActivity('합동점검', '등록', `[${jointCurQ}] "${loc}" ${content} 등록`);
             ['joint-loc','joint-content','joint-owner','joint-action'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
             document.getElementById('joint-found').value=''; document.getElementById('joint-due').value='';
             _jointBeforePhotos = [];
@@ -10104,7 +10681,7 @@ ${extraText}
         }
 
         function jointComplete(id){ const data=jointLoad(); const arr=data[jointCurQ]||[]; const idx=arr.findIndex(i=>i.id===id); if(idx<0)return; arr[idx].status='완료'; arr[idx].doneDate=new Date().toISOString().slice(0,10); data[jointCurQ]=arr; jointSave(data); showToast('✅ 완료 처리.','success'); jointRenderDetail(); }
-        function jointDelete(id){ if(!confirm('삭제?'))return; const data=jointLoad(); data[jointCurQ]=(data[jointCurQ]||[]).filter(i=>i.id!==id); jointSave(data); jointRenderDetail(); }
+        function jointDelete(id){ if(!confirm('삭제?'))return; const data=jointLoad(); const target=(data[jointCurQ]||[]).find(i=>i.id===id); data[jointCurQ]=(data[jointCurQ]||[]).filter(i=>i.id!==id); jointSave(data); jointRenderDetail(); logActivity('합동점검', '삭제', target ? `[${jointCurQ}] "${target.loc}" ${target.content} 삭제` : `삭제 (id:${id})`); }
 
         function jointRenderDetail(){
             const today=new Date().toISOString().slice(0,10);
@@ -10489,6 +11066,7 @@ ${extraText}
                 createdAt   : new Date().toISOString()
             });
             fixSave(items);
+            logActivity('위험요인 개선조치', '등록', `"${loc}" ${content} 등록`);
             ['fix-loc','fix-content','fix-owner','fix-action'].forEach(id => { document.getElementById(id).value = ''; });
             document.getElementById('fix-due-date').value = '';
             document.getElementById('fix-found-date').value = '';
@@ -10601,8 +11179,10 @@ ${extraText}
 
         function fixDelete(id) {
             if (!confirm('삭제하시겠습니까?')) return;
+            const target = fixLoad().find(i => i.id === id);
             fixSave(fixLoad().filter(i => i.id !== id));
             fixRender();
+            logActivity('위험요인 개선조치', '삭제', target ? `"${target.loc}" ${target.content} 삭제` : `삭제 (id:${id})`);
         }
 
         function fixToggleEdit(id) {
@@ -11049,6 +11629,7 @@ ${extraText}
                 createdAt    : new Date().toISOString()
             });
             nearSave(items);
+            logActivity('아차사고 관리', '등록', `[${date}] "${loc}" ${desc} 등록`);
             ['near-date','near-loc','near-desc','near-fix','near-due','near-owner','near-cause'].forEach(id => {
                 document.getElementById(id).value = '';
             });
@@ -11071,8 +11652,10 @@ ${extraText}
 
         function nearDelete(id) {
             if (!confirm('삭제하시겠습니까?')) return;
+            const target = nearLoad().find(i => i.id === id);
             nearSave(nearLoad().filter(i => i.id !== id));
             nearRender();
+            logActivity('아차사고 관리', '삭제', target ? `[${target.date}] "${target.loc}" ${target.desc} 삭제` : `삭제 (id:${id})`);
         }
 
         function nearOpenPhoto(id, idx, type) {
@@ -11293,6 +11876,7 @@ ${extraText}
                 savedAt: new Date().toISOString()
             });
             localStorage.setItem(RISK_CLIMATE_KEY + '_history', JSON.stringify(history.slice(0,100)));
+            logActivity('온열/한랭질환 관리', '등록', `[${typeLabel[type]}] ${date} 점검 저장 (${done}/${total})`);
             showToast(`✅ ${typeLabel[type]} 점검 결과가 저장되었습니다. (${done}/${total}항목 완료)`, 'success');
             document.getElementById('climate-' + type + '-memo').value = '';
             climateRenderHistory();
@@ -11337,9 +11921,11 @@ ${extraText}
 
         function climateDeleteHistory(id) {
             if (!confirm('삭제하시겠습니까?')) return;
+            const target = climateLoadHistory().find(x => x.id === id);
             const h = climateLoadHistory().filter(x => x.id !== id);
             localStorage.setItem(RISK_CLIMATE_KEY + '_history', JSON.stringify(h));
             climateRenderHistory();
+            logActivity('온열/한랭질환 관리', '삭제', target ? `[${target.typeLabel}] ${target.date} 점검 이력 삭제` : `이력 삭제 (id:${id})`);
         }
 
         // 탭 전환 시 자동 초기화 — riskShowTab은 switchTab 후 호출
@@ -12345,10 +12931,11 @@ ${extraText}
             const content = document.getElementById('notice-editor').innerHTML;
             const now = new Date().toISOString();
 
+            const isNew = !noticeEditId;
             const data = {
                 id: noticeEditId || ('n' + Date.now()),
                 subject,
-                author: '황준하',
+                author: CURRENT_SESSION ? CURRENT_SESSION.name : '황준하',
                 status,
                 pinned: noticeFormPinned,
                 active: noticeFormActive,
@@ -12375,6 +12962,7 @@ ${extraText}
             noticeRenderHome();
 
             const label = status === 'publish' ? '등록' : '임시저장';
+            logActivity('공지사항', isNew ? '등록' : '수정', `"${subject}" 공지 ${label}`);
             showToast(`✅ 공지사항이 ${label}되었습니다.`, 'success');
             noticeEditId = null;
             noticeShowList();
@@ -12388,9 +12976,11 @@ ${extraText}
         // 삭제
         function noticeDeleteCurrent() {
             if (!confirm('이 공지사항을 삭제하시겠습니까?')) return;
+            const target = noticeList.find(x => x.id === noticeCurrentId);
             noticeList = noticeList.filter(x => x.id !== noticeCurrentId);
             noticeSaveStorage();
             noticeRenderHome();
+            logActivity('공지사항', '삭제', target ? `"${target.subject}" 공지 삭제` : `공지 삭제 (id:${noticeCurrentId})`);
             showToast('🗑️ 공지사항이 삭제되었습니다.', 'info');
             noticeShowList();
         }
@@ -12642,10 +13232,14 @@ ${extraText}
         }
 
         // --- 경영방침/목표 뷰 전환 ---
-        const MGMT_VIEWS = ['mgmt-view-menu', 'mgmt-view-policy', 'mgmt-view-incident'];
+        const MGMT_VIEWS = ['mgmt-view-menu', 'mgmt-view-policy', 'mgmt-view-incident', 'mgmt-view-account'];
         function mgmtShowView(view) {
             if (view === 'incident' && !IS_MASTER) {
                 showToast('⚠️ 산재기록현황은 마스터만 접근할 수 있습니다.', 'warn');
+                view = 'menu';
+            }
+            if (view === 'account' && !IS_ADMIN) {
+                showToast('⚠️ 계정·이력관리는 관리자만 접근할 수 있습니다.', 'warn');
                 view = 'menu';
             }
             scmShowView(`mgmt-view-${view}`, MGMT_VIEWS, () => {
@@ -12661,6 +13255,7 @@ ${extraText}
                     });
                 }
                 if (view === 'incident') incidentRender();
+                if (view === 'account') { acctShowTab('log'); }
             });
         }
 
@@ -12856,11 +13451,13 @@ ${extraText}
                 if (idx !== -1) {
                     items[idx] = { ...items[idx], category, date, time, weekday, company, name, location, hireDate, tenure, work, injuryType, desc };
                     incidentSave(items);
+                    logActivity('산재기록현황', '수정', `[${category}] ${date} ${location} - ${name} 기록 수정`);
                     showToast('✅ 사고 기록이 수정되었습니다.', 'success');
                 }
             } else {
                 items.unshift({ id: Date.now(), category, date, time, weekday, company, name, location, hireDate, tenure, work, injuryType, desc, createdAt: new Date().toISOString() });
                 incidentSave(items);
+                logActivity('산재기록현황', '등록', `[${category}] ${date} ${location} - ${name} 기록 등록`);
                 showToast('✅ 사고 기록이 등록되었습니다.', 'success');
             }
             incidentResetForm();
@@ -12910,10 +13507,12 @@ ${extraText}
             }
             clearTimeout(incidentDeleteArmTimer);
             incidentDeleteArmedId = null;
+            const targetItem = incidentLoad().find(x => x.id === id);
             incidentSave(incidentLoad().filter(x => x.id !== id));
             incidentRender();
             homeRenderSafetySummary();
             homeRenderIncidentInsight();
+            logActivity('산재기록현황', '삭제', targetItem ? `[${targetItem.category}] ${targetItem.date} ${targetItem.location} - ${targetItem.name} 기록 삭제` : `기록 삭제 (id:${id})`);
             showToast('🗑 삭제되었습니다.', 'success');
         }
 
@@ -13146,6 +13745,8 @@ ${extraText}
         (function () {
             const el = document.getElementById('mega-item-incident');
             if (el && IS_MASTER) el.classList.remove('hidden');
+            const el2 = document.getElementById('mega-item-account');
+            if (el2 && IS_ADMIN) el2.classList.remove('hidden');
         })();
 
 
@@ -13374,7 +13975,7 @@ ${extraText}
                     data: base64,
                     size: file.size,
                     updatedAt: new Date().toISOString(),
-                    uploadedBy: '황준하 (관리자)',
+                    uploadedBy: CURRENT_SESSION ? `${CURRENT_SESSION.name} (${ROLE_LABEL[CURRENT_SESSION.role] || '일반'})` : '황준하 (관리자)',
                 });
 
                 try {
@@ -13402,6 +14003,7 @@ ${extraText}
                 mgmtRenderViewer(type);
 
                 const label = type === 'policy' ? '경영방침' : '안전보건 목표';
+                logActivity('경영방침·목표', '등록', `"${file.name}" ${label} 파일 업로드`);
                 showToast(`✅ "${file.name}" — ${label} 파일이 저장되었습니다.`, 'success');
             };
             reader.onerror = () => showToast('⚠️ 파일 읽기에 실패했습니다.', 'warn');
@@ -13422,6 +14024,7 @@ ${extraText}
             if (downloadBtn) downloadBtn.style.display = 'none';
 
             mgmtRenderViewer(type);
+            logActivity('경영방침·목표', '삭제', `${label} 파일 삭제`);
             showToast(`🗑️ ${label} 파일이 삭제되었습니다.`, 'info');
         }
 
