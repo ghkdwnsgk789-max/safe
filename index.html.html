@@ -482,6 +482,11 @@
              ============================================== -->
         <section id="tab-home" class="tab-content block space-y-5">
 
+            <!-- ▶ 이번 달 사고 주의 안내 (산재기록현황 데이터 기반, 완화된 문구) -->
+            <div id="home-incident-insight-wrap" class="hidden">
+                <div id="home-incident-insight" class="rounded-xl p-4"></div>
+            </div>
+
             <!-- ▶ 0행: KPI 수치 카드 4개 -->
             <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
                 <div class="dash-card green p-5">
@@ -3206,7 +3211,7 @@
                 if (tabId === 'iso') isoShowView('select');
 
                 // 홈 탭 → 위험요인 진행률 갱신
-                if (tabId === 'home') { homeRenderRiskProgress(); homeRenderSafetySummary(); }
+                if (tabId === 'home') { homeRenderRiskProgress(); homeRenderSafetySummary(); homeRenderIncidentInsight(); }
 
                 // 모바일 드롭다운 닫기
                 const sidebar = document.getElementById('sidebar');
@@ -7904,6 +7909,73 @@ ${extraText}
             if (barEl) barEl.style.width = hasIncident ? '100%' : '0%';
         }
 
+        // 산재기록현황 누적 데이터 기반 — "이번 달"이 사고 다발 시기이거나 특정 사고유형이
+        // 두드러지는 경우에만 완화된 안내 문구를 홈 대시보드 상단에 노출한다.
+        // (구체적인 건수·비율 등 사고 데이터를 직접 노출하지 않고, 주의를 당부하는 문구만 표시)
+        function homeRenderIncidentInsight() {
+            const wrap = document.getElementById('home-incident-insight-wrap');
+            const box  = document.getElementById('home-incident-insight');
+            if (!wrap || !box) return;
+            try { incidentSeedIfNeeded(); } catch (e) {}
+
+            let records = [];
+            try { records = incidentLoad().filter(i => i.date); } catch (e) {}
+
+            // 데이터가 너무 적으면(10건 미만) 통계적 의미가 없으므로 배너 숨김
+            if (records.length < 10) { wrap.classList.add('hidden'); return; }
+
+            const MONTH_NAMES = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+            const monthCount = Array(12).fill(0);
+            const monthTypeCount = Array.from({ length: 12 }, () => ({}));
+
+            records.forEach(r => {
+                const m = Number((r.date || '').slice(5, 7));
+                if (m < 1 || m > 12) return;
+                monthCount[m - 1]++;
+                const type = (r.injuryType || '').trim();
+                if (type) monthTypeCount[m - 1][type] = (monthTypeCount[m - 1][type] || 0) + 1;
+            });
+
+            // 월별 발생 건수 상위(다발) 월 판정: 건수 3건 이상 + 상위 3개월 이내
+            const ranked = monthCount
+                .map((cnt, idx) => ({ month: idx + 1, cnt }))
+                .filter(x => x.cnt >= 3)
+                .sort((a, b) => b.cnt - a.cnt);
+            const highFreqMonths = new Set(ranked.slice(0, 3).map(x => x.month));
+
+            // 특정 월의 대표(두드러진) 사고유형 판정: 해당 월 건수의 35% 이상 + 2건 이상 + 단독 1위
+            function dominantType(monthIdx1based) {
+                const dist = monthTypeCount[monthIdx1based - 1];
+                const monthTotal = monthCount[monthIdx1based - 1];
+                const entries = Object.entries(dist).sort((a, b) => b[1] - a[1]);
+                if (!entries.length || monthTotal === 0) return null;
+                const [topType, topCnt] = entries[0];
+                const secondCnt = entries[1] ? entries[1][1] : 0;
+                if (topCnt >= 2 && topCnt > secondCnt && (topCnt / monthTotal) >= 0.35) return topType;
+                return null;
+            }
+
+            const nowMonth = new Date().getMonth() + 1; // 실제 현재 월 기준으로만 안내
+            const isHighFreq = highFreqMonths.has(nowMonth);
+            const type = dominantType(nowMonth);
+
+            if (!isHighFreq && !type) { wrap.classList.add('hidden'); return; }
+
+            const lines = [];
+            if (isHighFreq) lines.push(`${MONTH_NAMES[nowMonth - 1]}은 안전사고가 많이 발생될 우려가 있는 달입니다. 안전에 대한 주의가 필요합니다.`);
+            if (type)       lines.push(`이번 달은 <strong>${type}사고</strong> 주의 기간입니다.`);
+
+            box.innerHTML = `
+                <div style="display:flex; align-items:flex-start; gap:10px; background:#FFFBEB; border:1px solid #FDE68A; border-radius:12px; padding:14px 16px;">
+                    <span style="font-size:18px; flex-shrink:0;">⚠️</span>
+                    <div style="flex:1; min-width:0;">
+                        <div style="font-size:13px; font-weight:800; color:#92400E; margin-bottom:2px;">이달의 안전 주의 안내</div>
+                        ${lines.map(l => `<div style="font-size:12.5px; font-weight:700; color:#B45309; line-height:1.6;">${l}</div>`).join('')}
+                    </div>
+                </div>`;
+            wrap.classList.remove('hidden');
+        }
+
         function homeRenderRiskProgress() {
             const el = document.getElementById('home-risk-progress');
             if (!el) return;
@@ -7968,7 +8040,7 @@ ${extraText}
 
 
         // 페이지 로드 시 홈이 기본 탭이므로 즉시 실행
-        document.addEventListener('DOMContentLoaded', () => { homeRenderRiskProgress(); homeRenderSafetySummary(); });
+        document.addEventListener('DOMContentLoaded', () => { homeRenderRiskProgress(); homeRenderSafetySummary(); homeRenderIncidentInsight(); });
 
         function riskShowTab(tab) {
             ['assess','fix','patrol','joint','near','climate'].forEach(t => {
@@ -12705,6 +12777,7 @@ ${extraText}
             incidentResetForm();
             incidentRender();
             homeRenderSafetySummary();
+            homeRenderIncidentInsight();
         }
 
         function incidentResetForm() {
@@ -12751,6 +12824,7 @@ ${extraText}
             incidentSave(incidentLoad().filter(x => x.id !== id));
             incidentRender();
             homeRenderSafetySummary();
+            homeRenderIncidentInsight();
             showToast('🗑 삭제되었습니다.', 'success');
         }
 
