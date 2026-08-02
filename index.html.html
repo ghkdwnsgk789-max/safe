@@ -337,12 +337,13 @@
                             <p class="mega-group-title">위험요인 관리</p>
                             <div class="mega-items-row">
                                 <button class="mega-item-btn" onclick="switchTab('risk');setTimeout(()=>riskShowTab('assess'),80)">위험성평가</button>
-                                <button class="mega-item-btn" onclick="showComingSoon('안전제안')">안전제안</button>
+                                <button class="mega-item-btn" onclick="switchTab('risk');setTimeout(()=>riskShowTab('proposal'),80)">안전제안</button>
                                 <button class="mega-item-btn" onclick="showComingSoon('TBM')">TBM (작업 전 미팅)</button>
                                 <button class="mega-item-btn" onclick="switchTab('risk');setTimeout(()=>riskShowTab('patrol'),80)">매월 패트롤 발굴</button>
                                 <button class="mega-item-btn" onclick="switchTab('risk');setTimeout(()=>riskShowTab('joint'),80)">작업장 합동점검</button>
                                 <button class="mega-item-btn" onclick="switchTab('risk');setTimeout(()=>riskShowTab('near'),80)">아차사고 관리</button>
-                                <button class="mega-item-btn" onclick="switchTab('risk');setTimeout(()=>riskShowTab('fix'),80)">위험요인 개선조치</button>
+                                <!-- 위험요인 개선조치: 임시 비활성화 (2026-08 요청) — 코드/데이터 보존, 아래 hidden 해제시 즉시 복구 -->
+                                <button class="mega-item-btn hidden" onclick="switchTab('risk');setTimeout(()=>riskShowTab('fix'),80)">위험요인 개선조치</button>
                                 <button class="mega-item-btn" onclick="switchTab('risk');setTimeout(()=>riskShowTab('climate'),80)">온열/한랭질환 관리</button>
                             </div>
                         </div>
@@ -1151,7 +1152,9 @@
             <!-- 서브탭 버튼 -->
             <div style="display:flex;gap:0;border-bottom:2px solid var(--scm-border);padding-bottom:0;flex-wrap:wrap;">
                 <button id="rtab-btn-assess"   onclick="riskShowTab('assess')"   class="rtab-btn" style="padding:8px 16px;font-size:12.5px;font-weight:700;border:none;background:none;cursor:pointer;border-bottom:3px solid #1B3A6B;color:#1B3A6B;margin-bottom:-2px;white-space:nowrap;">📐 위험성평가</button>
-                <button id="rtab-btn-fix"      onclick="riskShowTab('fix')"      class="rtab-btn" style="padding:8px 16px;font-size:12.5px;font-weight:700;border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;color:var(--scm-subtext);margin-bottom:-2px;white-space:nowrap;">🔧 위험요인 개선조치</button>
+                <button id="rtab-btn-proposal" onclick="riskShowTab('proposal')" class="rtab-btn" style="padding:8px 16px;font-size:12.5px;font-weight:700;border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;color:var(--scm-subtext);margin-bottom:-2px;white-space:nowrap;">💡 안전제안</button>
+                <!-- 위험요인 개선조치: 임시 비활성화 (2026-08 요청) — 코드/데이터 보존, 아래 hidden 해제시 즉시 복구 -->
+                <button id="rtab-btn-fix"      onclick="riskShowTab('fix')"      class="rtab-btn hidden" style="padding:8px 16px;font-size:12.5px;font-weight:700;border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;color:var(--scm-subtext);margin-bottom:-2px;white-space:nowrap;">🔧 위험요인 개선조치</button>
                 <button id="rtab-btn-patrol"   onclick="riskShowTab('patrol')"   class="rtab-btn" style="padding:8px 16px;font-size:12.5px;font-weight:700;border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;color:var(--scm-subtext);margin-bottom:-2px;white-space:nowrap;">📋 매월 패트롤</button>
                 <button id="rtab-btn-joint"    onclick="riskShowTab('joint')"    class="rtab-btn" style="padding:8px 16px;font-size:12.5px;font-weight:700;border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;color:var(--scm-subtext);margin-bottom:-2px;white-space:nowrap;">🤝 합동점검</button>
                 <button id="rtab-btn-near"     onclick="riskShowTab('near')"     class="rtab-btn" style="padding:8px 16px;font-size:12.5px;font-weight:700;border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;color:var(--scm-subtext);margin-bottom:-2px;white-space:nowrap;">💡 아차사고</button>
@@ -1473,6 +1476,75 @@
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════
+                 안전제안
+                 ══════════════════════════════════════════ -->
+            <div id="rtab-proposal" style="display:none;">
+
+                <div id="proposal-stats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;"></div>
+
+                <!-- 등록 폼 -->
+                <div class="scm-card p-5 mb-4">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                        <h3 style="font-size:13.5px;font-weight:800;color:var(--scm-navy);">+ 안전제안 등록</h3>
+                        <span style="font-size:11.5px;color:var(--scm-subtext);">💡 게시판에는 익명으로 표시됩니다 (관리자에게만 작성자가 보입니다)</span>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
+                        <div>
+                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">라인/장소</label>
+                            <select id="proposal-line" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;background:white;">
+                                <option value="">선택 안함</option>
+                                <option>CPL</option><option>CRM</option><option>CGL</option>
+                                <option>1CCL</option><option>2CCL</option><option>3CCL</option>
+                                <option>기계정비반</option><option>전기정비반</option><option>시험검사반</option><option>공정물류반</option>
+                                <option>기타</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">제안 유형</label>
+                            <select id="proposal-category" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;background:white;">
+                                <option>위험요인 개선</option><option>작업환경 개선</option>
+                                <option>보호구·설비 개선</option><option>절차·매뉴얼 개선</option><option>기타</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">제목 *</label>
+                            <input id="proposal-title" placeholder="제안 제목을 입력하세요" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
+                        </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+                        <div>
+                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">현재 문제점 *</label>
+                            <textarea id="proposal-problem" rows="3" placeholder="현재 어떤 점이 위험하거나 불편한지 구체적으로 작성해 주세요." style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;resize:vertical;font-family:inherit;"></textarea>
+                        </div>
+                        <div>
+                            <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">개선 아이디어 *</label>
+                            <textarea id="proposal-idea" rows="3" placeholder="무엇을 어떻게 개선하면 좋을지 제안해 주세요." style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;resize:vertical;font-family:inherit;"></textarea>
+                        </div>
+                    </div>
+                    <!-- 사진 첨부 -->
+                    <div style="margin-bottom:12px;border:1.5px solid var(--scm-border);border-radius:8px;overflow:hidden;">
+                        <div style="background:#F8FAFC;color:var(--scm-text);padding:6px 12px;font-size:12px;font-weight:700;border-bottom:1px solid var(--scm-border);display:flex;align-items:center;justify-content:space-between;">
+                            <span>▶ 관련 사진 (선택)</span>
+                            <label style="display:inline-flex;align-items:center;gap:5px;background:white;border:1px solid var(--scm-border);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:11.5px;font-weight:600;color:var(--scm-navy);">
+                                📷 사진 첨부
+                                <input type="file" id="proposal-photo" accept="image/*" multiple style="display:none;" onchange="proposalPreviewPhoto(this)">
+                            </label>
+                        </div>
+                        <div id="proposal-photo-preview" style="min-height:60px;"></div>
+                    </div>
+                    <div style="display:flex;justify-content:flex-end;">
+                        <button onclick="proposalRegister()" style="background:#1B3A6B;color:white;border:none;border-radius:8px;padding:8px 22px;font-size:13px;font-weight:700;cursor:pointer;">제안 등록</button>
+                    </div>
+                </div>
+
+                <!-- 필터 -->
+                <div id="proposal-filter-chips" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"></div>
+
+                <!-- 목록 -->
+                <div id="proposal-list"></div>
             </div>
 
             <!-- ══════════════════════════════════════════
@@ -8590,7 +8662,7 @@ ${extraText}
         document.addEventListener('DOMContentLoaded', () => { homeRenderRiskProgress(); homeRenderSafetySummary(); homeRenderIncidentInsight(); evalMatSetMode('url'); });
 
         function riskShowTab(tab) {
-            ['assess','fix','patrol','joint','near','climate'].forEach(t => {
+            ['assess','proposal','fix','patrol','joint','near','climate'].forEach(t => {
                 const el  = document.getElementById('rtab-' + t);
                 const btn = document.getElementById('rtab-btn-' + t);
                 if (el)  el.style.display  = (t === tab) ? '' : 'none';
@@ -8599,7 +8671,8 @@ ${extraText}
                     btn.style.color        = (t === tab) ? '#1B3A6B' : 'var(--scm-subtext)';
                 }
             });
-            if (tab === 'assess')  { assessRenderMatrix(); raRender(); }
+            if (tab === 'assess')   { assessRenderMatrix(); raRender(); }
+            if (tab === 'proposal') { proposalRender(); }
             if (tab === 'fix')     { fixRender(); }
             if (tab === 'patrol')  { patrolRenderFolders(); }
             if (tab === 'joint')   { jointRenderFolders(); }
@@ -11666,6 +11739,236 @@ ${extraText}
             if (!photos[idx]) return;
             const win = window.open('','_blank');
             win.document.write(`<html><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="${photos[idx].dataUrl}" style="max-width:100%;max-height:100vh;object-fit:contain;"></body></html>`);
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        //  안전제안 — 게시판에는 익명으로 표시, 마스터에게만 실명 노출
+        // ══════════════════════════════════════════════════════════════
+        const PROPOSAL_STORAGE = 'seahcm_proposal_v1';
+        let _proposalPhotos = [];
+        let proposalFilter = '전체';
+        const PROPOSAL_STATUS = ['접수', '검토중', '채택', '반려', '이행완료'];
+        const PROPOSAL_STATUS_COLOR = { '접수': '#64748B', '검토중': '#CA8A04', '채택': '#16A34A', '반려': '#DC2626', '이행완료': '#0F766E' };
+        // 포상등급 기능 — 일단 화면에서만 숨김 (2026-08 요청). true로 바꾸면 즉시 복구됨. 데이터는 그대로 보존.
+        const PROPOSAL_GRADE_ENABLED = false;
+        const PROPOSAL_GRADE_INFO = {
+            '최우수': { emoji: '🥇', color: '#B45309', bg: '#FFFBEB' },
+            '우수':   { emoji: '🥈', color: '#475569', bg: '#F8FAFC' },
+            '양호':   { emoji: '🥉', color: '#92400E', bg: '#FFF7ED' },
+            '채택':   { emoji: '✅', color: '#166534', bg: '#F0FDF4' },
+        };
+
+        function proposalLoad() { try { return JSON.parse(localStorage.getItem(PROPOSAL_STORAGE) || '[]'); } catch (e) { return []; } }
+        function proposalSave(list) { localStorage.setItem(PROPOSAL_STORAGE, JSON.stringify(list)); }
+        // 게시판 표시용 이름 — 마스터에게만 실명, 그 외에는 익명 처리
+        function proposalDisplayName(item) { return IS_MASTER ? item.authorName : '익명'; }
+
+        function proposalPreviewPhoto(input) {
+            const previewEl = document.getElementById('proposal-photo-preview');
+            if (!previewEl) return;
+            const files = Array.from(input.files || []);
+            if (!files.length) return;
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    _proposalPhotos.push({ name: file.name, dataUrl: e.target.result });
+                    const thumb = document.createElement('div');
+                    thumb.style.cssText = 'position:relative;display:inline-block;margin:4px;';
+                    thumb.innerHTML = `<img src="${e.target.result}" style="width:56px;height:56px;object-fit:cover;border-radius:6px;border:1px solid var(--scm-border);">`;
+                    previewEl.appendChild(thumb);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function proposalRegister() {
+            if (!CURRENT_SESSION) { showToast('⚠️ 로그인 후 이용해 주세요.', 'warn'); return; }
+            const line     = document.getElementById('proposal-line').value;
+            const category = document.getElementById('proposal-category').value;
+            const title    = document.getElementById('proposal-title').value.trim();
+            const problem  = document.getElementById('proposal-problem').value.trim();
+            const idea     = document.getElementById('proposal-idea').value.trim();
+            if (!title || !problem || !idea) {
+                showToast('⚠️ 제목, 현재 문제점, 개선 아이디어는 필수입니다.', 'warn'); return;
+            }
+            const items = proposalLoad();
+            items.unshift({
+                id: Date.now(),
+                authorName: CURRENT_SESSION.name,
+                line, category, title, problem, idea,
+                photos: _proposalPhotos.filter(p => p && p.dataUrl).map(p => ({ name: p.name, dataUrl: p.dataUrl })),
+                status: '접수',
+                grade: null,
+                reward: '',
+                reviewComment: '',
+                reviewedBy: '',
+                reviewedAt: '',
+                createdAt: new Date().toISOString()
+            });
+            proposalSave(items);
+            logActivity('안전제안', '등록', `"${title}" 제안 등록`);
+            ['proposal-title','proposal-problem','proposal-idea'].forEach(id => { document.getElementById(id).value = ''; });
+            document.getElementById('proposal-line').value = '';
+            document.getElementById('proposal-category').value = '위험요인 개선';
+            document.getElementById('proposal-photo').value = '';
+            document.getElementById('proposal-photo-preview').innerHTML = '';
+            _proposalPhotos = [];
+            showToast('✅ 안전제안이 등록되었습니다. 익명으로 게시됩니다.', 'success');
+            proposalRender();
+        }
+
+        function proposalSetFilter(f) {
+            proposalFilter = f;
+            proposalRender();
+        }
+
+        function proposalRender() {
+            const items = proposalLoad();
+
+            // 통계
+            const statsEl = document.getElementById('proposal-stats');
+            if (statsEl) {
+                const total = items.length;
+                const adopted = items.filter(i => ['채택','이행완료'].includes(i.status)).length;
+                const pending = items.filter(i => ['접수','검토중'].includes(i.status)).length;
+                const rate = total ? Math.round(adopted / total * 100) : 0;
+                const card = (label, val, color) => `<div class="scm-card p-4" style="text-align:center;">
+                    <div style="font-size:11px;font-weight:700;color:var(--scm-subtext);margin-bottom:4px;">${label}</div>
+                    <div style="font-size:20px;font-weight:900;color:${color};">${val}</div>
+                </div>`;
+                statsEl.innerHTML = card('총 제안', total + '건', 'var(--scm-text)')
+                    + card('심사중', pending + '건', '#CA8A04')
+                    + card('채택', adopted + '건', '#16A34A')
+                    + card('채택률', rate + '%', '#1B3A6B');
+            }
+
+            // 필터 칩
+            const chipsEl = document.getElementById('proposal-filter-chips');
+            if (chipsEl) {
+                const filters = ['전체', ...PROPOSAL_STATUS];
+                chipsEl.innerHTML = filters.map(f => {
+                    const active = f === proposalFilter;
+                    return `<button onclick="proposalSetFilter('${f}')" style="font-size:11.5px;font-weight:700;padding:5px 12px;border-radius:99px;cursor:pointer;
+                        background:${active ? '#1B3A6B' : 'white'};color:${active ? 'white' : 'var(--scm-subtext)'};border:1.5px solid ${active ? '#1B3A6B' : 'var(--scm-border)'};">${f}</button>`;
+                }).join('');
+            }
+
+            const listEl = document.getElementById('proposal-list');
+            if (!listEl) return;
+            const filtered = proposalFilter === '전체' ? items : items.filter(i => i.status === proposalFilter);
+            if (!filtered.length) {
+                listEl.innerHTML = `<div class="scm-card p-8 text-center" style="color:var(--scm-subtext);"><p class="text-3xl mb-2">💡</p><p class="text-[13px]">등록된 안전제안이 없습니다.</p></div>`;
+                return;
+            }
+
+            listEl.innerHTML = filtered.map(item => {
+                const statusColor = PROPOSAL_STATUS_COLOR[item.status] || '#64748B';
+                const gradeInfo = (PROPOSAL_GRADE_ENABLED && item.grade) ? PROPOSAL_GRADE_INFO[item.grade] : null;
+                const photoThumbs = (item.photos || []).map((p, i) =>
+                    `<img src="${p.dataUrl}" onclick="proposalOpenPhoto(${item.id},${i})" style="width:52px;height:52px;object-fit:cover;border-radius:6px;border:1px solid var(--scm-border);cursor:pointer;">`
+                ).join('');
+
+                return `<div class="scm-card p-5 mb-3">
+                    <div style="display:flex;justify-content:space-between;align-items:start;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
+                        <div style="min-width:0;">
+                            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
+                                <span style="font-size:14px;font-weight:800;color:var(--scm-text);">${item.title}</span>
+                                <span style="font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:99px;background:${statusColor}1A;color:${statusColor};">${item.status}</span>
+                                ${gradeInfo ? `<span style="font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:99px;background:${gradeInfo.bg};color:${gradeInfo.color};">${gradeInfo.emoji} ${item.grade}</span>` : ''}
+                            </div>
+                            <div style="font-size:11.5px;color:var(--scm-subtext);">
+                                제안자: <strong>${proposalDisplayName(item)}</strong>
+                                ${item.line ? ' · ' + item.line : ''}${item.category ? ' · ' + item.category : ''}
+                                · ${new Date(item.createdAt).toLocaleDateString('ko-KR')}
+                            </div>
+                        </div>
+                        ${IS_MASTER ? `<button onclick="proposalDelete(${item.id})" style="font-size:11px;font-weight:700;color:#DC2626;background:none;border:1px solid #FECACA;border-radius:6px;padding:4px 10px;cursor:pointer;white-space:nowrap;">삭제</button>` : ''}
+                    </div>
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px;">
+                        <div>
+                            <div style="font-size:11px;font-weight:700;color:var(--scm-subtext);margin-bottom:3px;">현재 문제점</div>
+                            <div style="font-size:12.5px;color:var(--scm-text);white-space:pre-wrap;">${item.problem}</div>
+                        </div>
+                        <div>
+                            <div style="font-size:11px;font-weight:700;color:var(--scm-subtext);margin-bottom:3px;">개선 아이디어</div>
+                            <div style="font-size:12.5px;color:var(--scm-text);white-space:pre-wrap;">${item.idea}</div>
+                        </div>
+                    </div>
+
+                    ${photoThumbs ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">${photoThumbs}</div>` : ''}
+
+                    ${item.reviewComment ? `<div style="font-size:12px;background:#F8FAFC;border-radius:8px;padding:8px 10px;margin-bottom:10px;color:var(--scm-text);">
+                        <strong style="color:var(--scm-navy);">심사의견:</strong> ${item.reviewComment}
+                        ${(PROPOSAL_GRADE_ENABLED && item.reward) ? `<br><strong style="color:var(--scm-navy);">포상:</strong> ${item.reward}` : ''}
+                    </div>` : ''}
+
+                    ${IS_ADMIN ? `
+                    <div style="border-top:1px solid var(--scm-border);padding-top:10px;display:grid;grid-template-columns:${(IS_MASTER && PROPOSAL_GRADE_ENABLED) ? '1fr 1fr 2fr auto' : '1fr 2fr auto'};gap:8px;align-items:end;">
+                        <div>
+                            <label style="font-size:10.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:3px;">심사상태</label>
+                            <select id="proposal-status-${item.id}" style="width:100%;border:1.5px solid var(--scm-border);border-radius:6px;padding:5px 6px;font-size:11.5px;outline:none;background:white;">
+                                ${PROPOSAL_STATUS.map(s => `<option value="${s}" ${item.status === s ? 'selected' : ''}>${s}</option>`).join('')}
+                            </select>
+                        </div>
+                        ${(IS_MASTER && PROPOSAL_GRADE_ENABLED) ? `<div>
+                            <label style="font-size:10.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:3px;">포상등급</label>
+                            <select id="proposal-grade-${item.id}" style="width:100%;border:1.5px solid var(--scm-border);border-radius:6px;padding:5px 6px;font-size:11.5px;outline:none;background:white;">
+                                <option value="">없음</option>
+                                <option value="최우수" ${item.grade==='최우수'?'selected':''}>🥇 최우수</option>
+                                <option value="우수" ${item.grade==='우수'?'selected':''}>🥈 우수</option>
+                                <option value="양호" ${item.grade==='양호'?'selected':''}>🥉 양호</option>
+                                <option value="채택" ${item.grade==='채택'?'selected':''}>✅ 채택</option>
+                            </select>
+                        </div>` : ''}
+                        <div>
+                            <label style="font-size:10.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:3px;">심사의견${(IS_MASTER && PROPOSAL_GRADE_ENABLED) ? ' / 포상내용' : ''}</label>
+                            <input id="proposal-comment-${item.id}" value="${item.reviewComment || ''}" placeholder="${IS_MASTER ? '심사의견 (포상내용은 등급 선택 후 별도 입력)' : '심사의견'}" style="width:100%;border:1.5px solid var(--scm-border);border-radius:6px;padding:5px 8px;font-size:11.5px;outline:none;">
+                        </div>
+                        <button onclick="proposalSaveReview(${item.id})" style="font-size:11.5px;font-weight:700;padding:6px 14px;background:#1B3A6B;color:white;border:none;border-radius:6px;cursor:pointer;white-space:nowrap;">저장</button>
+                    </div>` : ''}
+                </div>`;
+            }).join('');
+        }
+
+        function proposalSaveReview(id) {
+            if (!IS_ADMIN) { showToast('⚠️ 관리자 이상만 심사할 수 있습니다.', 'warn'); return; }
+            const items = proposalLoad();
+            const idx = items.findIndex(i => i.id === id);
+            if (idx === -1) return;
+            const newStatus = document.getElementById(`proposal-status-${id}`)?.value || items[idx].status;
+            const newComment = document.getElementById(`proposal-comment-${id}`)?.value.trim() || '';
+            let newGrade = items[idx].grade;
+            if (IS_MASTER) {
+                const gradeSel = document.getElementById(`proposal-grade-${id}`);
+                newGrade = gradeSel ? (gradeSel.value || null) : items[idx].grade;
+            }
+            items[idx].status = newStatus;
+            items[idx].reviewComment = newComment;
+            items[idx].grade = newGrade;
+            items[idx].reviewedBy = CURRENT_SESSION ? CURRENT_SESSION.name : '';
+            items[idx].reviewedAt = new Date().toISOString();
+            proposalSave(items);
+            logActivity('안전제안', '수정', `"${items[idx].title}" 심사 (${newStatus}${newGrade ? ', ' + newGrade : ''})`);
+            showToast('✅ 심사 내용이 저장되었습니다.', 'success');
+            proposalRender();
+        }
+
+        function proposalDelete(id) {
+            if (!IS_MASTER) { showToast('⚠️ 마스터만 삭제할 수 있습니다.', 'warn'); return; }
+            if (!confirm('삭제하시겠습니까?')) return;
+            const target = proposalLoad().find(i => i.id === id);
+            proposalSave(proposalLoad().filter(i => i.id !== id));
+            logActivity('안전제안', '삭제', target ? `"${target.title}" 제안 삭제` : `제안 삭제 (id:${id})`);
+            proposalRender();
+            showToast('🗑 삭제되었습니다.', 'success');
+        }
+
+        function proposalOpenPhoto(id, idx) {
+            const item = proposalLoad().find(i => i.id === id);
+            if (!item || !item.photos || !item.photos[idx]) return;
+            const win = window.open('', '_blank');
+            win.document.write(`<html><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="${item.photos[idx].dataUrl}" style="max-width:100%;max-height:100vh;object-fit:contain;"></body></html>`);
         }
 
         function nearRender() {
