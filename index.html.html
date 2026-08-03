@@ -13730,10 +13730,15 @@ ${extraText}
                 return {
                     number:   String(lawPick(j, ['조문번호', 'articleNo'])).trim(),
                     title:    String(lawPick(j, ['조문제목', 'articleTitle'])).trim(),
-                    content:  shortContent || fullText,
+                    content:  fullText || shortContent, // 하위 항·호까지 포함한 전체 텍스트를 우선 사용
                     fullText: fullText,
                 };
-            }).filter(a => a.fullText);
+            }).filter(a => {
+                if (!a.fullText) return false;
+                // "제6장 추락 또는 붕괴에 의한 위험 방지"처럼 실제 조문이 아닌 편·장·절 목차 구분 항목은 제외
+                const isStructuralHeading = /^제\s?[0-9]+\s?(편|장|절|관)(\s|의|$)/.test(a.fullText) && a.fullText.length < 40;
+                return !isStructuralHeading;
+            });
         }
 
         // 브라우저에서 직접 법제처 API를 호출해 검색 (기상청 위젯과 동일한 "직접 호출" 방식)
