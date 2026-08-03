@@ -13706,17 +13706,34 @@ ${extraText}
             return lawPick(chosen, ['법령일련번호', 'MST', 'lawSerialNo']) || null;
         }
 
+        // 법령 API 응답의 조문 구조(항·호·목 등 하위 조항)는 스키마가 문서화되어 있지 않아
+        // 재귀적으로 모든 하위 텍스트를 끌어모아 검색 누락을 방지한다.
+        function lawExtractAllText(obj, depth) {
+            depth = depth || 0;
+            if (obj == null || depth > 6) return '';
+            if (typeof obj === 'string') return obj;
+            if (typeof obj === 'number') return String(obj);
+            if (Array.isArray(obj)) return obj.map(o => lawExtractAllText(o, depth + 1)).join(' ');
+            if (typeof obj === 'object') return Object.values(obj).map(v => lawExtractAllText(v, depth + 1)).join(' ');
+            return '';
+        }
+
         async function lawFetchBody(mst) {
             const url = `${LAW_SERVICE_URL}?OC=${LAW_OC}&target=law&type=JSON&MST=${encodeURIComponent(mst)}`;
             const data = await lawFetchJson(url);
             const lawRoot = data?.법령 || data?.Law || data;
             const joSection = lawRoot?.조문 || lawRoot?.Article || {};
             const joList = lawToArray(lawPick(joSection, ['조문단위', 'ArticleUnit', 'jo']));
-            return joList.map(j => ({
-                number:  String(lawPick(j, ['조문번호', 'articleNo'])).trim(),
-                title:   String(lawPick(j, ['조문제목', 'articleTitle'])).trim(),
-                content: String(lawPick(j, ['조문내용', 'articleContent'])).trim(),
-            })).filter(a => a.content);
+            return joList.map(j => {
+                const shortContent = String(lawPick(j, ['조문내용', 'articleContent'])).trim();
+                const fullText = lawExtractAllText(j).trim(); // 항·호·목 등 하위 조항 텍스트까지 전부 포함
+                return {
+                    number:   String(lawPick(j, ['조문번호', 'articleNo'])).trim(),
+                    title:    String(lawPick(j, ['조문제목', 'articleTitle'])).trim(),
+                    content:  shortContent || fullText.slice(0, 400),
+                    fullText: fullText,
+                };
+            }).filter(a => a.fullText);
         }
 
         // 브라우저에서 직접 법제처 API를 호출해 검색 (기상청 위젯과 동일한 "직접 호출" 방식)
@@ -13731,7 +13748,8 @@ ${extraText}
                     if (lawInfo.key === 'law') {
                         penaltyArticles = joList.filter(a => { const n = lawArticleNum(a.number); return n !== null && n >= 167 && n <= 175; });
                     }
-                    const matched = joList.filter(a => a.content.includes(kw) || a.title.includes(kw));
+                    // 조문제목 + 조문내용 + 하위 항·호·목 전체 텍스트(fullText)까지 모두 검색 대상
+                    const matched = joList.filter(a => a.fullText.includes(kw) || a.title.includes(kw));
                     results[lawInfo.key] = { title: lawInfo.title, count: matched.length, articles: matched.slice(0, 15) };
                 } catch (innerErr) {
                     results[lawInfo.key] = { title: lawInfo.title, count: 0, articles: [], error: String(innerErr.message || innerErr) };
@@ -13777,6 +13795,37 @@ ${extraText}
             }
         }
 
+        function lawEscapeHtml(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+        }
+
+        // 검색어가 포함된 부분을 형광색(노란 배경)으로 강조 표시. 긴 조문은 검색어 주변을 잘라서 보여준다.
+        function lawHighlight(text, kw, maxLen) {
+            maxLen = maxLen || 160;
+            const raw = String(text || '');
+            if (!kw) {
+                const truncated = raw.slice(0, maxLen);
+                return lawEscapeHtml(truncated) + (raw.length > maxLen ? '…' : '');
+            }
+            const idx = raw.indexOf(kw);
+            let snippet, prefixEllipsis = false, suffixEllipsis = false;
+            if (idx === -1) {
+                snippet = raw.slice(0, maxLen);
+                suffixEllipsis = raw.length > maxLen;
+            } else {
+                const start = Math.max(0, idx - Math.floor(maxLen / 3));
+                const end = Math.min(raw.length, start + maxLen);
+                snippet = raw.slice(start, end);
+                prefixEllipsis = start > 0;
+                suffixEllipsis = end < raw.length;
+            }
+            const escapedSnippet = lawEscapeHtml(snippet);
+            const escapedKw = lawEscapeHtml(kw).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const kwRegex = new RegExp(escapedKw, 'g');
+            const highlighted = escapedSnippet.replace(kwRegex, m => `<mark style="background:#FDE047;color:#713F12;padding:0 2px;border-radius:3px;font-weight:700;">${m}</mark>`);
+            return (prefixEllipsis ? '…' : '') + highlighted + (suffixEllipsis ? '…' : '');
+        }
+
         function lawSearchRenderResults(kw, data) {
             const resultsEl = document.getElementById('lawsearch-results');
             const chipsEl = document.getElementById('lawsearch-summary-chips');
@@ -13787,7 +13836,7 @@ ${extraText}
 
             chipsEl.classList.remove('hidden');
             chipsEl.innerHTML = `
-                <span class="text-[12px] font-bold px-3 py-1.5 rounded-full" style="background:#F1F5F9;color:var(--scm-text);">검색어 ${kw}</span>
+                <span class="text-[12px] font-bold px-3 py-1.5 rounded-full" style="background:#F1F5F9;color:var(--scm-text);">검색어 ${lawEscapeHtml(kw)}</span>
                 <span class="text-[12px] font-bold px-3 py-1.5 rounded-full" style="background:#F1F5F9;color:var(--scm-text);">관련 조문 ${totalArticles}건</span>
                 <span class="text-[12px] font-bold px-3 py-1.5 rounded-full" style="background:#F1F5F9;color:var(--scm-text);">식별된 제재 ${penaltyArticles.length}건</span>
             `;
@@ -13802,8 +13851,8 @@ ${extraText}
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                         ${penaltyArticles.map(a => `
                             <div class="rounded-xl p-3.5" style="border:1px solid var(--scm-border); background:#FFF7ED;">
-                                <p class="text-[12.5px] font-black mb-2" style="color: var(--scm-text);">제${a.number}조</p>
-                                <p class="text-[11.5px] leading-relaxed" style="color: var(--scm-text); white-space:pre-wrap;">${(a.content || '').slice(0, 140)}${(a.content||'').length > 140 ? '…' : ''}</p>
+                                <p class="text-[12.5px] font-black mb-2" style="color: var(--scm-text);">제${lawEscapeHtml(a.number)}조</p>
+                                <p class="text-[11.5px] leading-relaxed" style="color: var(--scm-text); white-space:pre-wrap;">${lawHighlight(a.content, kw, 140)}</p>
                             </div>
                         `).join('')}
                     </div>
@@ -13820,14 +13869,14 @@ ${extraText}
                         return `
                         <div class="scm-card p-4">
                             <p class="text-[10.5px] font-black" style="color:#0F766E;">${l.badge}</p>
-                            <p class="text-[14px] font-black mt-0.5" style="color: var(--scm-text);">${r.title}</p>
+                            <p class="text-[14px] font-black mt-0.5" style="color: var(--scm-text);">${lawEscapeHtml(r.title)}</p>
                             <p class="text-[11px] font-bold mt-2 mb-3" style="color:#0F766E;">${r.count || 0}건</p>
-                            ${r.error ? `<p class="text-[11.5px]" style="color:#DC2626;">${r.error}</p>` : ''}
+                            ${r.error ? `<p class="text-[11.5px]" style="color:#DC2626;">${lawEscapeHtml(r.error)}</p>` : ''}
                             <div class="space-y-3">
                                 ${(r.articles || []).map(a => `
                                     <div style="border-top:1px solid var(--scm-border); padding-top:8px;">
-                                        <p class="text-[12px] font-black" style="color: var(--scm-text);">제${a.number}조${a.title ? ' (' + a.title + ')' : ''}</p>
-                                        <p class="text-[11.5px] mt-1 leading-relaxed" style="color: var(--scm-subtext); white-space:pre-wrap;">${(a.content || '').slice(0, 160)}${(a.content||'').length > 160 ? '…' : ''}</p>
+                                        <p class="text-[12px] font-black" style="color: var(--scm-text);">제${lawEscapeHtml(a.number)}조${a.title ? ' (' + lawEscapeHtml(a.title) + ')' : ''}</p>
+                                        <p class="text-[11.5px] mt-1 leading-relaxed" style="color: var(--scm-subtext); white-space:pre-wrap;">${lawHighlight(a.content, kw, 160)}</p>
                                     </div>
                                 `).join('') || `<p class="text-[11.5px]" style="color: var(--scm-subtext);">일치하는 조문이 없습니다.</p>`}
                             </div>
