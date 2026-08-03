@@ -435,7 +435,10 @@
                         <div class="mega-panel-wide">
                             <p class="mega-group-title">자료실</p>
                             <div class="mega-items-row">
-                                <button class="mega-item-btn" onclick="switchTab('library'); setTimeout(()=>libraryShowView('lawsearch'),80)">산업안전보건법 검토</button>
+                                <button class="mega-item-btn" onclick="switchTab('library'); setTimeout(()=>libraryShowView('lawsearch','osha'),80)">산업안전보건법 검토</button>
+                                <button class="mega-item-btn" onclick="switchTab('library'); setTimeout(()=>libraryShowView('lawsearch','hazmat'),80)">위험물안전관리법 검토</button>
+                                <button class="mega-item-btn" onclick="switchTab('library'); setTimeout(()=>libraryShowView('lawsearch','nuclear'),80)">원자력안전법 검토</button>
+                                <button class="mega-item-btn" onclick="switchTab('library'); setTimeout(()=>libraryShowView('lawsearch','fire'),80)">소방관련 법 검토</button>
                             </div>
                         </div>
                     </div>
@@ -3143,22 +3146,20 @@
                 <div id="library-menu-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-4"></div>
             </div>
 
-            <!-- [B] 산업안전보건법 검토 (법령 통합 검색) -->
+            <!-- [B] 법령 검토 (통합 검색) -->
             <div id="library-view-lawsearch" class="hidden space-y-6">
 
                 <!-- 브레드크럼 -->
                 <div class="flex items-center gap-2 text-[13px]">
                     <button onclick="libraryShowView('menu')" class="font-bold hover:underline" style="color: var(--scm-subtext);">← 자료실</button>
                     <span style="color: var(--scm-border);">/</span>
-                    <span class="font-bold" style="color: var(--scm-text);">산업안전보건법 검토</span>
+                    <span class="font-bold" id="lawsearch-breadcrumb" style="color: var(--scm-text);">산업안전보건법 검토</span>
                 </div>
 
                 <!-- 헤더 -->
                 <div>
-                    <h1 class="text-2xl sm:text-3xl font-black" style="color: var(--scm-text);">산업안전보건 법령 통합 검색</h1>
-                    <p class="text-[13px] sm:text-[14px] mt-3 leading-relaxed" style="color: var(--scm-subtext); max-width: 640px;">
-                        하나의 키워드로 산업안전보건법, 시행령, 시행규칙, 산업안전보건기준에 관한 규칙을 동시에 검색할 수 있습니다. 검색 결과와 연관된 벌금 및 과태료 조문도 함께 확인하세요.
-                    </p>
+                    <h1 class="text-2xl sm:text-3xl font-black" id="lawsearch-title" style="color: var(--scm-text);">산업안전보건 법령 통합 검색</h1>
+                    <p class="text-[13px] sm:text-[14px] mt-3 leading-relaxed" id="lawsearch-subtitle" style="color: var(--scm-subtext); max-width: 640px;"></p>
                     <button onclick="document.getElementById('lawsearch-box').scrollIntoView({behavior:'smooth', block:'start'})" class="mt-4 text-white text-[13px] font-bold px-5 py-2.5 rounded-xl hover:opacity-90 transition-opacity" style="background: var(--scm-navy);">법령 검색 시작 ↓</button>
                 </div>
 
@@ -3172,7 +3173,7 @@
                 <!-- 법령 비교 검색 -->
                 <div id="lawsearch-box" class="scm-card p-6" style="scroll-margin-top:20px;">
                     <h2 class="text-lg font-black" style="color: var(--scm-text);">법령 비교 검색</h2>
-                    <p class="text-[12.5px] mt-1.5 mb-4" style="color: var(--scm-subtext);">하나의 키워드로 산업안전보건법, 시행령, 시행규칙, 산업안전보건기준에 관한 규칙을 동시에 검색합니다. 아래쪽에는 식별된 조항과 법정 제재 상한을 요약하여 표시합니다.</p>
+                    <p class="text-[12.5px] mt-1.5 mb-4" id="lawsearch-box-desc" style="color: var(--scm-subtext);"></p>
                     <div class="flex gap-2">
                         <input id="lawsearch-input" type="text" placeholder="예: 추락, 안전대, 위험물" onkeydown="if(event.key==='Enter')lawSearchSubmit()" class="flex-1 border rounded-xl px-4 py-3 text-[13.5px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); color: var(--scm-text);">
                         <button onclick="lawSearchSubmit()" class="text-white text-[13px] font-bold px-5 py-3 rounded-xl hover:opacity-90 transition-opacity whitespace-nowrap" style="background: #0F766E;">통합 검색</button>
@@ -3728,7 +3729,7 @@
             library: {
                 icon: '📚',
                 color: '#0F766E',
-                items: ['산업안전보건법 검토']
+                items: ['산업안전보건법 검토', '위험물안전관리법 검토', '원자력안전법 검토', '소방관련 법 검토']
             },
             risk: {
                 icon: '⚠️',
@@ -3759,6 +3760,14 @@
             }
         };
 
+        // 자료실 메뉴 항목 라벨 → 법령그룹 키 매핑
+        const LIBRARY_ITEM_TO_GROUP = {
+            '산업안전보건법 검토': 'osha',
+            '위험물안전관리법 검토': 'hazmat',
+            '원자력안전법 검토': 'nuclear',
+            '소방관련 법 검토': 'fire',
+        };
+
         // ============================================
         // 각 탭의 메뉴 그리드 렌더링
         // ============================================
@@ -3768,15 +3777,16 @@
             if (!data || !grid) return;
 
             grid.innerHTML = data.items.map(item => {
+                const libraryGroup = (tabId === 'library') ? LIBRARY_ITEM_TO_GROUP[item] : null;
                 // 경영방침, 목표 → 전용 서브뷰 연결
                 const onclick = (tabId === 'management' && item === '경영방침, 목표')
                     ? `mgmtOpenPolicy()`
-                    : (tabId === 'library' && item === '산업안전보건법 검토')
-                        ? `libraryShowView('lawsearch')`
+                    : libraryGroup
+                        ? `libraryShowView('lawsearch','${libraryGroup}')`
                         : `showComingSoon('${item.replace(/'/g, "\\'")}')`;
                 const badge = (tabId === 'management' && item === '경영방침, 목표')
                     ? `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded mt-1 inline-block" style="background:#DBEAFE;color:#1D4ED8;">파일 열람</span>`
-                    : (tabId === 'library' && item === '산업안전보건법 검토')
+                    : libraryGroup
                         ? `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded mt-1 inline-block" style="background:#CCFBF1;color:#0F766E;">법령 통합 검색</span>`
                         : `<p class="text-[11px] mt-1" style="color: var(--scm-subtext);">바로가기 →</p>`;
                 return `
@@ -13620,39 +13630,108 @@ ${extraText}
         }
 
         // ══════════════════════════════════════════════════════════════
-        //  자료실 — 산업안전보건법 검토 (법령 통합 검색)
+        //  자료실 — 법령 검토 (법령 통합 검색)
         //  /api/law-search 서버리스 함수(Vercel)를 통해 법제처 Open API를
         //  서버 쪽에서 대신 호출한다 (CORS 우회 + OC 키 비노출).
         //  API가 아직 준비되지 않았거나 오류가 나면 law.go.kr 링크로 자동 대체된다.
+        //  여러 법령(산업안전보건법/위험물안전관리법/원자력안전법/소방관련법)을
+        //  LAW_GROUPS 설정 하나로 재사용 가능하게 구성했다.
         // ══════════════════════════════════════════════════════════════
+        const LAW_GROUPS = {
+            osha: {
+                label: '산업안전보건법 검토',
+                pageTitle: '산업안전보건 법령 통합 검색',
+                subtitle: '하나의 키워드로 산업안전보건법, 시행령, 시행규칙, 산업안전보건기준에 관한 규칙을 동시에 검색할 수 있습니다. 검색 결과와 연관된 벌금 및 과태료 조문도 함께 확인하세요.',
+                boxDesc: '하나의 키워드로 산업안전보건법, 시행령, 시행규칙, 산업안전보건기준에 관한 규칙을 동시에 검색합니다. 아래쪽에는 식별된 조항과 법정 제재 상한을 요약하여 표시합니다.',
+                targetLaws: [
+                    { key: 'law', title: '산업안전보건법', badge: '법', desc: '사업주의 의무와 벌칙 적용의 기준이 되는 법률 조문을 확인합니다.' },
+                    { key: 'decree', title: '산업안전보건법 시행령', badge: '시행령', desc: '법률에서 위임한 세부 적용 대상과 행정 기준을 확인합니다.' },
+                    { key: 'rule', title: '산업안전보건법 시행규칙', badge: '시행규칙', desc: '신고, 제출, 교육, 검사 등 실무 절차와 서식을 확인합니다.' },
+                    { key: 'standard', title: '산업안전보건기준에 관한 규칙', badge: '기준규칙', desc: '설비, 작업, 화학물질 및 위험요인별 구체적인 안전기준을 확인합니다.' },
+                ],
+                penaltyLawKey: 'law',
+                standardImputation: { fromKey: 'standard', toArticles: [38, 39] },
+            },
+            hazmat: {
+                label: '위험물안전관리법 검토',
+                pageTitle: '위험물안전관리법 통합 검색',
+                subtitle: '하나의 키워드로 위험물안전관리법, 시행령, 시행규칙을 동시에 검색할 수 있습니다. 검색 결과와 연관된 벌금 및 과태료 조문도 함께 확인하세요.',
+                boxDesc: '하나의 키워드로 위험물안전관리법, 시행령, 시행규칙을 동시에 검색합니다. 아래쪽에는 식별된 조항과 법정 제재 상한을 요약하여 표시합니다.',
+                targetLaws: [
+                    { key: 'law', title: '위험물안전관리법', badge: '법', desc: '위험물 저장·취급·운반의 기준이 되는 법률 조문을 확인합니다.' },
+                    { key: 'decree', title: '위험물안전관리법 시행령', badge: '시행령', desc: '법률에서 위임한 세부 적용 대상과 행정 기준을 확인합니다.' },
+                    { key: 'rule', title: '위험물안전관리법 시행규칙', badge: '시행규칙', desc: '제조소·저장소·취급소 등의 세부 기준과 절차를 확인합니다.' },
+                ],
+                penaltyLawKey: 'law',
+            },
+            nuclear: {
+                label: '원자력안전법 검토',
+                pageTitle: '원자력안전법 통합 검색',
+                subtitle: '하나의 키워드로 원자력안전법, 시행령, 시행규칙을 동시에 검색할 수 있습니다. 검색 결과와 연관된 벌금 및 과태료 조문도 함께 확인하세요.',
+                boxDesc: '하나의 키워드로 원자력안전법, 시행령, 시행규칙을 동시에 검색합니다. 아래쪽에는 식별된 조항과 법정 제재 상한을 요약하여 표시합니다.',
+                targetLaws: [
+                    { key: 'law', title: '원자력안전법', badge: '법', desc: '원자력 이용에 따른 안전관리의 기준이 되는 법률 조문을 확인합니다.' },
+                    { key: 'decree', title: '원자력안전법 시행령', badge: '시행령', desc: '법률에서 위임한 세부 적용 대상과 행정 기준을 확인합니다.' },
+                    { key: 'rule', title: '원자력안전법 시행규칙', badge: '시행규칙', desc: '신고, 검사, 허가 등 실무 절차와 서식을 확인합니다.' },
+                ],
+                penaltyLawKey: 'law',
+            },
+            fire: {
+                label: '소방관련 법 검토',
+                pageTitle: '소방 관련 법령 통합 검색',
+                subtitle: '하나의 키워드로 소방기본법 등 주요 소방 관련 법률을 동시에 검색할 수 있습니다. (여러 개별 법률의 묶음이라 벌칙 자동연결은 지원하지 않습니다.)',
+                boxDesc: '하나의 키워드로 소방 관련 주요 법률을 동시에 검색합니다. 각 법률은 서로 독립적이라 조문 검색 결과만 제공합니다.',
+                targetLaws: [
+                    { key: 'basic', title: '소방기본법', badge: '기본법', desc: '소방활동과 화재 예방의 기본 원칙을 확인합니다.' },
+                    { key: 'prevention', title: '화재의 예방 및 안전관리에 관한 법률', badge: '예방법', desc: '화재예방강화지구, 화재안전조사 등의 기준을 확인합니다.' },
+                    { key: 'facility', title: '소방시설 설치 및 관리에 관한 법률', badge: '시설법', desc: '소방시설의 설치·유지·관리 기준을 확인합니다.' },
+                    { key: 'construction', title: '소방시설공사업법', badge: '공사업법', desc: '소방시설공사업 등록·시공·감리 기준을 확인합니다.' },
+                ],
+                penaltyLawKey: null, // 여러 법이 각자 벌칙을 가지므로 자동 연결은 생략(조문 검색만 제공)
+            },
+        };
+
+        let currentLawGroup = 'osha';
+
         const LIBRARY_VIEWS = ['library-view-menu', 'library-view-lawsearch'];
-        function libraryShowView(view) {
+        function libraryShowView(view, groupKey) {
+            if (groupKey) currentLawGroup = groupKey;
             LIBRARY_VIEWS.forEach(v => {
                 const el = document.getElementById(v);
                 if (el) el.classList.toggle('hidden', v !== `library-view-${view}`);
             });
-            if (view === 'lawsearch') lawSearchRenderCards();
+            if (view === 'lawsearch') {
+                const g = LAW_GROUPS[currentLawGroup];
+                const bc = document.getElementById('lawsearch-breadcrumb');
+                const ti = document.getElementById('lawsearch-title');
+                const su = document.getElementById('lawsearch-subtitle');
+                const bd = document.getElementById('lawsearch-box-desc');
+                if (bc) bc.textContent = g.label;
+                if (ti) ti.textContent = g.pageTitle;
+                if (su) su.textContent = g.subtitle;
+                if (bd) bd.textContent = g.boxDesc;
+                lawSearchReset();
+                lawSearchRenderCards();
+            }
         }
 
         const LAW_GOKR_SEARCH = 'https://www.law.go.kr/lsSc.do?menuId=1&subMenuId=15&tabMenuId=81&query=';
         const LAW_API_ENDPOINT = '/api/law-search';
 
-        const LAW_SEARCH_CARDS = [
-            { no: '01', title: '산업안전보건법',            desc: '사업주의 의무와 벌칙 적용의 기준이 되는 법률 조문을 확인합니다.',            lawName: '산업안전보건법' },
-            { no: '02', title: '시행령',                    desc: '법률에서 위임한 세부 적용 대상과 행정 기준을 확인합니다.',                  lawName: '산업안전보건법 시행령' },
-            { no: '03', title: '시행규칙',                  desc: '신고, 제출, 교육, 검사 등 실무 절차와 서식을 확인합니다.',                  lawName: '산업안전보건법 시행규칙' },
-            { no: '04', title: '안전보건기준에 관한 규칙',   desc: '설비, 작업, 화학물질 및 위험요인별 구체적인 안전기준을 확인합니다.',        lawName: '산업안전보건기준에 관한 규칙' },
-            { no: '05', title: '벌금 및 과태료',            desc: '검색된 법령 조항과 연결되는 제167조부터 제175조까지의 제재 조문을 확인합니다.', lawName: '산업안전보건법 벌칙' },
-        ];
-
         function lawSearchRenderCards() {
             const el = document.getElementById('lawsearch-cards');
             if (!el) return;
-            el.innerHTML = LAW_SEARCH_CARDS.map(c => `
-                <button onclick="lawSearchOpen('${c.lawName}')" class="scm-card p-4 text-left hover:shadow-md hover:-translate-y-0.5 transition-all">
+            const g = LAW_GROUPS[currentLawGroup];
+            const cards = g.targetLaws.map((t, i) => ({ no: String(i + 1).padStart(2, '0'), title: t.badge === '법' ? t.title : t.badge, desc: t.desc, lawName: t.title }));
+            if (g.penaltyLawKey) {
+                const baseLaw = g.targetLaws.find(t => t.key === g.penaltyLawKey);
+                cards.push({ no: String(cards.length + 1).padStart(2, '0'), title: '벌금 및 과태료', desc: '검색된 법령 조항과 연결되는 벌칙·과태료 조문을 별도로 확인합니다.', lawName: (baseLaw ? baseLaw.title : '') + ' 벌칙' });
+            }
+            el.innerHTML = cards.map(c => `
+                <button onclick="lawSearchOpen('${lawEscapeHtml(c.lawName)}')" class="scm-card p-4 text-left hover:shadow-md hover:-translate-y-0.5 transition-all">
                     <p class="text-[11px] font-black" style="color:#0F766E;">${c.no}</p>
-                    <p class="text-[13.5px] font-black mt-1" style="color: var(--scm-text);">${c.title}</p>
-                    <p class="text-[11.5px] mt-1.5 leading-relaxed" style="color: var(--scm-subtext);">${c.desc}</p>
+                    <p class="text-[13.5px] font-black mt-1" style="color: var(--scm-text);">${lawEscapeHtml(c.title)}</p>
+                    <p class="text-[11.5px] mt-1.5 leading-relaxed" style="color: var(--scm-subtext);">${lawEscapeHtml(c.desc)}</p>
                 </button>
             `).join('');
         }
@@ -13676,12 +13755,6 @@ ${extraText}
         const LAW_OC = 'hjh6609';
         const LAW_SEARCH_URL = 'https://www.law.go.kr/DRF/lawSearch.do';
         const LAW_SERVICE_URL = 'https://www.law.go.kr/DRF/lawService.do';
-        const LAW_TARGET_LAWS = [
-            { key: 'law',      title: '산업안전보건법' },
-            { key: 'decree',   title: '산업안전보건법 시행령' },
-            { key: 'rule',     title: '산업안전보건법 시행규칙' },
-            { key: 'standard', title: '산업안전보건기준에 관한 규칙' },
-        ];
 
         function lawToArray(v) { if (v == null) return []; return Array.isArray(v) ? v : [v]; }
         function lawPick(obj, keys) { for (const k of keys) { if (obj && obj[k] != null) return obj[k]; } return ''; }
@@ -13814,16 +13887,19 @@ ${extraText}
         }
 
         async function lawSearchDirectFetch(kw) {
+            const g = LAW_GROUPS[currentLawGroup];
             const results = {};
             let penaltyArticlesFull = [];
 
-            for (const lawInfo of LAW_TARGET_LAWS) {
+            for (const lawInfo of g.targetLaws) {
                 try {
                     const mst = await lawFindMST(lawInfo.title);
                     if (!mst) { results[lawInfo.key] = { title: lawInfo.title, count: 0, articles: [] }; continue; }
                     const joList = await lawFetchBody(mst);
-                    if (lawInfo.key === 'law') {
-                        penaltyArticlesFull = joList.filter(a => { const n = lawArticleNum(a.number); return n !== null && n >= 167 && n <= 175; });
+                    // 벌칙 조문 탐지: 고정된 조문번호 범위 대신, 조문 제목이 "벌칙"/"과태료"인 조문을 찾는다
+                    // (법마다 벌칙 조문 번호대가 다르므로 이 방식이 어떤 법에도 재사용 가능)
+                    if (g.penaltyLawKey && lawInfo.key === g.penaltyLawKey) {
+                        penaltyArticlesFull = joList.filter(a => /벌칙|과태료/.test(a.title));
                     }
                     // 조문제목 + 조문내용 + 하위 항·호·목 전체 텍스트(fullText)까지 모두 검색 대상
                     const matchedFull = joList.filter(a => a.fullText.includes(kw) || a.title.includes(kw));
@@ -13833,13 +13909,22 @@ ${extraText}
                 }
             }
 
-            // 벌칙 연결 — "매칭된 산업안전보건법 조문번호가 벌칙조문(제167~175조) 본문 안에
-            // 실제로 인용되어 있는지"를 대조해서, 진짜 관련 있는 벌칙 조문(항 단위)만 골라낸다.
-            // (안전보건기준에 관한 규칙 위반은 법 제38조·39조 위반으로 의제되므로,
-            //  기준규칙에서 매칭이 있으면 제38조·39조도 함께 대조 대상에 포함한다.)
-            const matchedNumbers = new Set(results.law ? results.law.matchedNumbers : []);
-            const linkedFromStandard = (results.standard && results.standard.count > 0) && !matchedNumbers.size;
-            if ((results.standard && results.standard.count > 0)) { matchedNumbers.add(38); matchedNumbers.add(39); }
+            if (!g.penaltyLawKey) {
+                // 소방관련법처럼 여러 개별 법률의 묶음인 경우 벌칙 자동연결은 생략
+                return { query: kw, results, penaltyCards: [], linkedArticleNumbers: [], linkedFromStandard: false };
+            }
+
+            // 벌칙 연결 — "매칭된 조문번호가 벌칙조문 본문 안에 실제로 인용되어 있는지"를
+            // 대조해서, 진짜 관련 있는 벌칙 조문(항 단위)만 골라낸다.
+            const matchedNumbers = new Set(results[g.penaltyLawKey] ? results[g.penaltyLawKey].matchedNumbers : []);
+            let linkedFromStandard = false;
+            if (g.standardImputation) {
+                const src = results[g.standardImputation.fromKey];
+                if (src && src.count > 0) {
+                    linkedFromStandard = !matchedNumbers.size;
+                    g.standardImputation.toArticles.forEach(n => matchedNumbers.add(n));
+                }
+            }
 
             const penaltyCards = lawBuildPenaltyCards(penaltyArticlesFull, matchedNumbers);
             const linkedArticleNumbers = [...matchedNumbers].sort((a, b) => a - b);
@@ -13935,6 +14020,7 @@ ${extraText}
         function lawSearchRenderResults(kw, data) {
             const resultsEl = document.getElementById('lawsearch-results');
             const chipsEl = document.getElementById('lawsearch-summary-chips');
+            const g = LAW_GROUPS[currentLawGroup];
             const results = data.results || {};
             const penaltyCards = data.penaltyCards || [];
             const linkedArticleNumbers = data.linkedArticleNumbers || [];
@@ -13948,10 +14034,11 @@ ${extraText}
                 <span class="text-[12px] font-bold px-3 py-1.5 rounded-full" style="background:#F1F5F9;color:var(--scm-text);">식별된 제재 ${penaltyCards.length}건</span>
             `;
 
+            const baseLawTitle = (g.targetLaws.find(t => t.key === g.penaltyLawKey) || {}).title || '';
             const linkedFromStandard = !!data.linkedFromStandard;
-            const standardNoticeHtml = linkedFromStandard ? `
+            const standardNoticeHtml = (linkedFromStandard && g.standardImputation) ? `
                 <div class="rounded-xl p-4 mb-3" style="background:#EFF6FF; border:1px solid #BFDBFE;">
-                    <p class="text-[12.5px] font-bold" style="color:#1E3A8A;">산업안전보건기준에 관한 규칙을 위반하는 경우에는 산업안전보건법 <strong>제38조, 제39조</strong>(안전조치·보건조치) 위반으로 처벌될 수 있습니다.</p>
+                    <p class="text-[12.5px] font-bold" style="color:#1E3A8A;">${lawEscapeHtml((g.targetLaws.find(t => t.key === g.standardImputation.fromKey) || {}).title || '')}을(를) 위반하는 경우에는 ${lawEscapeHtml(baseLawTitle)} <strong>${g.standardImputation.toArticles.map(n => '제' + n + '조').join(', ')}</strong> 위반으로 처벌될 수 있습니다.</p>
                 </div>` : '';
 
             const tagColor = { '징역': { bg: '#FEF3C7', color: '#92400E' }, '벌금': { bg: '#FEF3C7', color: '#92400E' }, '과태료': { bg: '#DBEAFE', color: '#1D4ED8' } };
@@ -13960,7 +14047,7 @@ ${extraText}
                 <details class="mb-3">
                     <summary class="text-[12.5px] font-bold cursor-pointer select-none" style="color: var(--scm-navy);">▶ 연결된 법률 조문 ${linkedArticleNumbers.length}건 보기</summary>
                     <div class="flex gap-2 flex-wrap mt-2">
-                        ${linkedArticleNumbers.map(n => `<span class="text-[11.5px] font-bold px-3 py-1.5 rounded-lg" style="background:#1B3A6B;color:white;">산업안전보건법 제${n}조</span>`).join('')}
+                        ${linkedArticleNumbers.map(n => `<span class="text-[11.5px] font-bold px-3 py-1.5 rounded-lg" style="background:#1B3A6B;color:white;">${lawEscapeHtml(baseLawTitle)} 제${n}조</span>`).join('')}
                     </div>
                 </details>` : '';
 
@@ -13970,7 +14057,7 @@ ${extraText}
                         <h3 class="text-[15px] font-black" style="color: var(--scm-text);">제재 요약 — 관련 징역·벌금·과태료</h3>
                         <span class="text-[12px] font-bold" style="color:#C2410C;">${penaltyCards.length}건</span>
                     </div>
-                    <p class="text-[11.5px] mb-4" style="color: var(--scm-subtext);">산업안전보건법 조항을 위반하면 어떤 벌칙이 있는지 나타냅니다. (행정조치 - 벌금/징역, 과태료)</p>
+                    <p class="text-[11.5px] mb-4" style="color: var(--scm-subtext);">${lawEscapeHtml(baseLawTitle)} 조항을 위반하면 어떤 벌칙이 있는지 나타냅니다. (행정조치 - 벌금/징역, 과태료)</p>
                     ${standardNoticeHtml}
                     ${linkedSummaryHtml}
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -14007,12 +14094,10 @@ ${extraText}
                     </div>
                 </div>` : '';
 
-            const lawOrder = [
-                { key: 'law', badge: '법' }, { key: 'decree', badge: '시행령' },
-                { key: 'rule', badge: '시행규칙' }, { key: 'standard', badge: '기준규칙' },
-            ];
+            const lawOrder = g.targetLaws.map(t => ({ key: t.key, badge: t.badge }));
+            const gridColsClass = lawOrder.length >= 4 ? 'lg:grid-cols-4' : (lawOrder.length === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-2');
             const columnsHtml = `
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 ${gridColsClass} gap-4">
                     ${lawOrder.map(l => {
                         const r = results[l.key] || { title: '', count: 0, articles: [] };
                         return `
