@@ -13739,23 +13739,39 @@ ${extraText}
         // 브라우저에서 직접 법제처 API를 호출해 검색 (기상청 위젯과 동일한 "직접 호출" 방식)
         async function lawSearchDirectFetch(kw) {
             const results = {};
-            let penaltyArticles = [];
+            let penaltyArticlesFull = [];
+
             for (const lawInfo of LAW_TARGET_LAWS) {
                 try {
                     const mst = await lawFindMST(lawInfo.title);
-                    if (!mst) { results[lawInfo.key] = { title: lawInfo.title, count: 0, articles: [], error: '법령을 찾을 수 없습니다.' }; continue; }
+                    if (!mst) { results[lawInfo.key] = { title: lawInfo.title, count: 0, articles: [] }; continue; }
                     const joList = await lawFetchBody(mst);
                     if (lawInfo.key === 'law') {
-                        penaltyArticles = joList.filter(a => { const n = lawArticleNum(a.number); return n !== null && n >= 167 && n <= 175; });
+                        penaltyArticlesFull = joList.filter(a => { const n = lawArticleNum(a.number); return n !== null && n >= 167 && n <= 175; });
                     }
                     // 조문제목 + 조문내용 + 하위 항·호·목 전체 텍스트(fullText)까지 모두 검색 대상
-                    const matched = joList.filter(a => a.fullText.includes(kw) || a.title.includes(kw));
-                    results[lawInfo.key] = { title: lawInfo.title, count: matched.length, articles: matched.slice(0, 15) };
+                    const matchedFull = joList.filter(a => a.fullText.includes(kw) || a.title.includes(kw));
+                    results[lawInfo.key] = { title: lawInfo.title, count: matchedFull.length, articles: matchedFull.slice(0, 15), matchedNumbers: matchedFull.map(a => lawArticleNum(a.number)).filter(n => n !== null) };
                 } catch (innerErr) {
                     results[lawInfo.key] = { title: lawInfo.title, count: 0, articles: [], error: String(innerErr.message || innerErr) };
                 }
             }
-            return { query: kw, results, penaltyArticles };
+
+            // 벌칙 연결 — "매칭된 산업안전보건법 조문번호가 벌칙조문(제167~175조) 본문 안에
+            // 실제로 인용되어 있는지"를 대조해서, 진짜 관련 있는 벌칙 조문만 골라낸다.
+            // (안전보건기준에 관한 규칙 위반은 법 제38조·39조 위반으로 의제되므로,
+            //  기준규칙에서 매칭이 있으면 제38조·39조도 함께 대조 대상에 포함한다.)
+            const matchedNumbers = new Set(results.law ? results.law.matchedNumbers : []);
+            if ((results.standard && results.standard.count > 0)) { matchedNumbers.add(38); matchedNumbers.add(39); }
+
+            const penaltyArticles = matchedNumbers.size
+                ? penaltyArticlesFull.filter(p => [...matchedNumbers].some(n => p.fullText.includes(`제${n}조`)))
+                : [];
+
+            // 내부 계산용 필드는 결과에서 제거
+            Object.values(results).forEach(r => { delete r.matchedNumbers; });
+
+            return { query: kw, results, penaltyArticles, linkedFromStandard: matchedNumbers.has(38) && (!results.law || !results.law.matchedNumbers) };
         }
 
         async function lawSearchSubmit() {
@@ -13841,13 +13857,20 @@ ${extraText}
                 <span class="text-[12px] font-bold px-3 py-1.5 rounded-full" style="background:#F1F5F9;color:var(--scm-text);">식별된 제재 ${penaltyArticles.length}건</span>
             `;
 
+            const linkedFromStandard = !!data.linkedFromStandard;
+            const standardNoticeHtml = linkedFromStandard ? `
+                <div class="rounded-xl p-4 mb-3" style="background:#EFF6FF; border:1px solid #BFDBFE;">
+                    <p class="text-[12.5px] font-bold" style="color:#1E3A8A;">산업안전보건기준에 관한 규칙을 위반하는 경우에는 산업안전보건법 <strong>제38조, 제39조</strong>(안전조치·보건조치) 위반으로 처벌될 수 있습니다.</p>
+                </div>` : '';
+
             const penaltyHtml = penaltyArticles.length ? `
                 <div class="scm-card p-5" style="border:1.5px solid #FED7AA;">
                     <div class="flex items-center justify-between mb-1">
                         <h3 class="text-[15px] font-black" style="color: var(--scm-text);">제재 요약 — 관련 징역·벌금·과태료</h3>
                         <span class="text-[12px] font-bold" style="color:#C2410C;">${penaltyArticles.length}건</span>
                     </div>
-                    <p class="text-[11.5px] mb-4" style="color: var(--scm-subtext);">산업안전보건법 제167조~제175조(벌칙) 중 관련될 수 있는 조문입니다. (행정조치 - 벌금/징역, 과태료)</p>
+                    <p class="text-[11.5px] mb-4" style="color: var(--scm-subtext);">검색된 조문 번호가 실제로 인용된 벌칙(제167조~제175조) 조문만 골라 표시합니다. (행정조치 - 벌금/징역, 과태료)</p>
+                    ${standardNoticeHtml}
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                         ${penaltyArticles.map(a => `
                             <div class="rounded-xl p-3.5" style="border:1px solid var(--scm-border); background:#FFF7ED;">
