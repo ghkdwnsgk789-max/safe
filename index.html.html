@@ -1808,9 +1808,18 @@
                                 <div style="background:#253D6B;color:white;padding:8px 6px;font-size:11.5px;font-weight:700;text-align:center;border-right:1px solid #CBD5E1;display:flex;align-items:center;justify-content:center;">점검날짜</div>
                                 <div style="padding:4px 8px;display:flex;align-items:center;"><input type="date" id="patrol-found" style="width:100%;border:none;outline:none;font-size:12px;color:#1B3A6B;font-weight:700;background:transparent;padding:4px 0;"></div>
                             </div>
-                            <div style="display:grid;grid-template-columns:90px 1fr;gap:0;border:1.5px solid #CBD5E1;border-top:0;overflow:hidden;">
+                            <div style="display:grid;grid-template-columns:90px 1fr 90px 1fr;gap:0;border:1.5px solid #CBD5E1;border-top:0;overflow:hidden;">
                                 <div style="background:#2D4A7A;color:white;padding:8px 10px;font-size:11.5px;font-weight:700;text-align:center;border-right:1px solid #CBD5E1;display:flex;align-items:center;justify-content:center;">발견 장소</div>
-                                <div style="padding:5px 8px;"><input id="patrol-loc" placeholder="예: 3공장 프레스 구역" style="width:100%;border:none;outline:none;font-size:12.5px;background:transparent;padding:3px 0;"></div>
+                                <div style="padding:5px 8px;border-right:1px solid #CBD5E1;"><input id="patrol-loc" placeholder="예: 3공장 프레스 구역" style="width:100%;border:none;outline:none;font-size:12.5px;background:transparent;padding:3px 0;"></div>
+                                <div style="background:#2D4A7A;color:white;padding:8px 6px;font-size:11.5px;font-weight:700;text-align:center;display:flex;align-items:center;justify-content:center;">담당라인</div>
+                                <div style="padding:4px 8px;display:flex;align-items:center;"><select id="patrol-line" style="width:100%;border:none;outline:none;font-size:12.5px;font-weight:700;color:#1B3A6B;background:transparent;padding:4px 0;cursor:pointer;">
+                                    <option value="">-- 선택 --</option>
+                                    <option value="CPL">CPL</option><option value="CRM">CRM</option><option value="CGL">CGL</option>
+                                    <option value="1CCL">1CCL</option><option value="2CCL">2CCL</option><option value="3CCL">3CCL</option>
+                                    <option value="기계정비반">기계정비반</option><option value="전기정비반">전기정비반</option>
+                                    <option value="시험검사반">시험검사반</option><option value="공정물류반">공정물류반</option>
+                                    <option value="기타">기타</option>
+                                </select></div>
                             </div>
                             <div style="display:grid;grid-template-columns:90px 1fr 80px 120px 80px 120px;gap:0;border:1.5px solid #CBD5E1;border-top:0;border-radius:0 0 8px 8px;overflow:hidden;">
                                 <div style="background:#1B3A6B;color:white;padding:10px;font-size:12px;font-weight:700;text-align:center;border-right:1px solid #CBD5E1;display:flex;align-items:center;justify-content:center;">조치사항</div>
@@ -1845,12 +1854,22 @@
                     </div>
 
                     <!-- 필터 -->
-                    <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
+                    <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:center;">
                         <span style="font-size:12px;color:var(--scm-subtext);font-weight:600;line-height:28px;">필터:</span>
                         <button onclick="patrolSetFilter('all')"     id="pf-all"     style="font-size:12px;font-weight:700;padding:3px 11px;border-radius:99px;border:1.5px solid #1B3A6B;background:#1B3A6B;color:white;cursor:pointer;">전체</button>
                         <button onclick="patrolSetFilter('open')"    id="pf-open"    style="font-size:12px;font-weight:700;padding:3px 11px;border-radius:99px;border:1.5px solid var(--scm-border);background:white;color:var(--scm-subtext);cursor:pointer;">미완료</button>
                         <button onclick="patrolSetFilter('overdue')" id="pf-overdue" style="font-size:12px;font-weight:700;padding:3px 11px;border-radius:99px;border:1.5px solid var(--scm-border);background:white;color:var(--scm-subtext);cursor:pointer;">⚠️ 기한초과</button>
                         <button onclick="patrolSetFilter('done')"    id="pf-done"    style="font-size:12px;font-weight:700;padding:3px 11px;border-radius:99px;border:1.5px solid var(--scm-border);background:white;color:var(--scm-subtext);cursor:pointer;">완료</button>
+                        <span style="width:1px;height:18px;background:var(--scm-border);margin:0 4px;"></span>
+                        <span style="font-size:12px;color:var(--scm-subtext);font-weight:600;">라인:</span>
+                        <select id="patrol-line-filter" onchange="patrolSetLineFilter(this.value)" style="font-size:12px;font-weight:700;padding:4px 8px;border-radius:8px;border:1.5px solid var(--scm-border);background:white;color:var(--scm-text);cursor:pointer;">
+                            <option value="전체">전체 라인</option>
+                            <option value="CPL">CPL</option><option value="CRM">CRM</option><option value="CGL">CGL</option>
+                            <option value="1CCL">1CCL</option><option value="2CCL">2CCL</option><option value="3CCL">3CCL</option>
+                            <option value="기계정비반">기계정비반</option><option value="전기정비반">전기정비반</option>
+                            <option value="시험검사반">시험검사반</option><option value="공정물류반">공정물류반</option>
+                            <option value="기타">기타</option>
+                        </select>
                     </div>
                     <div id="patrol-list"></div>
                 </div>
@@ -3778,7 +3797,7 @@
             if (!members.length) { showToast('⚠️ 저장할 팀원 데이터가 없습니다.', 'warn'); return; }
             try {
                 const html = document.documentElement.outerHTML;
-                const dataStr = JSON.stringify(members).replace(/</g, '\\u003c'); // </script> 조기 종료 방지
+                const dataStr = JSON.stringify(members).replace(/</g, '\\u003c'); // script 태그 조기 종료 방지
                 const updated = html.replace(
                     /let TEAM_EMBED_DATA = null;/,
                     `let TEAM_EMBED_DATA = ${dataStr};`
@@ -10084,6 +10103,7 @@ ${extraText}
         const MONTH_NAMES    = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
         let   patrolCurMonth = '';
         let   patrolFilter   = 'all';
+        let   patrolLineFilter = '전체';
 
         function patrolLoad() { try { return JSON.parse(localStorage.getItem(PATROL_KEY)||'{}'); } catch(e){ return {}; } }
         function patrolSave(d){ localStorage.setItem(PATROL_KEY, JSON.stringify(d)); }
@@ -10156,6 +10176,9 @@ ${extraText}
         function patrolOpenMonth(m) {
             patrolCurMonth = m;
             patrolFilter   = 'all';
+            patrolLineFilter = '전체';
+            const lineFilterEl = document.getElementById('patrol-line-filter');
+            if (lineFilterEl) lineFilterEl.value = '전체';
             document.getElementById('patrol-folder-view').style.display  = 'none';
             document.getElementById('patrol-detail-view').style.display  = '';
             document.getElementById('patrol-detail-title').textContent   = `📋 ${MONTH_NAMES[parseInt(m)-1]} 위험요인 발굴 및 관리`;
@@ -10185,6 +10208,11 @@ ${extraText}
                 btn.style.color       = on?'white':'var(--scm-subtext)';
                 btn.style.borderColor = on?'#1B3A6B':'var(--scm-border)';
             });
+            patrolRenderDetail();
+        }
+
+        function patrolSetLineFilter(line) {
+            patrolLineFilter = line;
             patrolRenderDetail();
         }
 
@@ -10517,6 +10545,7 @@ ${extraText}
 
         function patrolRegister() {
             const loc     = document.getElementById('patrol-loc').value.trim();
+            const line    = document.getElementById('patrol-line').value;
             const content = document.getElementById('patrol-content').value.trim();
             const owner   = document.getElementById('patrol-owner').value;
             const dueDate = document.getElementById('patrol-due').value;
@@ -10527,7 +10556,7 @@ ${extraText}
             if (!data[patrolCurMonth]) data[patrolCurMonth] = [];
             data[patrolCurMonth].unshift({
                 id          : Date.now(),
-                loc, content, owner, dueDate,
+                loc, line, content, owner, dueDate,
                 foundDate   : document.getElementById('patrol-found').value,
                 level       : document.getElementById('patrol-level').value,
                 action      : document.getElementById('patrol-action').value.trim(),
@@ -10538,10 +10567,11 @@ ${extraText}
                 createdAt   : new Date().toISOString()
             });
             patrolSave(data);
-            logActivity('매월 패트롤', '등록', `[${patrolCurMonth}] "${loc}" ${content} 등록`);
+            logActivity('매월 패트롤', '등록', `[${patrolCurMonth}]${line ? ' [' + line + ']' : ''} "${loc}" ${content} 등록`);
             ['patrol-loc','patrol-content','patrol-owner','patrol-action'].forEach(id=>{
                 const el=document.getElementById(id); if(el) el.value='';
             });
+            document.getElementById('patrol-line').value = '';
             ['patrol-found','patrol-due'].forEach(id=>{
                 const el=document.getElementById(id); if(el) el.value='';
             });
@@ -10578,6 +10608,7 @@ ${extraText}
             }
             arr[idx] = { ...arr[idx],
                 loc      : g('loc'),
+                line     : g('line'),
                 content,
                 level    : document.getElementById(`pe-level-${id}`)?.value  || arr[idx].level,
                 foundDate: g('found'),
@@ -10660,6 +10691,7 @@ ${extraText}
             if(patrolFilter==='open')    items=items.filter(i=>i.status!=='완료');
             if(patrolFilter==='overdue') items=items.filter(i=>i.status!=='완료'&&i.dueDate<today);
             if(patrolFilter==='done')    items=items.filter(i=>i.status==='완료');
+            if(patrolLineFilter && patrolLineFilter!=='전체') items=items.filter(i=>(i.line||'')===patrolLineFilter);
             const listEl=document.getElementById('patrol-list');
             if(!listEl)return;
             if(!items.length){listEl.innerHTML='<div style="text-align:center;padding:28px;color:var(--scm-subtext);font-size:13px;">등록된 항목이 없습니다.</div>';return;}
@@ -10743,10 +10775,16 @@ ${extraText}
                        </select>`
                     : `<div style="padding:8px 10px;font-size:12px;font-weight:700;color:${stFg};">${st}${ov?`<span style="font-size:11px;background:#FEE2E2;color:#991B1B;padding:1px 6px;border-radius:99px;margin-left:6px;">⚠️${Math.abs(dl)}일 초과</span>`:''}</div>`;
 
+                const LINE_OPTS = ['','CPL','CRM','CGL','1CCL','2CCL','3CCL','기계정비반','전기정비반','시험검사반','공정물류반','기타'];
                 const contentCell = IS_MASTER
                     ? `<div style="display:flex;flex-direction:column;">
-                        <input id="pe-loc-${item.id}" value="${(item.loc||'').replace(/"/g,'&quot;')}"
-                            placeholder="발견 장소" style="${cellStyle}font-size:11px;padding:5px 10px;color:#64748B;border-bottom:1px solid #E2E8F0;">
+                        <div style="display:flex;align-items:center;border-bottom:1px solid #E2E8F0;">
+                            <input id="pe-loc-${item.id}" value="${(item.loc||'').replace(/"/g,'&quot;')}"
+                                placeholder="발견 장소" style="${cellStyle}flex:1;font-size:11px;padding:5px 6px 5px 10px;color:#64748B;">
+                            <select id="pe-line-${item.id}" style="${cellStyle}width:auto;font-size:10.5px;font-weight:700;padding:5px 8px 5px 4px;color:#1D4ED8;cursor:pointer;">
+                                ${LINE_OPTS.map(o=>`<option value="${o}" ${(item.line||'')===o?'selected':''}>${o||'라인 선택'}</option>`).join('')}
+                            </select>
+                        </div>
                         <input id="pe-content-${item.id}" value="${(item.content||'').replace(/"/g,'&quot;')}"
                             placeholder="위험요인 내용" style="${cellStyle}font-size:12.5px;font-weight:600;padding:7px 10px;color:#1E293B;">
                        </div>`
@@ -10773,7 +10811,7 @@ ${extraText}
 
                 return `<div id="patrol-card-${item.id}" style="background:${cardBg};border:1.5px solid ${borderCol};border-radius:10px;margin-bottom:12px;overflow:hidden;">
                     <div style="background:#F8FAFC;padding:7px 12px;font-size:12px;font-weight:800;color:#1B3A6B;border-bottom:1px solid ${borderCol};display:flex;align-items:center;justify-content:space-between;">
-                        <span>현장 패트롤 점검 사항</span>
+                        <span>현장 패트롤 점검 사항${item.line ? ` <span style="font-size:11px;font-weight:700;background:#DBEAFE;color:#1D4ED8;padding:2px 9px;border-radius:99px;margin-left:6px;">🏭 ${item.line}</span>` : ''}</span>
                         <div style="display:flex;gap:6px;align-items:center;">
                             ${st!=='완료'?`<button onclick="patrolComplete(${item.id})" style="font-size:11.5px;font-weight:700;padding:5px 12px;background:#166534;color:white;border:none;border-radius:6px;cursor:pointer;">✓ 완료</button>`:''}
                             ${IS_MASTER?`<button onclick="patrolSaveEdit(${item.id})" style="font-size:11.5px;font-weight:700;padding:5px 12px;background:#1B3A6B;color:white;border:none;border-radius:6px;cursor:pointer;">💾 저장</button>`:''}
