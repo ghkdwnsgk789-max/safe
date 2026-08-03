@@ -321,7 +321,6 @@
                             <div class="mega-items-row">
                                 <button class="mega-item-btn" onclick="switchTab('management'); setTimeout(()=>mgmtShowView('policy'),80)">경영방침 · 안전보건목표</button>
                                 <button class="mega-item-btn" onclick="showComingSoon('업무수행평가')">업무수행평가</button>
-                                <button class="mega-item-btn" onclick="showComingSoon('법규등록부')">법규등록부</button>
                                 <button class="mega-item-btn" onclick="showComingSoon('이행결과 분석')">이행결과 분석</button>
                                 <button id="mega-item-incident" class="mega-item-btn hidden" onclick="switchTab('management'); setTimeout(()=>mgmtShowView('incident'),80)">🔒 산재기록현황</button>
                                 <button id="mega-item-account" class="mega-item-btn hidden" onclick="switchTab('management'); setTimeout(()=>mgmtShowView('account'),80)">🔒 계정·이력관리</button>
@@ -429,6 +428,18 @@
                             class="tab-btn scm-nav-link h-16 px-4 text-[13px] font-bold flex items-center transition-colors whitespace-nowrap">화학물질 ↗</button>
                     </div>
 
+                    <!-- 자료실 -->
+                    <div class="mega-item h-16 flex items-center">
+                        <button id="btn-tab-library" onclick="switchTab('library')"
+                            class="tab-btn scm-nav-link h-16 px-4 text-[13px] font-bold flex items-center transition-colors whitespace-nowrap">자료실</button>
+                        <div class="mega-panel-wide">
+                            <p class="mega-group-title">자료실</p>
+                            <div class="mega-items-row">
+                                <button class="mega-item-btn" onclick="switchTab('library'); setTimeout(()=>libraryShowView('lawsearch'),80)">산업안전보건법 검토</button>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- 중대재해 반기보고 -->
                     <div class="mega-item h-16 flex items-center">
                         <button id="btn-tab-hbreport" onclick="switchTab('hbreport')"
@@ -517,6 +528,7 @@
             <button onclick="switchTab('iso')" class="mobile-tab-btn w-full px-3 py-2.5 rounded-lg text-[13px] font-bold text-left text-blue-50 hover:bg-white/10">ISO</button>
             <button onclick="switchTab('event')" class="mobile-tab-btn w-full px-3 py-2.5 rounded-lg text-[13px] font-bold text-left text-blue-50 hover:bg-white/10">이벤트</button>
             <button onclick="window.open('https://seahmsds.vercel.app/#paint','_blank')" class="mobile-tab-btn w-full px-3 py-2.5 rounded-lg text-[13px] font-bold text-left text-blue-50 hover:bg-white/10">화학물질 ↗</button>
+            <button onclick="switchTab('library')" class="mobile-tab-btn w-full px-3 py-2.5 rounded-lg text-[13px] font-bold text-left text-blue-50 hover:bg-white/10">자료실</button>
             <button onclick="switchTab('hbreport')" class="mobile-tab-btn w-full px-3 py-2.5 rounded-lg text-[13px] font-bold text-left text-blue-50 hover:bg-white/10 flex items-center gap-2">
                 <span class="text-[9px] font-extrabold px-1.5 py-0.5 rounded" style="background:#E53E3E; color:white;">중대재해</span>반기보고
             </button>
@@ -3118,6 +3130,70 @@
         </section>
 
         <!-- ==============================================
+             자료실 탭
+             ============================================== -->
+        <section id="tab-library" class="tab-content hidden space-y-6">
+
+            <!-- [A] 자료실 메뉴 목록 -->
+            <div id="library-view-menu">
+                <div class="pb-1">
+                    <h2 class="text-xl font-black" style="color: var(--scm-text);">📚 자료실</h2>
+                    <p class="text-[13px] mt-1.5" style="color: var(--scm-subtext);">안전보건 관련 법령, 참고자료를 모아둔 공간입니다.</p>
+                </div>
+                <div id="library-menu-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-4"></div>
+            </div>
+
+            <!-- [B] 산업안전보건법 검토 (법령 통합 검색) -->
+            <div id="library-view-lawsearch" class="hidden space-y-6">
+
+                <!-- 브레드크럼 -->
+                <div class="flex items-center gap-2 text-[13px]">
+                    <button onclick="libraryShowView('menu')" class="font-bold hover:underline" style="color: var(--scm-subtext);">← 자료실</button>
+                    <span style="color: var(--scm-border);">/</span>
+                    <span class="font-bold" style="color: var(--scm-text);">산업안전보건법 검토</span>
+                </div>
+
+                <!-- 헤더 -->
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-black" style="color: var(--scm-text);">산업안전보건 법령 통합 검색</h1>
+                    <p class="text-[13px] sm:text-[14px] mt-3 leading-relaxed" style="color: var(--scm-subtext); max-width: 640px;">
+                        하나의 키워드로 산업안전보건법, 시행령, 시행규칙, 산업안전보건기준에 관한 규칙을 동시에 검색할 수 있습니다. 검색 결과와 연관된 벌금 및 과태료 조문도 함께 확인하세요.
+                    </p>
+                    <button onclick="document.getElementById('lawsearch-box').scrollIntoView({behavior:'smooth', block:'start'})" class="mt-4 text-white text-[13px] font-bold px-5 py-2.5 rounded-xl hover:opacity-90 transition-opacity" style="background: var(--scm-navy);">법령 검색 시작 ↓</button>
+                </div>
+
+                <!-- BILL ANALYSIS 안내 카드 -->
+                <div class="rounded-2xl p-5" style="background:#F3F0FF; border:1px solid #E4DBFF; max-width:480px;">
+                    <p class="text-[10.5px] font-black tracking-wide" style="color:#7C3AED;">BILL ANALYSIS</p>
+                    <a href="https://likms.assembly.go.kr/bill/main.do" target="_blank" rel="noopener" class="text-[15px] font-black hover:underline" style="color:#6D28D9;">입법 현황 분석 보기 →</a>
+                    <p class="text-[12.5px] mt-1.5" style="color:#6B7280;">국회 의안의 진행 상태와 주요 변경 내용을 확인합니다. (국회 의안정보시스템으로 이동)</p>
+                </div>
+
+                <!-- 법령 비교 검색 -->
+                <div id="lawsearch-box" class="scm-card p-6" style="scroll-margin-top:20px;">
+                    <h2 class="text-lg font-black" style="color: var(--scm-text);">법령 비교 검색</h2>
+                    <p class="text-[12.5px] mt-1.5 mb-4" style="color: var(--scm-subtext);">하나의 키워드로 산업안전보건법, 시행령, 시행규칙, 산업안전보건기준에 관한 규칙을 동시에 검색합니다. 아래쪽에는 식별된 조항과 법정 제재 상한을 요약하여 표시합니다.</p>
+                    <div class="flex gap-2">
+                        <input id="lawsearch-input" type="text" placeholder="예: 추락, 안전대, 위험물" onkeydown="if(event.key==='Enter')lawSearchSubmit()" class="flex-1 border rounded-xl px-4 py-3 text-[13.5px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); color: var(--scm-text);">
+                        <button onclick="lawSearchSubmit()" class="text-white text-[13px] font-bold px-5 py-3 rounded-xl hover:opacity-90 transition-opacity whitespace-nowrap" style="background: #0F766E;">통합 검색</button>
+                        <button onclick="lawSearchReset()" class="text-[13px] font-bold px-4 py-3 rounded-xl hover:bg-slate-50 transition-colors whitespace-nowrap" style="border:1px solid var(--scm-border); color: var(--scm-subtext);">초기화</button>
+                    </div>
+                    <div id="lawsearch-summary-chips" class="hidden flex gap-2 flex-wrap mt-4"></div>
+                </div>
+
+                <!-- 검색 결과 (실시간 API 조회 결과) -->
+                <div id="lawsearch-results" class="hidden space-y-5"></div>
+
+                <!-- 검색 결과 구성 안내 -->
+                <div id="lawsearch-cards-wrap">
+                    <h2 class="text-lg font-black mb-3" style="color: var(--scm-text);">검색 결과 구성</h2>
+                    <div id="lawsearch-cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4"></div>
+                    <p class="text-[11.5px] mt-4" style="color: var(--scm-subtext);">※ 검색 결과는 관련 조문을 빠르게 탐색하기 위한 참고 자료입니다. 실제 위반 여부와 적용되는 벌칙 또는 과태료는 구체적인 사실관계와 관계 기관의 판단에 따라 달라질 수 있습니다.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==============================================
              반기보고 탭 (중대재해처벌법 경영책임자 보고)
              ============================================== -->
         <section id="tab-hbreport" class="tab-content hidden space-y-5">
@@ -3647,7 +3723,12 @@
             management: {
                 icon: '🏢',
                 color: '#2563EB',
-                items: ['경영방침, 목표', '업무수행평가', '법규등록부', '이행결과 분석']
+                items: ['경영방침, 목표', '업무수행평가', '이행결과 분석']
+            },
+            library: {
+                icon: '📚',
+                color: '#0F766E',
+                items: ['산업안전보건법 검토']
             },
             risk: {
                 icon: '⚠️',
@@ -3690,10 +3771,14 @@
                 // 경영방침, 목표 → 전용 서브뷰 연결
                 const onclick = (tabId === 'management' && item === '경영방침, 목표')
                     ? `mgmtOpenPolicy()`
-                    : `showComingSoon('${item.replace(/'/g, "\\'")}')`;
+                    : (tabId === 'library' && item === '산업안전보건법 검토')
+                        ? `libraryShowView('lawsearch')`
+                        : `showComingSoon('${item.replace(/'/g, "\\'")}')`;
                 const badge = (tabId === 'management' && item === '경영방침, 목표')
                     ? `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded mt-1 inline-block" style="background:#DBEAFE;color:#1D4ED8;">파일 열람</span>`
-                    : `<p class="text-[11px] mt-1" style="color: var(--scm-subtext);">바로가기 →</p>`;
+                    : (tabId === 'library' && item === '산업안전보건법 검토')
+                        ? `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded mt-1 inline-block" style="background:#CCFBF1;color:#0F766E;">법령 통합 검색</span>`
+                        : `<p class="text-[11px] mt-1" style="color: var(--scm-subtext);">바로가기 →</p>`;
                 return `
                 <button onclick="${onclick}" class="scm-card p-5 text-left hover:shadow-md hover:-translate-y-0.5 transition-all group">
                     <div class="w-10 h-10 rounded-lg flex items-center justify-center text-base mb-3" style="background: ${data.color}1A; color: ${data.color};">
@@ -13533,6 +13618,227 @@ ${extraText}
             switchTab('management');
             setTimeout(() => mgmtShowView('policy'), 60);
         }
+
+        // ══════════════════════════════════════════════════════════════
+        //  자료실 — 산업안전보건법 검토 (법령 통합 검색)
+        //  /api/law-search 서버리스 함수(Vercel)를 통해 법제처 Open API를
+        //  서버 쪽에서 대신 호출한다 (CORS 우회 + OC 키 비노출).
+        //  API가 아직 준비되지 않았거나 오류가 나면 law.go.kr 링크로 자동 대체된다.
+        // ══════════════════════════════════════════════════════════════
+        const LIBRARY_VIEWS = ['library-view-menu', 'library-view-lawsearch'];
+        function libraryShowView(view) {
+            LIBRARY_VIEWS.forEach(v => {
+                const el = document.getElementById(v);
+                if (el) el.classList.toggle('hidden', v !== `library-view-${view}`);
+            });
+            if (view === 'lawsearch') lawSearchRenderCards();
+        }
+
+        const LAW_GOKR_SEARCH = 'https://www.law.go.kr/lsSc.do?menuId=1&subMenuId=15&tabMenuId=81&query=';
+        const LAW_API_ENDPOINT = '/api/law-search';
+
+        const LAW_SEARCH_CARDS = [
+            { no: '01', title: '산업안전보건법',            desc: '사업주의 의무와 벌칙 적용의 기준이 되는 법률 조문을 확인합니다.',            lawName: '산업안전보건법' },
+            { no: '02', title: '시행령',                    desc: '법률에서 위임한 세부 적용 대상과 행정 기준을 확인합니다.',                  lawName: '산업안전보건법 시행령' },
+            { no: '03', title: '시행규칙',                  desc: '신고, 제출, 교육, 검사 등 실무 절차와 서식을 확인합니다.',                  lawName: '산업안전보건법 시행규칙' },
+            { no: '04', title: '안전보건기준에 관한 규칙',   desc: '설비, 작업, 화학물질 및 위험요인별 구체적인 안전기준을 확인합니다.',        lawName: '산업안전보건기준에 관한 규칙' },
+            { no: '05', title: '벌금 및 과태료',            desc: '검색된 법령 조항과 연결되는 제167조부터 제175조까지의 제재 조문을 확인합니다.', lawName: '산업안전보건법 벌칙' },
+        ];
+
+        function lawSearchRenderCards() {
+            const el = document.getElementById('lawsearch-cards');
+            if (!el) return;
+            el.innerHTML = LAW_SEARCH_CARDS.map(c => `
+                <button onclick="lawSearchOpen('${c.lawName}')" class="scm-card p-4 text-left hover:shadow-md hover:-translate-y-0.5 transition-all">
+                    <p class="text-[11px] font-black" style="color:#0F766E;">${c.no}</p>
+                    <p class="text-[13.5px] font-black mt-1" style="color: var(--scm-text);">${c.title}</p>
+                    <p class="text-[11.5px] mt-1.5 leading-relaxed" style="color: var(--scm-subtext);">${c.desc}</p>
+                </button>
+            `).join('');
+        }
+
+        function lawSearchOpen(query) {
+            window.open(LAW_GOKR_SEARCH + encodeURIComponent(query), '_blank');
+        }
+
+        function lawSearchReset() {
+            document.getElementById('lawsearch-input').value = '';
+            document.getElementById('lawsearch-results').classList.add('hidden');
+            document.getElementById('lawsearch-results').innerHTML = '';
+            document.getElementById('lawsearch-summary-chips').classList.add('hidden');
+            document.getElementById('lawsearch-summary-chips').innerHTML = '';
+            document.getElementById('lawsearch-cards-wrap').classList.remove('hidden');
+        }
+
+        // ── 법제처 OC 인증키 ──────────────────────────────────────────
+        // ※ 기상청 API 위젯과 동일한 방식으로, 플랫폼(브라우저) 코드에 직접 넣어 사용합니다.
+        //   법제처 API는 무료·낮은 민감도(법령 원문 열람)라 키가 노출되어도 실질적 위험이 낮습니다.
+        const LAW_OC = 'hjh6609';
+        const LAW_SEARCH_URL = 'https://www.law.go.kr/DRF/lawSearch.do';
+        const LAW_SERVICE_URL = 'https://www.law.go.kr/DRF/lawService.do';
+        const LAW_TARGET_LAWS = [
+            { key: 'law',      title: '산업안전보건법' },
+            { key: 'decree',   title: '산업안전보건법 시행령' },
+            { key: 'rule',     title: '산업안전보건법 시행규칙' },
+            { key: 'standard', title: '산업안전보건기준에 관한 규칙' },
+        ];
+
+        function lawToArray(v) { if (v == null) return []; return Array.isArray(v) ? v : [v]; }
+        function lawPick(obj, keys) { for (const k of keys) { if (obj && obj[k] != null) return obj[k]; } return ''; }
+        function lawArticleNum(numStr) { const m = String(numStr).match(/\d+/); return m ? parseInt(m[0], 10) : null; }
+
+        async function lawFetchJson(url) {
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(`법제처 API 응답 오류 (HTTP ${res.status})`);
+            const text = await res.text();
+            try { return JSON.parse(text); }
+            catch (e) { throw new Error('법제처 API가 JSON이 아닌 응답을 반환했습니다.'); }
+        }
+
+        async function lawFindMST(lawTitle) {
+            const url = `${LAW_SEARCH_URL}?OC=${LAW_OC}&target=law&type=JSON&query=${encodeURIComponent(lawTitle)}&display=10`;
+            const data = await lawFetchJson(url);
+            const container = data?.LawSearch || data;
+            const list = lawToArray(lawPick(container, ['law', 'Law']));
+            if (!list.length) return null;
+            const exact = list.find(l => lawPick(l, ['법령명한글', 'lawNm']) === lawTitle);
+            const chosen = exact || list[0];
+            return lawPick(chosen, ['법령일련번호', 'MST', 'lawSerialNo']) || null;
+        }
+
+        async function lawFetchBody(mst) {
+            const url = `${LAW_SERVICE_URL}?OC=${LAW_OC}&target=law&type=JSON&MST=${encodeURIComponent(mst)}`;
+            const data = await lawFetchJson(url);
+            const lawRoot = data?.법령 || data?.Law || data;
+            const joSection = lawRoot?.조문 || lawRoot?.Article || {};
+            const joList = lawToArray(lawPick(joSection, ['조문단위', 'ArticleUnit', 'jo']));
+            return joList.map(j => ({
+                number:  String(lawPick(j, ['조문번호', 'articleNo'])).trim(),
+                title:   String(lawPick(j, ['조문제목', 'articleTitle'])).trim(),
+                content: String(lawPick(j, ['조문내용', 'articleContent'])).trim(),
+            })).filter(a => a.content);
+        }
+
+        // 브라우저에서 직접 법제처 API를 호출해 검색 (기상청 위젯과 동일한 "직접 호출" 방식)
+        async function lawSearchDirectFetch(kw) {
+            const results = {};
+            let penaltyArticles = [];
+            for (const lawInfo of LAW_TARGET_LAWS) {
+                try {
+                    const mst = await lawFindMST(lawInfo.title);
+                    if (!mst) { results[lawInfo.key] = { title: lawInfo.title, count: 0, articles: [], error: '법령을 찾을 수 없습니다.' }; continue; }
+                    const joList = await lawFetchBody(mst);
+                    if (lawInfo.key === 'law') {
+                        penaltyArticles = joList.filter(a => { const n = lawArticleNum(a.number); return n !== null && n >= 167 && n <= 175; });
+                    }
+                    const matched = joList.filter(a => a.content.includes(kw) || a.title.includes(kw));
+                    results[lawInfo.key] = { title: lawInfo.title, count: matched.length, articles: matched.slice(0, 15) };
+                } catch (innerErr) {
+                    results[lawInfo.key] = { title: lawInfo.title, count: 0, articles: [], error: String(innerErr.message || innerErr) };
+                }
+            }
+            return { query: kw, results, penaltyArticles };
+        }
+
+        async function lawSearchSubmit() {
+            const kw = document.getElementById('lawsearch-input').value.trim();
+            if (!kw) { showToast('⚠️ 검색어를 입력해 주세요.', 'warn'); return; }
+            logActivity('자료실(법령검색)', '등록', `"${kw}" 법령 검색`);
+
+            const resultsEl = document.getElementById('lawsearch-results');
+            resultsEl.classList.remove('hidden');
+            resultsEl.innerHTML = `<div class="scm-card p-8 text-center" style="color: var(--scm-subtext);">🔍 "${kw}" 검색 중입니다...</div>`;
+            document.getElementById('lawsearch-cards-wrap').classList.add('hidden');
+
+            // 1) 브라우저에서 직접 법제처 API 호출 시도 (기상청 API와 동일한 방식, 가장 간단함)
+            try {
+                const data = await lawSearchDirectFetch(kw);
+                lawSearchRenderResults(kw, data);
+                return;
+            } catch (directErr) {
+                console.warn('법제처 API 직접 호출 실패(CORS 등):', directErr);
+            }
+
+            // 2) 직접 호출이 막힌 경우(CORS 등) — 배포되어 있다면 서버리스 프록시로 재시도
+            try {
+                const res = await fetch(`${LAW_API_ENDPOINT}?query=${encodeURIComponent(kw)}`);
+                if (!res.ok) throw new Error(`API 응답 오류 (HTTP ${res.status})`);
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+                lawSearchRenderResults(kw, data);
+            } catch (err) {
+                resultsEl.innerHTML = `
+                    <div class="scm-card p-6" style="border:1.5px solid #FDE68A; background:#FFFBEB;">
+                        <p class="text-[13px] font-bold" style="color:#92400E;">⚠️ 브라우저에서 법제처 API에 직접 접속할 수 없습니다 (CORS 제한으로 추정).</p>
+                        <p class="text-[12px] mt-1.5" style="color:#B45309;">오류 내용: ${(err && err.message) ? err.message : '알 수 없는 오류'}</p>
+                        <p class="text-[12px] mt-3" style="color:#78350F;">이 경우 별도로 안내드린 Vercel 서버리스 함수(api/law-search.js) 배포가 필요합니다. 그동안은 국가법령정보센터에서 바로 검색하실 수 있습니다.</p>
+                        <button onclick="lawSearchOpen('${kw.replace(/'/g, "\\'")}')" class="mt-3 text-white text-[12.5px] font-bold px-4 py-2 rounded-lg hover:opacity-90" style="background:#92400E;">law.go.kr에서 "${kw}" 검색하기 ↗</button>
+                    </div>`;
+            }
+        }
+
+        function lawSearchRenderResults(kw, data) {
+            const resultsEl = document.getElementById('lawsearch-results');
+            const chipsEl = document.getElementById('lawsearch-summary-chips');
+            const results = data.results || {};
+            const penaltyArticles = data.penaltyArticles || [];
+
+            const totalArticles = Object.values(results).reduce((sum, r) => sum + (r.count || 0), 0);
+
+            chipsEl.classList.remove('hidden');
+            chipsEl.innerHTML = `
+                <span class="text-[12px] font-bold px-3 py-1.5 rounded-full" style="background:#F1F5F9;color:var(--scm-text);">검색어 ${kw}</span>
+                <span class="text-[12px] font-bold px-3 py-1.5 rounded-full" style="background:#F1F5F9;color:var(--scm-text);">관련 조문 ${totalArticles}건</span>
+                <span class="text-[12px] font-bold px-3 py-1.5 rounded-full" style="background:#F1F5F9;color:var(--scm-text);">식별된 제재 ${penaltyArticles.length}건</span>
+            `;
+
+            const penaltyHtml = penaltyArticles.length ? `
+                <div class="scm-card p-5" style="border:1.5px solid #FED7AA;">
+                    <div class="flex items-center justify-between mb-1">
+                        <h3 class="text-[15px] font-black" style="color: var(--scm-text);">제재 요약 — 관련 징역·벌금·과태료</h3>
+                        <span class="text-[12px] font-bold" style="color:#C2410C;">${penaltyArticles.length}건</span>
+                    </div>
+                    <p class="text-[11.5px] mb-4" style="color: var(--scm-subtext);">산업안전보건법 제167조~제175조(벌칙) 중 관련될 수 있는 조문입니다. (행정조치 - 벌금/징역, 과태료)</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                        ${penaltyArticles.map(a => `
+                            <div class="rounded-xl p-3.5" style="border:1px solid var(--scm-border); background:#FFF7ED;">
+                                <p class="text-[12.5px] font-black mb-2" style="color: var(--scm-text);">제${a.number}조</p>
+                                <p class="text-[11.5px] leading-relaxed" style="color: var(--scm-text); white-space:pre-wrap;">${(a.content || '').slice(0, 140)}${(a.content||'').length > 140 ? '…' : ''}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>` : '';
+
+            const lawOrder = [
+                { key: 'law', badge: '법' }, { key: 'decree', badge: '시행령' },
+                { key: 'rule', badge: '시행규칙' }, { key: 'standard', badge: '기준규칙' },
+            ];
+            const columnsHtml = `
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    ${lawOrder.map(l => {
+                        const r = results[l.key] || { title: '', count: 0, articles: [] };
+                        return `
+                        <div class="scm-card p-4">
+                            <p class="text-[10.5px] font-black" style="color:#0F766E;">${l.badge}</p>
+                            <p class="text-[14px] font-black mt-0.5" style="color: var(--scm-text);">${r.title}</p>
+                            <p class="text-[11px] font-bold mt-2 mb-3" style="color:#0F766E;">${r.count || 0}건</p>
+                            ${r.error ? `<p class="text-[11.5px]" style="color:#DC2626;">${r.error}</p>` : ''}
+                            <div class="space-y-3">
+                                ${(r.articles || []).map(a => `
+                                    <div style="border-top:1px solid var(--scm-border); padding-top:8px;">
+                                        <p class="text-[12px] font-black" style="color: var(--scm-text);">제${a.number}조${a.title ? ' (' + a.title + ')' : ''}</p>
+                                        <p class="text-[11.5px] mt-1 leading-relaxed" style="color: var(--scm-subtext); white-space:pre-wrap;">${(a.content || '').slice(0, 160)}${(a.content||'').length > 160 ? '…' : ''}</p>
+                                    </div>
+                                `).join('') || `<p class="text-[11.5px]" style="color: var(--scm-subtext);">일치하는 조문이 없습니다.</p>`}
+                            </div>
+                        </div>`;
+                    }).join('')}
+                </div>`;
+
+            resultsEl.innerHTML = penaltyHtml + `<div class="mt-5">${columnsHtml}</div>
+                <p class="text-[11.5px] mt-4" style="color: var(--scm-subtext);">※ 검색 결과는 관련 조문을 빠르게 탐색하기 위한 참고 자료입니다. 실제 위반 여부와 적용되는 벌칙 또는 과태료는 구체적인 사실관계와 관계 기관의 판단에 따라 달라질 수 있습니다.</p>`;
+        }
+
 
         // --- 경영방침/목표 뷰 전환 ---
         const MGMT_VIEWS = ['mgmt-view-menu', 'mgmt-view-policy', 'mgmt-view-incident', 'mgmt-view-account'];
