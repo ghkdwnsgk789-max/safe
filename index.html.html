@@ -270,7 +270,7 @@
             </div>
 
             <!-- 신규 팀원 등록 폼 -->
-            <div id="login-register-form" class="hidden" style="margin-top:14px; padding-top:14px; border-top:1px solid #E2E8F0; display:flex; flex-direction:column; gap:10px;">
+            <div id="login-register-form" class="hidden" style="margin-top:14px; padding-top:14px; border-top:1px solid #E2E8F0; flex-direction:column; gap:10px;">
                 <div>
                     <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">구분 <span style="color:#DC2626;">*</span></label>
                     <select id="login-reg-type" onchange="loginRegTypeChange()" style="width:100%; border:1.5px solid #E2E8F0; border-radius:8px; padding:9px 10px; font-size:13px; outline:none; background:white;">
@@ -585,7 +585,7 @@
                     <div style="margin-top:12px;height:5px;background:#D1FAE5;border-radius:99px;overflow:hidden;"><div class="progress-bar" style="height:100%;background:linear-gradient(90deg,#10B981,#059669);border-radius:99px;width:100%;"></div></div>
 
                     <!-- 무재해 시작일 편집 패널 (마스터 전용, 평소엔 숨김) -->
-                    <div id="safe-days-edit-panel" class="hidden" style="position:absolute; inset:0; background:white; border-radius:14px; border:1.5px solid #059669; padding:14px; z-index:10; display:flex; flex-direction:column; gap:8px; justify-content:center; box-shadow:0 8px 20px rgba(0,0,0,0.12);">
+                    <div id="safe-days-edit-panel" style="position:absolute; inset:0; background:white; border-radius:14px; border:1.5px solid #059669; padding:14px; z-index:10; display:none; flex-direction:column; gap:8px; justify-content:center; box-shadow:0 8px 20px rgba(0,0,0,0.12);">
                         <label style="font-size:11px; font-weight:700; color:#065F46;">무재해 시작일</label>
                         <input type="date" id="safe-days-start-input" style="border:1.5px solid #A7F3D0; border-radius:8px; padding:6px 8px; font-size:12.5px; outline:none;">
                         <div style="display:flex; gap:6px;">
@@ -998,13 +998,13 @@
                         <div id="incident-yearly-table" style="overflow-x:auto;"></div>
                     </div>
                     <div class="scm-card p-5">
-                        <h3 style="font-size:13px;font-weight:800;color:var(--scm-navy); margin-bottom:10px;">🏭 라인(장소)별 사고건수</h3>
-                        <div id="incident-line-bars"></div>
+                        <h3 style="font-size:13px;font-weight:800;color:var(--scm-navy); margin-bottom:10px;">📊 재해유형별 사고건수</h3>
+                        <div id="incident-type-bars"></div>
                     </div>
                 </div>
                 <div class="scm-card p-5">
-                    <h3 style="font-size:13px;font-weight:800;color:var(--scm-navy); margin-bottom:10px;">📊 재해유형별 사고건수</h3>
-                    <div id="incident-type-bars" style="display:grid; grid-template-columns:repeat(5,1fr); gap:10px;"></div>
+                    <h3 style="font-size:13px;font-weight:800;color:var(--scm-navy); margin-bottom:10px;">🏭 라인(장소)별 사고건수</h3>
+                    <div id="incident-line-bars"></div>
                 </div>
 
                 <!-- 요일별 / 시간대별 현황 -->
@@ -3540,10 +3540,14 @@
 
         function loginShowRegister() {
             document.getElementById('login-form-box').classList.add('hidden');
-            document.getElementById('login-register-form').classList.remove('hidden');
+            const regForm = document.getElementById('login-register-form');
+            regForm.classList.remove('hidden');
+            regForm.style.display = 'flex';
         }
         function loginHideRegister() {
-            document.getElementById('login-register-form').classList.add('hidden');
+            const regForm = document.getElementById('login-register-form');
+            regForm.classList.add('hidden');
+            regForm.style.display = 'none';
             document.getElementById('login-form-box').classList.remove('hidden');
         }
 
@@ -8897,11 +8901,11 @@ ${extraText}
             const input = document.getElementById('safe-days-start-input');
             if (input) input.value = safeDaysGetStart();
             const panel = document.getElementById('safe-days-edit-panel');
-            if (panel) panel.classList.remove('hidden');
+            if (panel) panel.style.display = 'flex';
         }
         function safeDaysCancelEdit() {
             const panel = document.getElementById('safe-days-edit-panel');
-            if (panel) panel.classList.add('hidden');
+            if (panel) panel.style.display = 'none';
         }
         function safeDaysSaveEdit() {
             if (!IS_MASTER) { showToast('⚠️ 무재해 일수 수정은 마스터만 가능합니다.', 'warn'); return; }
@@ -14547,6 +14551,16 @@ ${extraText}
             return found || '기타';
         }
 
+        // 사내협력사 목록 — 사고기록의 "소속" 필드가 이 목록에 해당하면 협력사명으로,
+        // 아니면 기존 라인(장소) 기준으로, 둘 다 아니면 "기타"로 분류한다.
+        const INCIDENT_PARTNER_COMPANIES = ['예일', '시스코', '아이엠텍', 'S&H', '수국산업', '위더스환경', '우솔', '세롤텍'];
+        function incidentGetGroup(item) {
+            const company = (item.company || '').trim();
+            const matched = INCIDENT_PARTNER_COMPANIES.find(p => company.includes(p));
+            if (matched) return matched;
+            return incidentGetLine(item.location);
+        }
+
         function incidentGetWeekday(dateStr) {
             if (!dateStr) return '';
             const days = ['일','월','화','수','목','금','토'];
@@ -14746,9 +14760,9 @@ ${extraText}
             const CAT_ORDER  = ['산재', '공상', '아차사고', '공정사고'];
             const CAT_COLORS = { '산재': '#DC2626', '공상': '#F59E0B', '아차사고': '#2563EB', '공정사고': '#7C3AED' };
 
-            const counts = {}; // { 라인: { 산재:n, 공상:n, 아차사고:n, 공정사고:n, total:n } }
+            const counts = {}; // { 라인/협력사: { 산재:n, 공상:n, 아차사고:n, 공정사고:n, total:n } }
             items.forEach(i => {
-                const l = incidentGetLine(i.location);
+                const l = incidentGetGroup(i);
                 if (!counts[l]) counts[l] = { 산재:0, 공상:0, 아차사고:0, 공정사고:0, total:0 };
                 const cat = CAT_ORDER.includes(i.category) ? i.category : null;
                 if (cat) counts[l][cat]++;
@@ -14757,6 +14771,7 @@ ${extraText}
             const lines = Object.keys(counts);
             if (!lines.length) { el.innerHTML = `<p style="font-size:12px; color:var(--scm-subtext);">데이터가 없습니다.</p>`; return; }
             const maxV = Math.max(1, ...lines.map(l => counts[l].total));
+            const grandTotal = lines.reduce((s, l) => s + counts[l].total, 0);
             const sorted = lines.sort((a,b) => counts[b].total - counts[a].total);
 
             const legendHtml = `<div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:10px;">${CAT_ORDER.map(c => `
@@ -14766,6 +14781,7 @@ ${extraText}
 
             const barsHtml = sorted.map(l => {
                 const d = counts[l];
+                const pct = grandTotal ? Math.round(d.total / grandTotal * 100) : 0;
                 const segHtml = CAT_ORDER.filter(c => d[c] > 0).map(c =>
                     `<div title="${l} · ${c} ${d[c]}건" style="width:${(d[c]/maxV*100)}%; background:${CAT_COLORS[c]}; height:100%;"></div>`
                 ).join('');
@@ -14773,11 +14789,11 @@ ${extraText}
                 return `
                 <div style="margin-bottom:9px;">
                     <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="width:44px; font-size:11px; font-weight:700; color:var(--scm-text); flex-shrink:0;">${l}</span>
+                        <span style="width:64px; font-size:11px; font-weight:700; color:var(--scm-text); flex-shrink:0;">${l}</span>
                         <div style="flex:1; background:#F1F5F9; border-radius:99px; height:16px; overflow:hidden; display:flex;">${segHtml}</div>
-                        <span style="width:24px; font-size:11px; font-weight:700; color:${d.total===maxV ? '#DC2626' : 'var(--scm-text)'}; text-align:right; flex-shrink:0;">${d.total}</span>
+                        <span style="width:66px; font-size:11px; font-weight:700; color:${d.total===maxV ? '#DC2626' : 'var(--scm-text)'}; text-align:right; flex-shrink:0;">${d.total}건 <span style="color:var(--scm-subtext); font-weight:600; font-size:10.5px;">(${pct}%)</span></span>
                     </div>
-                    <div style="margin-left:52px; font-size:10.5px; color:var(--scm-subtext); margin-top:2px;">${breakdown}</div>
+                    <div style="margin-left:72px; font-size:10.5px; color:var(--scm-subtext); margin-top:2px;">${breakdown}</div>
                 </div>`;
             }).join('');
 
@@ -14791,11 +14807,40 @@ ${extraText}
             items.forEach(i => { if (i.injuryType) counts[i.injuryType] = (counts[i.injuryType] || 0) + 1; });
             const types = Object.keys(counts).sort((a,b) => counts[b]-counts[a]);
             if (!types.length) { el.innerHTML = `<p style="font-size:12px; color:var(--scm-subtext);">데이터가 없습니다.</p>`; return; }
-            el.innerHTML = types.map(t => `
-                <div style="background:#F8FAFC; border-radius:8px; padding:10px; text-align:center;">
-                    <p style="font-size:11px; color:var(--scm-subtext); margin:0 0 2px;">${t}</p>
-                    <p style="font-size:16px; font-weight:800; color:var(--scm-navy); margin:0;">${counts[t]}</p>
-                </div>`).join('');
+
+            const PALETTE = ['#DC2626','#2563EB','#059669','#D97706','#7C3AED','#DB2777','#0891B2','#65A30D','#EA580C','#4F46E5','#BE123C','#0D9488'];
+            const total = types.reduce((s,t) => s + counts[t], 0);
+            const R = 62, C_LEN = 2 * Math.PI * R;
+            let cumulative = 0;
+            const segments = types.map((t, idx) => {
+                const val = counts[t];
+                const arc = C_LEN * (val / total);
+                const offset = -cumulative;
+                cumulative += arc;
+                const color = PALETTE[idx % PALETTE.length];
+                return `<circle cx="90" cy="90" r="${R}" fill="none" stroke="${color}" stroke-width="26" stroke-dasharray="${arc} ${C_LEN - arc}" stroke-dashoffset="${offset}" transform="rotate(-90 90 90)"><title>${t} ${val}건</title></circle>`;
+            }).join('');
+
+            const legend = types.map((t, idx) => {
+                const color = PALETTE[idx % PALETTE.length];
+                const pct = Math.round(counts[t] / total * 100);
+                return `<div style="display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--scm-text); margin-bottom:6px;">
+                    <span style="width:9px; height:9px; border-radius:2px; background:${color}; flex-shrink:0;"></span>
+                    <span style="flex:1; font-weight:600;">${t}</span>
+                    <span style="font-weight:800; color:var(--scm-navy);">${counts[t]}건</span>
+                    <span style="color:var(--scm-subtext); font-size:10.5px; width:32px; text-align:right;">${pct}%</span>
+                </div>`;
+            }).join('');
+
+            el.innerHTML = `
+                <div style="display:flex; align-items:center; gap:18px; flex-wrap:wrap;">
+                    <svg width="180" height="180" viewBox="0 0 180 180" style="flex-shrink:0;">
+                        ${segments}
+                        <text x="90" y="86" text-anchor="middle" font-size="24" font-weight="800" fill="var(--scm-navy)">${total}</text>
+                        <text x="90" y="105" text-anchor="middle" font-size="11" fill="var(--scm-subtext)">건</text>
+                    </svg>
+                    <div style="flex:1; min-width:150px;">${legend}</div>
+                </div>`;
         }
 
         // 세로 막대그래프 공통 렌더러
