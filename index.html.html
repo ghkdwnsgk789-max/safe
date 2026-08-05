@@ -39,20 +39,32 @@
             --accent-purple: #8B5CF6;
             --accent-blue: #3B82F6;
         }
-        /* 흰색 배경의 개별 박스(공지/경고문구 등)는 어두운 텍스트 유지 */
-        [style*="background:white"], [style*="background: white"],
-        [style*="background:#fff"], [style*="background: #fff"],
-        [style*="background:#FFF"], [style*="background: #FFF"],
-        [style*="background:#FFFFFF"], [style*="background: #FFFFFF"] {
-            --scm-text: #1E293B;
-            --scm-subtext: #64748B;
-        }
         /* 카드(scm-card/dash-card)는 다크 글래스이므로 밝은 텍스트 + 밝은 강조색(네이비 대신 하늘색) 사용 */
         .scm-card, .dash-card {
             --scm-text: #F1F5F9;
             --scm-subtext: #B8C4D9;
             --scm-navy: #93C5FD;
             --scm-border: rgba(255,255,255,0.15);
+        }
+        /* 밝은 배경의 개별 박스(표 헤더/공지/경고문구 등)는 카드 안에 있어도 항상 어두운 텍스트 유지
+           (아래 규칙이 위 .scm-card 규칙보다 나중에 오므로, 동일 요소에 둘 다 해당되면 이 규칙이 우선 적용됨) */
+        [style*="background:white"], [style*="background: white"],
+        [style*="background:#fff"], [style*="background: #fff"],
+        [style*="background:#FFF"], [style*="background: #FFF"],
+        [style*="background:#FFFFFF"], [style*="background: #FFFFFF"],
+        [style*="background:#F8FAFC"], [style*="background: #F8FAFC"],
+        [style*="background:#F1F5F9"], [style*="background: #F1F5F9"],
+        [style*="background:#F9FAFB"], [style*="background: #F9FAFB"],
+        [style*="background:#FAFAFA"], [style*="background: #FAFAFA"],
+        [style*="background:#EFF6FF"], [style*="background: #EFF6FF"],
+        [style*="background:#FFFBEB"], [style*="background: #FFFBEB"],
+        [style*="background:#F0FDF4"], [style*="background: #F0FDF4"],
+        [style*="background:#FEF2F2"], [style*="background: #FEF2F2"],
+        [style*="background:#FFF7ED"], [style*="background: #FFF7ED"],
+        [style*="background:#F0F9FF"], [style*="background: #F0F9FF"] {
+            --scm-text: #1E293B;
+            --scm-subtext: #64748B;
+            --scm-navy: #1B3A6B;
         }
         body {
             font-family: 'Noto Sans KR', sans-serif;
@@ -1319,6 +1331,12 @@
 
                 <!-- 라인 선택 -->
                 <div id="ra-line-select">
+                    <div id="ra-overall-progress" class="dash-card blue p-5" style="margin-bottom:14px;">
+                        <div class="section-eyebrow mb-3">위험성평가 전체 진행률</div>
+                        <div class="stat-num" style="color:#2563EB;">—</div>
+                        <div style="font-size:12px;color:var(--scm-subtext);margin-top:5px;">데이터 없음</div>
+                        <div style="margin-top:12px;height:5px;background:#DBEAFE;border-radius:99px;overflow:hidden;"><div class="progress-bar" style="height:100%;background:linear-gradient(90deg,#3B82F6,#2563EB);border-radius:99px;width:0%;"></div></div>
+                    </div>
                     <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
                         <h3 style="font-size:14px;font-weight:800;color:var(--scm-navy); margin:0;">라인별 위험성평가표</h3>
                         <div style="display:flex; gap:6px;">
@@ -3278,7 +3296,7 @@
                         <input type="date" id="campaign-date" style="width:220px;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
                     </div>
                     <div>
-                        <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">라인/장소 (여러 개 선택 가능)</label>
+                        <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">위험요인을 발굴한 라인/장소 (여러 개 선택 가능)</label>
                         <div id="campaign-line-toggles" style="display:flex; gap:6px; flex-wrap:wrap;"></div>
                     </div>
                     <div style="border:1.5px solid var(--scm-border);border-radius:8px;overflow:hidden;">
@@ -9328,6 +9346,21 @@ ${extraText}
                     ${high > 0 ? `<p style="font-size:10.5px; font-weight:700; color:#EF4444; margin:4px 0 0;">⚠ 상 등급 ${high}건</p>` : ''}
                 </button>`;
             }).join('');
+            raRenderOverallProgress(allItems);
+        }
+
+        // 위험성평가 전체 진행률 — 모든 라인 통틀어, 개선 후 위험도가 "상"(8점 이상)이 아닌
+        // (=허용 가능한 수준으로 낮아진) 항목의 비율을 "진행률"로 표시한다.
+        function raRenderOverallProgress(allItems) {
+            const el = document.getElementById('ra-overall-progress');
+            if (!el) return;
+            allItems = allItems || raLoad();
+            const total = allItems.length;
+            const done  = allItems.filter(i => !(i.afterScore != null && i.afterScore >= 8)).length;
+            const pct   = total ? Math.round(done / total * 100) : 0;
+            el.querySelector('.stat-num').textContent = total ? `${pct}%` : '—';
+            el.querySelector('div[style*="margin-top:5px"]').textContent = total ? `${done}건 / 전체 ${total}건` : '데이터 없음';
+            el.querySelector('.progress-bar').style.width = `${pct}%`;
         }
 
         // ── 위험성평가 데이터 백업(내보내기) / 복원(가져오기) ──────────────
@@ -12829,6 +12862,24 @@ ${extraText}
             if (_campaignSelectedLines.has(line)) _campaignSelectedLines.delete(line);
             else _campaignSelectedLines.add(line);
             campaignRenderLineToggles();
+            campaignRefreshHazardRowLineOptions();
+        }
+
+        // 상단에서 선택한 라인만 각 위험요인 행의 드롭다운에 나오도록 옵션 목록을 다시 그린다
+        function campaignGetSelectedLinesOrdered() {
+            return CAMPAIGN_LINE_OPTS.filter(l => _campaignSelectedLines.has(l));
+        }
+        function campaignRefreshHazardRowLineOptions() {
+            const selectedLines = campaignGetSelectedLinesOrdered();
+            document.querySelectorAll('#campaign-hazard-rows > div').forEach(rowEl => {
+                const rowId = rowEl.dataset.rowId;
+                const sel = document.getElementById(`campaign-hazard-line-${rowId}`);
+                if (!sel) return;
+                const prevValue = sel.value;
+                const keepPrev = selectedLines.includes(prevValue);
+                sel.innerHTML = ['', ...selectedLines].map(l => `<option value="${l}">${l || '라인 선택'}</option>`).join('');
+                sel.value = keepPrev ? prevValue : '';
+            });
         }
 
         function campaignOpenForm() {
@@ -12878,7 +12929,7 @@ ${extraText}
             rowEl.id = `campaign-hazard-row-${rowId}`;
             rowEl.dataset.rowId = rowId;
             rowEl.style.cssText = 'border:1.5px solid var(--scm-border); border-radius:10px; padding:10px; margin-bottom:8px; background:white;';
-            const lineOptsHtml = ['', ...CAMPAIGN_LINE_OPTS].map(l => `<option value="${l}">${l || '라인 선택'}</option>`).join('');
+            const lineOptsHtml = ['', ...campaignGetSelectedLinesOrdered()].map(l => `<option value="${l}">${l || '라인 선택'}</option>`).join('');
             rowEl.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                     <select id="campaign-hazard-line-${rowId}" style="border:1px solid var(--scm-border); border-radius:6px; padding:4px 8px; font-size:11.5px; font-weight:700; color:#DB2777; background:white;">${lineOptsHtml}</select>
@@ -12958,14 +13009,19 @@ ${extraText}
         }
 
         function campaignDelete(id) {
-            if (!IS_ADMIN) { showToast('⚠️ 삭제는 관리자 이상만 가능합니다.', 'warn'); return; }
-            if (!confirm('삭제하시겠습니까?')) return;
-            const list = campaignLoad();
-            const target = list.find(c => c.id === id);
-            campaignSave(list.filter(c => c.id !== id));
-            logActivity('안전캠페인', '삭제', target ? `[${target.date}] 캠페인 활동 삭제` : `캠페인 삭제 (id:${id})`);
-            campaignRender();
-            showToast('🗑 삭제되었습니다.', 'success');
+            try {
+                if (!IS_ADMIN) { showToast('⚠️ 삭제는 관리자 이상만 가능합니다.', 'warn'); return; }
+                if (!confirm('삭제하시겠습니까?')) return;
+                const list = campaignLoad();
+                const target = list.find(c => c.id === id);
+                campaignSave(list.filter(c => c.id !== id));
+                logActivity('안전캠페인', '삭제', target ? `[${target.date}] 캠페인 활동 삭제` : `캠페인 삭제 (id:${id})`);
+                campaignRender();
+                showToast('🗑 삭제되었습니다.', 'success');
+            } catch (err) {
+                console.error('campaignDelete 오류:', err);
+                showToast('⚠️ 삭제 중 오류가 발생했습니다. 콘솔(F12)을 확인해 주세요.', 'warn');
+            }
         }
         function campaignOpenPhoto(id, idx) {
             const item = campaignLoad().find(c => c.id === id);
@@ -15720,13 +15776,13 @@ ${extraText}
                         const v = years[y];
                         const total = v.산재 + v.공상 + v.아차사고 + v.공정사고;
                         const active = y === incidentActiveYear;
-                        return `<tr style="${active ? 'background:#EFF6FF;' : ''}">
-                            <td onclick="incidentSetYear('${y}')" style="cursor:pointer; border:1px solid var(--scm-border); padding:6px; text-align:center; font-weight:700; ${active ? 'color:var(--scm-navy);' : ''}" title="클릭하면 ${y}년 대시보드로 이동">${y}</td>
-                            <td onclick="incidentSetYear('${y}')" style="cursor:pointer; border:1px solid var(--scm-border); padding:6px; text-align:center;">${v.산재}</td>
-                            <td onclick="incidentSetYear('${y}')" style="cursor:pointer; border:1px solid var(--scm-border); padding:6px; text-align:center;">${v.공상}</td>
-                            <td onclick="incidentSetYear('${y}')" style="cursor:pointer; border:1px solid var(--scm-border); padding:6px; text-align:center;">${v.아차사고}</td>
-                            <td onclick="incidentSetYear('${y}')" style="cursor:pointer; border:1px solid var(--scm-border); padding:6px; text-align:center;">${v.공정사고}</td>
-                            <td onclick="incidentSetYear('${y}')" style="cursor:pointer; border:1px solid var(--scm-border); padding:6px; text-align:center; font-weight:800;">${total}</td>
+                        return `<tr style="${active ? 'background:rgba(59,130,246,0.18);' : ''}">
+                            <td onclick="incidentSetYear('${y}')" style="cursor:pointer; border:1px solid var(--scm-border); padding:6px; text-align:center; font-weight:700; color:${active ? '#93C5FD' : 'var(--scm-text)'};" title="클릭하면 ${y}년 대시보드로 이동">${y}</td>
+                            <td onclick="incidentSetYear('${y}')" style="cursor:pointer; border:1px solid var(--scm-border); padding:6px; text-align:center; color:var(--scm-text);">${v.산재}</td>
+                            <td onclick="incidentSetYear('${y}')" style="cursor:pointer; border:1px solid var(--scm-border); padding:6px; text-align:center; color:var(--scm-text);">${v.공상}</td>
+                            <td onclick="incidentSetYear('${y}')" style="cursor:pointer; border:1px solid var(--scm-border); padding:6px; text-align:center; color:var(--scm-text);">${v.아차사고}</td>
+                            <td onclick="incidentSetYear('${y}')" style="cursor:pointer; border:1px solid var(--scm-border); padding:6px; text-align:center; color:var(--scm-text);">${v.공정사고}</td>
+                            <td onclick="incidentSetYear('${y}')" style="cursor:pointer; border:1px solid var(--scm-border); padding:6px; text-align:center; font-weight:800; color:var(--scm-text);">${total}</td>
                             ${IS_MASTER ? `<td style="border:1px solid var(--scm-border); padding:4px; text-align:center;"><button onclick="event.stopPropagation(); incidentDeleteYear('${y}')" style="font-size:10.5px; font-weight:700; color:#DC2626; background:none; border:1px solid #FECACA; border-radius:6px; padding:3px 8px; cursor:pointer;">🗑 ${y}년 전체삭제</button></td>` : ''}
                         </tr>`;
                     }).join('')}
