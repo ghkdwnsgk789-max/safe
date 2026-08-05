@@ -425,9 +425,9 @@
                         <div class="mega-panel-wide">
                             <p class="mega-group-title">안전 이벤트</p>
                             <div class="mega-items-row">
-                                <button class="mega-item-btn" onclick="showComingSoon('안전의 날')">안전의 날</button>
-                                <button class="mega-item-btn" onclick="showComingSoon('안전 캠페인')">안전 캠페인</button>
-                                <button class="mega-item-btn" onclick="showComingSoon('우수사례 공유')">우수사례 공유</button>
+                                <button class="mega-item-btn" onclick="switchTab('event'); setTimeout(()=>eventShowView('inspectionday'),80)">안전환경점검의 날</button>
+                                <button class="mega-item-btn" onclick="switchTab('event'); setTimeout(()=>eventShowView('campaign'),80)">안전 캠페인</button>
+                                <button class="mega-item-btn" onclick="switchTab('event'); setTimeout(()=>eventShowView('bestcase'),80)">우수사례 공유</button>
                             </div>
                         </div>
                     </div>
@@ -3173,11 +3173,126 @@
              6. 이벤트 탭
              ============================================== -->
         <section id="tab-event" class="tab-content hidden space-y-6">
-            <div class="pb-1">
-                <h2 class="text-xl font-black" style="color: var(--scm-text);">🎉 이벤트</h2>
-                <p class="text-[13px] mt-1.5" style="color: var(--scm-subtext);">안전퀴즈, 공모전 등 임직원 참여형 안전 캠페인을 운영합니다.</p>
+
+            <!-- [A] 이벤트 메뉴 랜딩 -->
+            <div id="event-view-menu">
+                <div class="pb-1">
+                    <h2 class="text-xl font-black" style="color: var(--scm-text);">🎉 이벤트</h2>
+                    <p class="text-[13px] mt-1.5" style="color: var(--scm-subtext);">안전환경점검의 날, 안전 캠페인, 우수사례 공유 등 임직원 참여형 안전 활동을 운영합니다.</p>
+                </div>
+                <div id="event-menu-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-4"></div>
             </div>
-            <div id="event-menu-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"></div>
+
+            <!-- [B] 안전환경점검의 날 — 게시판 (마스터만 등록, 전체 열람/다운로드) -->
+            <div id="event-view-inspectionday" class="hidden space-y-5">
+                <div class="flex items-center gap-2 text-[13px]">
+                    <button onclick="eventShowView('menu')" class="font-bold hover:underline" style="color: var(--scm-subtext);">← 이벤트</button>
+                    <span style="color: var(--scm-border);">/</span>
+                    <span class="font-bold" style="color: var(--scm-text);">안전환경점검의 날</span>
+                </div>
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                    <div>
+                        <h2 class="text-xl font-black" style="color: var(--scm-text);">🛡️ 안전환경점검의 날</h2>
+                        <p class="text-[12.5px] mt-1" style="color: var(--scm-subtext);">점검 자료를 게시하고 열람·다운로드할 수 있는 게시판입니다. (등록은 마스터만 가능)</p>
+                    </div>
+                    <button id="board-inspectionday-write-btn" onclick="boardOpenForm('inspectionday')" class="hidden text-white text-[13px] font-bold px-4 py-2.5 rounded-xl hover:opacity-90" style="background: var(--scm-navy);">+ 자료 등록</button>
+                </div>
+                <div id="board-inspectionday-form" class="hidden scm-card p-5 space-y-3"></div>
+                <div id="board-inspectionday-list"></div>
+                <div id="board-inspectionday-detail" class="hidden"></div>
+            </div>
+
+            <!-- [C] 안전 캠페인 — 매주 화요일 활동사진 + 현장 위험요인 발굴 기록 -->
+            <div id="event-view-campaign" class="hidden space-y-5">
+                <div class="flex items-center gap-2 text-[13px]">
+                    <button onclick="eventShowView('menu')" class="font-bold hover:underline" style="color: var(--scm-subtext);">← 이벤트</button>
+                    <span style="color: var(--scm-border);">/</span>
+                    <span class="font-bold" style="color: var(--scm-text);">안전 캠페인</span>
+                </div>
+                <div>
+                    <h2 class="text-xl font-black" style="color: var(--scm-text);">📣 안전 캠페인</h2>
+                    <p class="text-[12.5px] mt-1" style="color: var(--scm-subtext);">매주 화요일 진행하는 안전 캠페인 활동사진과, 캠페인 중 현장에서 발굴한 위험요인을 함께 기록합니다.</p>
+                </div>
+                <div id="campaign-form-wrap" class="hidden scm-card p-5 space-y-3">
+                    <h3 style="font-size:13.5px;font-weight:800;color:var(--scm-navy);">+ 캠페인 활동 등록</h3>
+                    <div>
+                        <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">캠페인 일자 (매주 화요일)</label>
+                        <input type="date" id="campaign-date" style="width:220px;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
+                    </div>
+                    <div>
+                        <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">라인/장소 (여러 개 선택 가능)</label>
+                        <div id="campaign-line-toggles" style="display:flex; gap:6px; flex-wrap:wrap;"></div>
+                    </div>
+                    <div style="border:1.5px solid var(--scm-border);border-radius:8px;overflow:hidden;">
+                        <div style="background:#F8FAFC;color:var(--scm-text);padding:6px 12px;font-size:12px;font-weight:700;border-bottom:1px solid var(--scm-border);display:flex;align-items:center;justify-content:space-between;">
+                            <span>▶ 캠페인 활동 사진 (전체 스냅샷)</span>
+                            <label style="display:inline-flex;align-items:center;gap:5px;background:white;border:1px solid var(--scm-border);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:11.5px;font-weight:600;color:var(--scm-navy);">
+                                📷 사진 첨부
+                                <input type="file" id="campaign-photo-input" accept="image/*" multiple style="display:none;" onchange="campaignPreviewPhoto(this)">
+                            </label>
+                        </div>
+                        <div id="campaign-photo-preview" style="min-height:44px; padding:8px; display:flex; gap:6px; flex-wrap:wrap;"></div>
+                    </div>
+
+                    <!-- 현장 위험요인 발굴 — 항목별(사진/내용/개선조치) 반복 입력 -->
+                    <div style="border:1.5px solid #FDE68A;border-radius:8px;overflow:hidden;">
+                        <div style="background:#FFFBEB;color:#92400E;padding:6px 12px;font-size:12px;font-weight:700;border-bottom:1px solid #FDE68A;display:flex;align-items:center;justify-content:space-between;">
+                            <span>⚠️ 현장에서 발굴한 위험요인 (건별 등록 — 라인별 추적관리에 반영됩니다)</span>
+                            <button onclick="campaignAddHazardRow()" style="font-size:11px;font-weight:700;background:white;border:1px solid #FDE68A;border-radius:6px;padding:4px 10px;cursor:pointer;color:#92400E;">+ 위험요인 추가</button>
+                        </div>
+                        <div id="campaign-hazard-rows" style="padding:10px;"></div>
+                    </div>
+
+                    <div style="display:flex; justify-content:flex-end; gap:8px;">
+                        <button onclick="campaignCancelForm()" style="font-size:12.5px;font-weight:700;color:var(--scm-subtext);background:white;border:1px solid var(--scm-border);border-radius:8px;padding:8px 16px;cursor:pointer;">취소</button>
+                        <button onclick="campaignRegister()" style="background:#1B3A6B;color:white;border:none;border-radius:8px;padding:8px 22px;font-size:13px;font-weight:700;cursor:pointer;">등록</button>
+                    </div>
+                </div>
+
+                <!-- 위험요인 추적관리 (전체 캠페인 통합 뷰) -->
+                <div id="campaign-tracking-wrap" class="hidden space-y-3">
+                    <div class="scm-card p-4" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                        <button onclick="campaignHideTracking()" style="font-size:12px;font-weight:700;color:var(--scm-subtext);background:none;border:none;cursor:pointer;">← 캠페인 목록으로</button>
+                        <span style="width:1px;height:18px;background:var(--scm-border);"></span>
+                        <span style="font-size:12px;font-weight:700;color:var(--scm-navy);">라인:</span>
+                        <select id="campaign-tracking-line-filter" onchange="campaignTrackingSetLineFilter(this.value)" style="font-size:12px;font-weight:700;padding:4px 8px;border-radius:8px;border:1.5px solid var(--scm-border);background:white;">
+                            <option value="전체">전체</option>
+                        </select>
+                        <span style="font-size:12px;font-weight:700;color:var(--scm-navy);">상태:</span>
+                        <select id="campaign-tracking-status-filter" onchange="campaignTrackingSetStatusFilter(this.value)" style="font-size:12px;font-weight:700;padding:4px 8px;border-radius:8px;border:1.5px solid var(--scm-border);background:white;">
+                            <option value="전체">전체</option>
+                            <option value="미조치">미조치</option>
+                            <option value="조치완료">조치완료</option>
+                        </select>
+                    </div>
+                    <div id="campaign-tracking-list"></div>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+                    <button onclick="campaignShowTracking()" style="font-size:12.5px;font-weight:700;color:#92400E;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:8px 16px;cursor:pointer;">🔍 위험요인 추적관리</button>
+                    <button id="campaign-write-btn" onclick="campaignOpenForm()" class="hidden text-white text-[13px] font-bold px-4 py-2.5 rounded-xl hover:opacity-90" style="background: var(--scm-navy);">+ 캠페인 활동 등록</button>
+                </div>
+                <div id="campaign-list"></div>
+            </div>
+
+            <!-- [D] 우수사례 발표 — 게시판 -->
+            <div id="event-view-bestcase" class="hidden space-y-5">
+                <div class="flex items-center gap-2 text-[13px]">
+                    <button onclick="eventShowView('menu')" class="font-bold hover:underline" style="color: var(--scm-subtext);">← 이벤트</button>
+                    <span style="color: var(--scm-border);">/</span>
+                    <span class="font-bold" style="color: var(--scm-text);">우수사례 발표</span>
+                </div>
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                    <div>
+                        <h2 class="text-xl font-black" style="color: var(--scm-text);">🏆 우수사례 발표</h2>
+                        <p class="text-[12.5px] mt-1" style="color: var(--scm-subtext);">현장의 우수 안전관리 사례를 공유하는 게시판입니다.</p>
+                    </div>
+                    <button id="board-bestcase-write-btn" onclick="boardOpenForm('bestcase')" class="hidden text-white text-[13px] font-bold px-4 py-2.5 rounded-xl hover:opacity-90" style="background: var(--scm-navy);">+ 사례 등록</button>
+                </div>
+                <div id="board-bestcase-form" class="hidden scm-card p-5 space-y-3"></div>
+                <div id="board-bestcase-list"></div>
+                <div id="board-bestcase-detail" class="hidden"></div>
+            </div>
         </section>
 
         <!-- ==============================================
@@ -3948,7 +4063,7 @@
             event: {
                 icon: '🎉',
                 color: '#DB2777',
-                items: ['안전퀴즈', '공모전 제출']
+                items: ['안전환경점검의 날', '안전 캠페인', '우수사례 발표']
             }
         };
 
@@ -3958,6 +4073,11 @@
             '위험물안전관리법 검토': 'hazmat',
             '원자력안전법 검토': 'nuclear',
             '소방관련 법 검토': 'fire',
+        };
+        const EVENT_ITEM_TO_VIEW = {
+            '안전환경점검의 날': 'inspectionday',
+            '안전 캠페인': 'campaign',
+            '우수사례 발표': 'bestcase',
         };
 
         // ============================================
@@ -3970,17 +4090,22 @@
 
             grid.innerHTML = data.items.map(item => {
                 const libraryGroup = (tabId === 'library') ? LIBRARY_ITEM_TO_GROUP[item] : null;
+                const eventView    = (tabId === 'event') ? EVENT_ITEM_TO_VIEW[item] : null;
                 // 경영방침, 목표 → 전용 서브뷰 연결
                 const onclick = (tabId === 'management' && item === '경영방침, 목표')
                     ? `mgmtOpenPolicy()`
                     : libraryGroup
                         ? `libraryShowView('lawsearch','${libraryGroup}')`
-                        : `showComingSoon('${item.replace(/'/g, "\\'")}')`;
+                        : eventView
+                            ? `eventShowView('${eventView}')`
+                            : `showComingSoon('${item.replace(/'/g, "\\'")}')`;
                 const badge = (tabId === 'management' && item === '경영방침, 목표')
                     ? `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded mt-1 inline-block" style="background:#DBEAFE;color:#1D4ED8;">파일 열람</span>`
                     : libraryGroup
                         ? `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded mt-1 inline-block" style="background:#CCFBF1;color:#0F766E;">법령 통합 검색</span>`
-                        : `<p class="text-[11px] mt-1" style="color: var(--scm-subtext);">바로가기 →</p>`;
+                        : eventView
+                            ? `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded mt-1 inline-block" style="background:#FCE7F3;color:#DB2777;">바로가기</span>`
+                            : `<p class="text-[11px] mt-1" style="color: var(--scm-subtext);">바로가기 →</p>`;
                 return `
                 <button onclick="${onclick}" class="scm-card p-5 text-left hover:shadow-md hover:-translate-y-0.5 transition-all group">
                     <div class="w-10 h-10 rounded-lg flex items-center justify-center text-base mb-3" style="background: ${data.color}1A; color: ${data.color};">
@@ -12311,6 +12436,493 @@ ${extraText}
             if (!item || !item.photos || !item.photos[idx]) return;
             const win = window.open('', '_blank');
             win.document.write(`<html><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="${item.photos[idx].dataUrl}" style="max-width:100%;max-height:100vh;object-fit:contain;"></body></html>`);
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        //  이벤트 탭 — 서브뷰 전환
+        // ══════════════════════════════════════════════════════════════
+        const EVENT_VIEWS = ['event-view-menu', 'event-view-inspectionday', 'event-view-campaign', 'event-view-bestcase'];
+        function eventShowView(view) {
+            EVENT_VIEWS.forEach(v => {
+                const el = document.getElementById(v);
+                if (el) el.classList.toggle('hidden', v !== `event-view-${view}`);
+            });
+            if (view === 'inspectionday') { boardCancelForm('inspectionday'); boardRender('inspectionday'); }
+            if (view === 'bestcase')      { boardCancelForm('bestcase');      boardRender('bestcase'); }
+            if (view === 'campaign')      { campaignCancelForm();             campaignRender(); }
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        //  게시판형 공통 모듈 — 안전환경점검의 날(마스터 전용 등록) / 우수사례 발표(관리자 이상 등록)
+        //  전체 사용자는 열람 + 첨부파일 다운로드 가능
+        // ══════════════════════════════════════════════════════════════
+        const BOARD_CONFIGS = {
+            inspectionday: { storageKey: 'seahcm_board_inspectionday_v1', label: '안전환경점검의 날', canWrite: () => IS_MASTER, writeRoleLabel: '마스터' },
+            bestcase:      { storageKey: 'seahcm_board_bestcase_v1',      label: '우수사례 발표',      canWrite: () => IS_ADMIN,  writeRoleLabel: '관리자 이상' },
+        };
+        let _boardAttachFiles = [];
+        let _boardEditId = null;
+
+        function boardLoad(key) { try { return JSON.parse(localStorage.getItem(BOARD_CONFIGS[key].storageKey) || '[]'); } catch (e) { return []; } }
+        function boardSave(key, list) { localStorage.setItem(BOARD_CONFIGS[key].storageKey, JSON.stringify(list)); }
+
+        function boardOpenForm(key, editId) {
+            const cfg = BOARD_CONFIGS[key];
+            if (!cfg.canWrite()) { showToast(`⚠️ 등록은 ${cfg.writeRoleLabel}만 가능합니다.`, 'warn'); return; }
+            _boardEditId = editId != null ? editId : null;
+            _boardAttachFiles = [];
+            const editing = _boardEditId != null;
+            const existing = editing ? boardLoad(key).find(p => p.id === _boardEditId) : null;
+            const formEl = document.getElementById(`board-${key}-form`);
+            formEl.innerHTML = `
+                <h3 style="font-size:13.5px;font-weight:800;color:var(--scm-navy);">${editing ? '✏️ 게시글 수정' : '+ 게시글 등록'}</h3>
+                <div>
+                    <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">제목 *</label>
+                    <input id="board-${key}-title" value="${existing ? lawEscapeHtml(existing.title) : ''}" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:8px 10px;font-size:13px;outline:none;">
+                </div>
+                <div>
+                    <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">내용</label>
+                    <textarea id="board-${key}-content" rows="6" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:8px 10px;font-size:12.5px;outline:none;resize:vertical;font-family:inherit;">${existing ? existing.content || '' : ''}</textarea>
+                </div>
+                <div style="border:1.5px solid var(--scm-border);border-radius:8px;overflow:hidden;">
+                    <div style="background:#F8FAFC;padding:6px 12px;font-size:12px;font-weight:700;border-bottom:1px solid var(--scm-border);display:flex;align-items:center;justify-content:space-between;">
+                        <span>▶ 첨부파일</span>
+                        <label style="display:inline-flex;align-items:center;gap:5px;background:white;border:1px solid var(--scm-border);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:11.5px;font-weight:600;color:var(--scm-navy);">
+                            📎 파일 첨부
+                            <input type="file" id="board-${key}-file-input" multiple style="display:none;" onchange="boardPreviewFile('${key}')">
+                        </label>
+                    </div>
+                    <div id="board-${key}-file-preview" style="min-height:36px; padding:8px;"></div>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:8px;">
+                    <button onclick="boardCancelForm('${key}')" style="font-size:12.5px;font-weight:700;color:var(--scm-subtext);background:white;border:1px solid var(--scm-border);border-radius:8px;padding:8px 16px;cursor:pointer;">취소</button>
+                    <button onclick="boardSubmit('${key}')" style="background:#1B3A6B;color:white;border:none;border-radius:8px;padding:8px 22px;font-size:13px;font-weight:700;cursor:pointer;">${editing ? '수정 저장' : '등록'}</button>
+                </div>`;
+            formEl.classList.remove('hidden');
+            document.getElementById(`board-${key}-list`).classList.add('hidden');
+            const detailEl = document.getElementById(`board-${key}-detail`);
+            if (detailEl) detailEl.classList.add('hidden');
+            if (existing && existing.attachments) { _boardAttachFiles = existing.attachments.slice(); boardRenderFilePreview(key); }
+        }
+
+        function boardPreviewFile(key) {
+            const input = document.getElementById(`board-${key}-file-input`);
+            const files = Array.from(input.files || []);
+            const MAX = 8 * 1024 * 1024;
+            files.forEach(file => {
+                if (file.size > MAX) { showToast('⚠️ 8MB를 초과하는 파일은 첨부할 수 없습니다.', 'warn'); return; }
+                const reader = new FileReader();
+                reader.onload = e => {
+                    _boardAttachFiles.push({ name: file.name, mime: file.type, dataUrl: e.target.result });
+                    boardRenderFilePreview(key);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function boardRenderFilePreview(key) {
+            const el = document.getElementById(`board-${key}-file-preview`);
+            if (!el) return;
+            el.innerHTML = _boardAttachFiles.map((f, i) => `
+                <div style="display:inline-flex;align-items:center;gap:5px;background:#F1F5F9;border-radius:6px;padding:4px 8px;margin:2px;font-size:11px;">
+                    📄 ${f.name}
+                    <button onclick="boardRemoveFile(${i}, '${key}')" style="color:#DC2626;background:none;border:none;cursor:pointer;font-weight:700;">✕</button>
+                </div>`).join('') || '<span style="font-size:11px;color:var(--scm-subtext);">첨부된 파일 없음</span>';
+        }
+        function boardRemoveFile(idx, key) { _boardAttachFiles.splice(idx, 1); boardRenderFilePreview(key); }
+
+        function boardCancelForm(key) {
+            const formEl = document.getElementById(`board-${key}-form`);
+            if (formEl) formEl.classList.add('hidden');
+            const listEl = document.getElementById(`board-${key}-list`);
+            if (listEl) listEl.classList.remove('hidden');
+            _boardAttachFiles = []; _boardEditId = null;
+        }
+
+        function boardSubmit(key) {
+            const cfg = BOARD_CONFIGS[key];
+            if (!cfg.canWrite()) { showToast(`⚠️ 등록은 ${cfg.writeRoleLabel}만 가능합니다.`, 'warn'); return; }
+            const title   = document.getElementById(`board-${key}-title`).value.trim();
+            const content = document.getElementById(`board-${key}-content`).value.trim();
+            if (!title) { showToast('⚠️ 제목을 입력해 주세요.', 'warn'); return; }
+            const list = boardLoad(key);
+            if (_boardEditId != null) {
+                const idx = list.findIndex(p => p.id === _boardEditId);
+                if (idx !== -1) list[idx] = { ...list[idx], title, content, attachments: _boardAttachFiles.slice() };
+                logActivity(cfg.label, '수정', `"${title}" 게시글 수정`);
+                showToast('✅ 게시글이 수정되었습니다.', 'success');
+            } else {
+                list.unshift({
+                    id: Date.now(), title, content,
+                    attachments: _boardAttachFiles.slice(),
+                    author: CURRENT_SESSION ? CURRENT_SESSION.name : '',
+                    createdAt: new Date().toISOString(),
+                });
+                logActivity(cfg.label, '등록', `"${title}" 게시글 등록`);
+                showToast('✅ 게시글이 등록되었습니다.', 'success');
+            }
+            boardSave(key, list);
+            boardCancelForm(key);
+            boardRender(key);
+        }
+
+        function boardDelete(key, id) {
+            const cfg = BOARD_CONFIGS[key];
+            if (!cfg.canWrite()) { showToast(`⚠️ 삭제는 ${cfg.writeRoleLabel}만 가능합니다.`, 'warn'); return; }
+            if (!confirm('삭제하시겠습니까?')) return;
+            const list = boardLoad(key);
+            const target = list.find(p => p.id === id);
+            boardSave(key, list.filter(p => p.id !== id));
+            logActivity(cfg.label, '삭제', target ? `"${target.title}" 게시글 삭제` : `게시글 삭제 (id:${id})`);
+            boardRender(key);
+            const detailEl = document.getElementById(`board-${key}-detail`);
+            if (detailEl) detailEl.classList.add('hidden');
+            document.getElementById(`board-${key}-list`).classList.remove('hidden');
+            showToast('🗑 삭제되었습니다.', 'success');
+        }
+
+        function boardRender(key) {
+            const cfg = BOARD_CONFIGS[key];
+            const list = boardLoad(key);
+            const listEl = document.getElementById(`board-${key}-list`);
+            const writeBtn = document.getElementById(`board-${key}-write-btn`);
+            if (writeBtn) writeBtn.style.display = cfg.canWrite() ? 'block' : 'none';
+            if (!listEl) return;
+            listEl.classList.remove('hidden');
+            if (!list.length) {
+                listEl.innerHTML = `<div class="scm-card p-8 text-center" style="color:var(--scm-subtext);"><p class="text-3xl mb-2">📋</p><p class="text-[13px]">등록된 게시글이 없습니다.</p></div>`;
+                return;
+            }
+            listEl.innerHTML = `<div class="scm-card p-0" style="overflow:hidden;">
+                ${list.map((p, idx) => `
+                    <div onclick="boardOpenDetail('${key}', ${p.id})" style="padding:14px 18px; cursor:pointer; ${idx < list.length - 1 ? 'border-bottom:1px solid var(--scm-border);' : ''}" class="hover:bg-slate-50">
+                        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                            <span style="font-size:13.5px; font-weight:700; color:var(--scm-text);">${lawEscapeHtml(p.title)}${p.attachments && p.attachments.length ? ` <span style="font-size:11px; color:var(--scm-subtext);">📎${p.attachments.length}</span>` : ''}</span>
+                            <span style="font-size:11px; color:var(--scm-subtext); white-space:nowrap;">${lawEscapeHtml(p.author || '')} · ${new Date(p.createdAt).toLocaleDateString('ko-KR')}</span>
+                        </div>
+                    </div>`).join('')}
+            </div>`;
+        }
+
+        function boardOpenDetail(key, id) {
+            const cfg = BOARD_CONFIGS[key];
+            const post = boardLoad(key).find(p => p.id === id);
+            if (!post) return;
+            document.getElementById(`board-${key}-list`).classList.add('hidden');
+            const detailEl = document.getElementById(`board-${key}-detail`);
+            detailEl.innerHTML = `
+                <div class="scm-card p-6">
+                    <button onclick="boardCloseDetail('${key}')" style="font-size:12px;font-weight:700;color:var(--scm-subtext);background:none;border:none;cursor:pointer;margin-bottom:10px;">← 목록으로</button>
+                    <div style="display:flex; align-items:start; justify-content:space-between; gap:10px;">
+                        <h2 style="font-size:17px;font-weight:800;color:var(--scm-text);">${lawEscapeHtml(post.title)}</h2>
+                        ${cfg.canWrite() ? `<div style="display:flex; gap:6px; flex-shrink:0;">
+                            <button onclick="boardOpenForm('${key}', ${post.id})" style="font-size:11.5px;font-weight:700;color:var(--scm-navy);background:white;border:1px solid var(--scm-border);border-radius:6px;padding:5px 12px;cursor:pointer;">수정</button>
+                            <button onclick="boardDelete('${key}', ${post.id})" style="font-size:11.5px;font-weight:700;color:#DC2626;background:white;border:1px solid #FECACA;border-radius:6px;padding:5px 12px;cursor:pointer;">삭제</button>
+                        </div>` : ''}
+                    </div>
+                    <p style="font-size:11.5px;color:var(--scm-subtext);margin-top:4px;">${lawEscapeHtml(post.author || '')} · ${new Date(post.createdAt).toLocaleString('ko-KR')}</p>
+                    <div style="margin-top:16px; font-size:13px; color:var(--scm-text); white-space:pre-wrap; line-height:1.7;">${lawEscapeHtml(post.content || '')}</div>
+                    ${post.attachments && post.attachments.length ? `
+                        <div style="margin-top:18px; border-top:1px solid var(--scm-border); padding-top:14px;">
+                            <p style="font-size:12px;font-weight:700;color:var(--scm-navy);margin-bottom:8px;">📎 첨부파일 (${post.attachments.length})</p>
+                            <div style="display:flex; flex-direction:column; gap:6px;">
+                                ${post.attachments.map(a => `<a href="${a.dataUrl}" download="${a.name}" style="display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--scm-navy); text-decoration:none; background:#F8FAFC; border-radius:8px; padding:8px 12px;">📄 ${lawEscapeHtml(a.name)} <span style="margin-left:auto; font-size:11px; color:var(--scm-subtext);">다운로드 ↓</span></a>`).join('')}
+                            </div>
+                        </div>` : ''}
+                </div>`;
+            detailEl.classList.remove('hidden');
+        }
+        function boardCloseDetail(key) {
+            document.getElementById(`board-${key}-detail`).classList.add('hidden');
+            document.getElementById(`board-${key}-list`).classList.remove('hidden');
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        //  안전 캠페인 — 매주 화요일 활동사진 + 현장 위험요인 발굴 기록 (관리자 이상 등록)
+        // ══════════════════════════════════════════════════════════════
+        const CAMPAIGN_STORAGE = 'seahcm_campaign_v1';
+        const CAMPAIGN_LINE_OPTS = ['CPL','CRM','CGL','1CCL','2CCL','3CCL','기계정비반','전기정비반','시험검사반','공정물류반','전사','기타'];
+        let _campaignPhotos = [];
+        let _campaignSelectedLines = new Set();
+        let _campaignHazardRowSeq = 0;
+        let _campaignHazardPhotos = {}; // { rowId: [{name,dataUrl}] }
+
+        function campaignLoad() { try { return JSON.parse(localStorage.getItem(CAMPAIGN_STORAGE) || '[]'); } catch (e) { return []; } }
+        function campaignSave(list) { localStorage.setItem(CAMPAIGN_STORAGE, JSON.stringify(list)); }
+
+        // 라인/장소 다중선택 토글 버튼 렌더링
+        function campaignRenderLineToggles() {
+            const wrap = document.getElementById('campaign-line-toggles');
+            if (!wrap) return;
+            wrap.innerHTML = CAMPAIGN_LINE_OPTS.map(l => {
+                const on = _campaignSelectedLines.has(l);
+                return `<button type="button" onclick="campaignToggleLine('${l}')" data-line="${l}" style="font-size:11.5px;font-weight:700;padding:5px 12px;border-radius:99px;cursor:pointer;
+                    background:${on ? '#DB2777' : 'white'};color:${on ? 'white' : 'var(--scm-subtext)'};border:1.5px solid ${on ? '#DB2777' : 'var(--scm-border)'};">${l}</button>`;
+            }).join('');
+        }
+        function campaignToggleLine(line) {
+            if (_campaignSelectedLines.has(line)) _campaignSelectedLines.delete(line);
+            else _campaignSelectedLines.add(line);
+            campaignRenderLineToggles();
+        }
+
+        function campaignOpenForm() {
+            if (!IS_ADMIN) { showToast('⚠️ 등록은 관리자 이상만 가능합니다.', 'warn'); return; }
+            _campaignPhotos = [];
+            _campaignSelectedLines = new Set();
+            _campaignHazardPhotos = {};
+            document.getElementById('campaign-date').value = '';
+            document.getElementById('campaign-photo-input').value = '';
+            document.getElementById('campaign-photo-preview').innerHTML = '';
+            document.getElementById('campaign-hazard-rows').innerHTML = '';
+            campaignRenderLineToggles();
+            campaignAddHazardRow(); // 최소 1개 행 제공
+            document.getElementById('campaign-form-wrap').classList.remove('hidden');
+            document.getElementById('campaign-tracking-wrap').classList.add('hidden');
+            document.getElementById('campaign-list').classList.add('hidden');
+        }
+        function campaignCancelForm() {
+            const el = document.getElementById('campaign-form-wrap');
+            if (el) el.classList.add('hidden');
+            const listEl = document.getElementById('campaign-list');
+            if (listEl) listEl.classList.remove('hidden');
+            _campaignPhotos = []; _campaignSelectedLines = new Set(); _campaignHazardPhotos = {};
+        }
+        function campaignPreviewPhoto(input) {
+            const files = Array.from(input.files || []);
+            const previewEl = document.getElementById('campaign-photo-preview');
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    _campaignPhotos.push({ name: file.name, dataUrl: e.target.result });
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.style.cssText = 'width:56px;height:56px;object-fit:cover;border-radius:8px;border:1px solid var(--scm-border);';
+                    previewEl.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // 위험요인 발굴 항목(건별: 라인/사진/내용/개선조치) 반복 입력 행
+        function campaignAddHazardRow() {
+            const rowId = ++_campaignHazardRowSeq;
+            _campaignHazardPhotos[rowId] = [];
+            const container = document.getElementById('campaign-hazard-rows');
+            const rowEl = document.createElement('div');
+            rowEl.id = `campaign-hazard-row-${rowId}`;
+            rowEl.dataset.rowId = rowId;
+            rowEl.style.cssText = 'border:1.5px solid var(--scm-border); border-radius:10px; padding:10px; margin-bottom:8px; background:white;';
+            const lineOptsHtml = ['', ...CAMPAIGN_LINE_OPTS].map(l => `<option value="${l}">${l || '라인 선택'}</option>`).join('');
+            rowEl.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                    <select id="campaign-hazard-line-${rowId}" style="border:1px solid var(--scm-border); border-radius:6px; padding:4px 8px; font-size:11.5px; font-weight:700; color:#DB2777; background:white;">${lineOptsHtml}</select>
+                    <button type="button" onclick="campaignRemoveHazardRow(${rowId})" style="font-size:11px; color:#DC2626; background:none; border:none; cursor:pointer; font-weight:700;">✕ 삭제</button>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:6px;">
+                    <textarea id="campaign-hazard-content-${rowId}" rows="2" placeholder="위험요인 발굴 내용" style="border:1px solid var(--scm-border); border-radius:6px; padding:6px 8px; font-size:12px; outline:none; resize:vertical; font-family:inherit;"></textarea>
+                    <textarea id="campaign-hazard-action-${rowId}" rows="2" placeholder="개선조치사항" style="border:1px solid var(--scm-border); border-radius:6px; padding:6px 8px; font-size:12px; outline:none; resize:vertical; font-family:inherit;"></textarea>
+                </div>
+                <label style="display:inline-flex; align-items:center; gap:5px; background:#F8FAFC; border:1px solid var(--scm-border); border-radius:6px; padding:3px 9px; cursor:pointer; font-size:11px; font-weight:600; color:var(--scm-navy);">
+                    📷 사진 첨부
+                    <input type="file" accept="image/*" multiple style="display:none;" onchange="campaignHazardPreviewPhoto(${rowId}, this)">
+                </label>
+                <div id="campaign-hazard-photo-preview-${rowId}" style="display:flex; gap:5px; flex-wrap:wrap; margin-top:6px;"></div>`;
+            container.appendChild(rowEl);
+        }
+        function campaignRemoveHazardRow(rowId) {
+            const el = document.getElementById(`campaign-hazard-row-${rowId}`);
+            if (el) el.remove();
+            delete _campaignHazardPhotos[rowId];
+        }
+        function campaignHazardPreviewPhoto(rowId, input) {
+            const files = Array.from(input.files || []);
+            const previewEl = document.getElementById(`campaign-hazard-photo-preview-${rowId}`);
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    _campaignHazardPhotos[rowId].push({ name: file.name, dataUrl: e.target.result });
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.style.cssText = 'width:44px;height:44px;object-fit:cover;border-radius:6px;border:1px solid var(--scm-border);';
+                    previewEl.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function campaignRegister() {
+            if (!IS_ADMIN) { showToast('⚠️ 등록은 관리자 이상만 가능합니다.', 'warn'); return; }
+            const date = document.getElementById('campaign-date').value;
+            if (!date) { showToast('⚠️ 캠페인 일자를 선택해 주세요.', 'warn'); return; }
+            const lines = [..._campaignSelectedLines];
+
+            const hazards = [];
+            document.querySelectorAll('#campaign-hazard-rows > div').forEach(rowEl => {
+                const rowId = rowEl.dataset.rowId;
+                const line = document.getElementById(`campaign-hazard-line-${rowId}`).value;
+                const content = document.getElementById(`campaign-hazard-content-${rowId}`).value.trim();
+                const action = document.getElementById(`campaign-hazard-action-${rowId}`).value.trim();
+                const photos = (_campaignHazardPhotos[rowId] || []).slice();
+                if (!content && !action && !photos.length) return; // 빈 행은 저장하지 않음
+                hazards.push({
+                    id: Date.now() + Math.floor(Math.random() * 1000),
+                    line, content, action, photos,
+                    status: '미조치', dueDate: '', owner: '', doneDate: '',
+                });
+            });
+
+            const list = campaignLoad();
+            list.unshift({
+                id: Date.now(), date, lines,
+                photos: _campaignPhotos.slice(),
+                hazards,
+                author: CURRENT_SESSION ? CURRENT_SESSION.name : '',
+                createdAt: new Date().toISOString(),
+            });
+            campaignSave(list);
+            logActivity('안전캠페인', '등록', `[${date}]${lines.length ? ' ' + lines.join(',') : ''} 캠페인 활동 등록 (위험요인 ${hazards.length}건)`);
+            campaignCancelForm();
+            campaignRender();
+            showToast('✅ 캠페인 활동이 등록되었습니다.', 'success');
+        }
+
+        function campaignDelete(id) {
+            if (!IS_ADMIN) { showToast('⚠️ 삭제는 관리자 이상만 가능합니다.', 'warn'); return; }
+            if (!confirm('삭제하시겠습니까?')) return;
+            const list = campaignLoad();
+            const target = list.find(c => c.id === id);
+            campaignSave(list.filter(c => c.id !== id));
+            logActivity('안전캠페인', '삭제', target ? `[${target.date}] 캠페인 활동 삭제` : `캠페인 삭제 (id:${id})`);
+            campaignRender();
+            showToast('🗑 삭제되었습니다.', 'success');
+        }
+        function campaignOpenPhoto(id, idx) {
+            const item = campaignLoad().find(c => c.id === id);
+            if (!item || !item.photos || !item.photos[idx]) return;
+            const win = window.open('', '_blank');
+            win.document.write(`<html><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="${item.photos[idx].dataUrl}" style="max-width:100%;max-height:100vh;object-fit:contain;"></body></html>`);
+        }
+        function campaignOpenHazardPhoto(campaignId, hazardId, idx) {
+            const camp = campaignLoad().find(c => c.id === campaignId);
+            const hz = camp && (camp.hazards || []).find(h => h.id === hazardId);
+            if (!hz || !hz.photos || !hz.photos[idx]) return;
+            const win = window.open('', '_blank');
+            win.document.write(`<html><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="${hz.photos[idx].dataUrl}" style="max-width:100%;max-height:100vh;object-fit:contain;"></body></html>`);
+        }
+
+        // 위험요인 상태 토글(미조치 ↔ 조치완료) — 캠페인 카드/추적관리 뷰 공용
+        function campaignHazardToggleStatus(campaignId, hazardId) {
+            if (!IS_ADMIN) { showToast('⚠️ 상태 변경은 관리자 이상만 가능합니다.', 'warn'); return; }
+            const list = campaignLoad();
+            const camp = list.find(c => c.id === campaignId);
+            const hz = camp && (camp.hazards || []).find(h => h.id === hazardId);
+            if (!hz) return;
+            hz.status = hz.status === '조치완료' ? '미조치' : '조치완료';
+            hz.doneDate = hz.status === '조치완료' ? new Date().toISOString().slice(0, 10) : '';
+            campaignSave(list);
+            logActivity('안전캠페인', '수정', `[${camp.date}]${hz.line ? ' ' + hz.line : ''} 위험요인 상태 변경: ${hz.status}`);
+            campaignRender();
+            campaignRenderTracking();
+            showToast('✅ 상태가 변경되었습니다.', 'success');
+        }
+
+        function campaignHazardCardHtml(camp, hz, showCampaignMeta) {
+            const statusColor = hz.status === '조치완료' ? { bg: '#DCFCE7', color: '#166534' } : { bg: '#FEF3C7', color: '#92400E' };
+            return `
+                <div style="border:1px solid var(--scm-border); border-radius:8px; padding:10px 12px; margin-bottom:8px; background:#FFFBEB;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; margin-bottom:6px;">
+                        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                            ${hz.line ? `<span style="font-size:10.5px; font-weight:700; background:#FCE7F3; color:#DB2777; padding:2px 8px; border-radius:99px;">${lawEscapeHtml(hz.line)}</span>` : ''}
+                            ${showCampaignMeta ? `<span style="font-size:11px; color:var(--scm-subtext);">${camp.date}</span>` : ''}
+                            <span style="font-size:10.5px; font-weight:800; padding:2px 8px; border-radius:99px; background:${statusColor.bg}; color:${statusColor.color};">${hz.status}${hz.status === '조치완료' && hz.doneDate ? ' · ' + hz.doneDate : ''}</span>
+                        </div>
+                        ${IS_ADMIN ? `<button onclick="campaignHazardToggleStatus(${camp.id}, ${hz.id})" style="font-size:10.5px;font-weight:700;color:var(--scm-navy);background:white;border:1px solid var(--scm-border);border-radius:6px;padding:3px 9px;cursor:pointer;">${hz.status === '조치완료' ? '미조치로 되돌리기' : '✅ 완료 처리'}</button>` : ''}
+                    </div>
+                    ${hz.content ? `<p style="font-size:12px; color:var(--scm-text); margin-bottom:3px;"><strong style="color:#92400E;">발굴:</strong> ${lawEscapeHtml(hz.content)}</p>` : ''}
+                    ${hz.action ? `<p style="font-size:12px; color:var(--scm-text);"><strong style="color:#166534;">개선조치:</strong> ${lawEscapeHtml(hz.action)}</p>` : ''}
+                    ${(hz.photos && hz.photos.length) ? `<div style="display:flex; gap:5px; flex-wrap:wrap; margin-top:6px;">
+                        ${hz.photos.map((p, i) => `<img src="${p.dataUrl}" onclick="campaignOpenHazardPhoto(${camp.id},${hz.id},${i})" style="width:52px;height:52px;object-fit:cover;border-radius:6px;border:1px solid var(--scm-border);cursor:pointer;">`).join('')}
+                    </div>` : ''}
+                </div>`;
+        }
+
+        function campaignRender() {
+            const writeBtn = document.getElementById('campaign-write-btn');
+            if (writeBtn) writeBtn.style.display = IS_ADMIN ? 'block' : 'none';
+            const listEl = document.getElementById('campaign-list');
+            if (!listEl) return;
+            const list = campaignLoad();
+            if (!list.length) {
+                listEl.innerHTML = `<div class="scm-card p-8 text-center" style="color:var(--scm-subtext);"><p class="text-3xl mb-2">📣</p><p class="text-[13px]">등록된 캠페인 활동이 없습니다.</p></div>`;
+                return;
+            }
+            listEl.innerHTML = list.map(c => `
+                <div class="scm-card p-5 mb-3">
+                    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:8px;">
+                        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                            <span style="font-size:14px; font-weight:800; color:var(--scm-text);">${c.date}</span>
+                            ${(c.lines || []).map(l => `<span style="font-size:11px; font-weight:700; background:#FCE7F3; color:#DB2777; padding:2px 9px; border-radius:99px;">${lawEscapeHtml(l)}</span>`).join('')}
+                        </div>
+                        ${IS_ADMIN ? `<button onclick="campaignDelete(${c.id})" style="font-size:11px;font-weight:700;color:#DC2626;background:none;border:1px solid #FECACA;border-radius:6px;padding:4px 10px;cursor:pointer;">삭제</button>` : ''}
+                    </div>
+                    ${(c.photos && c.photos.length) ? `<div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;">
+                        ${c.photos.map((p, i) => `<img src="${p.dataUrl}" onclick="campaignOpenPhoto(${c.id},${i})" style="width:76px;height:76px;object-fit:cover;border-radius:8px;border:1px solid var(--scm-border);cursor:pointer;">`).join('')}
+                    </div>` : ''}
+                    ${(c.hazards && c.hazards.length) ? `<div>
+                        <p style="font-size:11px; font-weight:700; color:#92400E; margin-bottom:6px;">⚠️ 현장 위험요인 발굴 (${c.hazards.length}건)</p>
+                        ${c.hazards.map(hz => campaignHazardCardHtml(c, hz, false)).join('')}
+                    </div>` : ''}
+                    <p style="font-size:11px; color:var(--scm-subtext); margin-top:6px;">등록자: ${lawEscapeHtml(c.author || '-')}</p>
+                </div>`).join('');
+        }
+
+        // ── 위험요인 추적관리 (전체 캠페인 통합 뷰) ──────────────────────────
+        let campaignTrackingLineFilter = '전체';
+        let campaignTrackingStatusFilter = '전체';
+
+        function campaignShowTracking() {
+            document.getElementById('campaign-list').classList.add('hidden');
+            document.getElementById('campaign-form-wrap').classList.add('hidden');
+            document.getElementById('campaign-tracking-wrap').classList.remove('hidden');
+            const lineSel = document.getElementById('campaign-tracking-line-filter');
+            lineSel.innerHTML = '<option value="전체">전체</option>' + CAMPAIGN_LINE_OPTS.map(l => `<option value="${l}">${l}</option>`).join('');
+            lineSel.value = campaignTrackingLineFilter;
+            document.getElementById('campaign-tracking-status-filter').value = campaignTrackingStatusFilter;
+            campaignRenderTracking();
+        }
+        function campaignHideTracking() {
+            document.getElementById('campaign-tracking-wrap').classList.add('hidden');
+            document.getElementById('campaign-list').classList.remove('hidden');
+        }
+        function campaignTrackingSetLineFilter(v)   { campaignTrackingLineFilter = v;   campaignRenderTracking(); }
+        function campaignTrackingSetStatusFilter(v) { campaignTrackingStatusFilter = v; campaignRenderTracking(); }
+
+        function campaignRenderTracking() {
+            const listEl = document.getElementById('campaign-tracking-list');
+            if (!listEl) return;
+            const all = campaignLoad();
+            let rows = [];
+            all.forEach(c => (c.hazards || []).forEach(h => rows.push({ hz: h, camp: c })));
+
+            const total = rows.length;
+            const openCount = rows.filter(r => r.hz.status !== '조치완료').length;
+
+            if (campaignTrackingLineFilter !== '전체')   rows = rows.filter(r => r.hz.line === campaignTrackingLineFilter);
+            if (campaignTrackingStatusFilter !== '전체') rows = rows.filter(r => r.hz.status === campaignTrackingStatusFilter);
+            rows.sort((a, b) => a.camp.date.localeCompare(b.camp.date)); // 오래된 미조치 항목이 먼저 보이도록
+
+            const summaryHtml = `<div class="scm-card p-4 mb-3" style="display:flex; gap:18px; flex-wrap:wrap;">
+                <div><span style="font-size:11px;color:var(--scm-subtext);">전체 발굴 건수</span><br><span style="font-size:18px;font-weight:800;color:var(--scm-text);">${total}건</span></div>
+                <div><span style="font-size:11px;color:var(--scm-subtext);">미조치</span><br><span style="font-size:18px;font-weight:800;color:#DC2626;">${openCount}건</span></div>
+                <div><span style="font-size:11px;color:var(--scm-subtext);">조치완료</span><br><span style="font-size:18px;font-weight:800;color:#059669;">${total - openCount}건</span></div>
+            </div>`;
+
+            if (!rows.length) {
+                listEl.innerHTML = summaryHtml + `<div class="scm-card p-8 text-center" style="color:var(--scm-subtext);"><p class="text-3xl mb-2">🔍</p><p class="text-[13px]">해당 조건의 위험요인이 없습니다.</p></div>`;
+                return;
+            }
+            listEl.innerHTML = summaryHtml + rows.map(r => campaignHazardCardHtml(r.camp, r.hz, true)).join('');
         }
 
         function nearRender() {
