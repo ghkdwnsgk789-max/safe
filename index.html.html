@@ -17,11 +17,11 @@
             --scm-navy-dark: #122B52;
             --scm-navy-darker: #0E1F3D;
             --scm-blue: #3B82F6;
-            --scm-bg: #F0F4FA;
-            --scm-card: #FFFFFF;
+            --scm-bg: #0E1F3D;
+            --scm-card: rgba(255,255,255,0.92);
             --scm-border: #DDE4EF;
-            --scm-text: #1E293B;
-            --scm-subtext: #64748B;
+            --scm-text: #F1F5F9;
+            --scm-subtext: #94A3B8;
             --scm-danger-bg: #FDECEC;
             --scm-danger-border: #F6C6C6;
             --scm-danger-text: #C0392B;
@@ -29,8 +29,8 @@
             /* 신규 디자인 토큰 */
             --scm-surface: rgba(255,255,255,0.72);
             --scm-glass: rgba(255,255,255,0.55);
-            --scm-shadow: 0 4px 24px rgba(27,58,107,0.10);
-            --scm-shadow-lg: 0 8px 40px rgba(27,58,107,0.16);
+            --scm-shadow: 0 4px 24px rgba(0,0,0,0.35);
+            --scm-shadow-lg: 0 8px 40px rgba(0,0,0,0.5);
             --scm-radius: 16px;
             --scm-radius-sm: 10px;
             --accent-green: #10B981;
@@ -39,19 +39,32 @@
             --accent-purple: #8B5CF6;
             --accent-blue: #3B82F6;
         }
+        /* 흰색 배경 카드/박스 내부에서는 기존 어두운 텍스트색으로 되돌린다 (검정 배경 전환의 영향을 받지 않도록) */
+        .scm-card, .dash-card,
+        [style*="background:white"], [style*="background: white"],
+        [style*="background:#fff"], [style*="background: #fff"],
+        [style*="background:#FFF"], [style*="background: #FFF"],
+        [style*="background:#FFFFFF"], [style*="background: #FFFFFF"] {
+            --scm-text: #1E293B;
+            --scm-subtext: #64748B;
+        }
         body {
             font-family: 'Noto Sans KR', sans-serif;
-            background: var(--scm-bg);
+            background: linear-gradient(160deg, #0E1F3D 0%, #16233A 45%, #111827 100%);
             background-image:
-                radial-gradient(ellipse 900px 500px at 0% 0%, rgba(27,58,107,0.07) 0%, transparent 70%),
-                radial-gradient(ellipse 600px 400px at 100% 100%, rgba(59,130,246,0.05) 0%, transparent 70%);
+                linear-gradient(160deg, #0E1F3D 0%, #16233A 45%, #111827 100%),
+                radial-gradient(ellipse 900px 500px at 0% 0%, rgba(59,130,246,0.10) 0%, transparent 70%),
+                radial-gradient(ellipse 700px 500px at 100% 100%, rgba(27,58,107,0.25) 0%, transparent 70%);
+            background-attachment: fixed;
             min-height: 100vh;
         }
 
-        /* ─── 카드 ──────────────────────────────────────────── */
+        /* ─── 카드 (글래스 스타일: 반투명 + 블러로 배경이 은은하게 비침) ──── */
         .scm-card {
             background: var(--scm-card);
-            border: 1px solid var(--scm-border);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.35);
             border-radius: var(--scm-radius);
             box-shadow: var(--scm-shadow);
             transition: box-shadow 0.2s ease, transform 0.2s ease;
@@ -61,7 +74,9 @@
         /* 좌측 컬러 액센트 보더 카드 */
         .dash-card {
             background: var(--scm-card);
-            border: 1px solid var(--scm-border);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.35);
             border-radius: var(--scm-radius);
             box-shadow: var(--scm-shadow);
             border-left: 4px solid transparent;
@@ -235,7 +250,7 @@
         ::-webkit-scrollbar-track { background: transparent; }
     </style>
 </head>
-<body class="text-slate-800 min-h-screen flex flex-col overflow-x-hidden" style="background: var(--scm-bg);">
+<body class="text-slate-800 min-h-screen flex flex-col overflow-x-hidden" style="background: linear-gradient(160deg, #0E1F3D 0%, #16233A 45%, #111827 100%); background-attachment: fixed;">
 
     <!-- ============================================
          로그인(작업자 식별) 오버레이 — 실제 보안 인증이 아닌
@@ -3212,6 +3227,7 @@
                 <div>
                     <h2 class="text-xl font-black" style="color: var(--scm-text);">📣 안전 캠페인</h2>
                     <p class="text-[12.5px] mt-1" style="color: var(--scm-subtext);">매주 화요일 진행하는 안전 캠페인 활동사진과, 캠페인 중 현장에서 발굴한 위험요인을 함께 기록합니다.</p>
+                    <div id="campaign-progress-summary"></div>
                 </div>
                 <div id="campaign-form-wrap" class="hidden scm-card p-5 space-y-3">
                     <h3 style="font-size:13.5px;font-weight:800;color:var(--scm-navy);">+ 캠페인 활동 등록</h3>
@@ -3251,21 +3267,33 @@
 
                 <!-- 위험요인 추적관리 (전체 캠페인 통합 뷰) -->
                 <div id="campaign-tracking-wrap" class="hidden space-y-3">
-                    <div class="scm-card p-4" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                    <div class="scm-card p-4" style="display:flex; align-items:center; gap:10px;">
                         <button onclick="campaignHideTracking()" style="font-size:12px;font-weight:700;color:var(--scm-subtext);background:none;border:none;cursor:pointer;">← 캠페인 목록으로</button>
                         <span style="width:1px;height:18px;background:var(--scm-border);"></span>
-                        <span style="font-size:12px;font-weight:700;color:var(--scm-navy);">라인:</span>
-                        <select id="campaign-tracking-line-filter" onchange="campaignTrackingSetLineFilter(this.value)" style="font-size:12px;font-weight:700;padding:4px 8px;border-radius:8px;border:1.5px solid var(--scm-border);background:white;">
-                            <option value="전체">전체</option>
-                        </select>
-                        <span style="font-size:12px;font-weight:700;color:var(--scm-navy);">상태:</span>
-                        <select id="campaign-tracking-status-filter" onchange="campaignTrackingSetStatusFilter(this.value)" style="font-size:12px;font-weight:700;padding:4px 8px;border-radius:8px;border:1.5px solid var(--scm-border);background:white;">
-                            <option value="전체">전체</option>
-                            <option value="미조치">미조치</option>
-                            <option value="조치완료">조치완료</option>
-                        </select>
+                        <h3 style="font-size:14px;font-weight:800;color:var(--scm-navy); margin:0;">🔍 위험요인 추적관리</h3>
                     </div>
-                    <div id="campaign-tracking-list"></div>
+
+                    <!-- 전체 진행률 -->
+                    <div id="campaign-tracking-overall" class="scm-card p-4"></div>
+
+                    <!-- [A] 라인별 카드 그리드 (기본 화면) -->
+                    <div id="campaign-tracking-grid-view">
+                        <h4 style="font-size:13px;font-weight:800;color:var(--scm-navy); margin-bottom:10px;">라인별 위험요인 현황</h4>
+                        <div id="campaign-tracking-line-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:10px;"></div>
+                    </div>
+
+                    <!-- [B] 특정 라인 상세 (카드 클릭시) -->
+                    <div id="campaign-tracking-detail-view" class="hidden space-y-3">
+                        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+                            <button onclick="campaignTrackingBackToGrid()" style="font-size:12px;font-weight:700;color:var(--scm-subtext);background:none;border:none;cursor:pointer;">← 라인 선택으로</button>
+                            <select id="campaign-tracking-status-filter" onchange="campaignTrackingSetStatusFilter(this.value)" style="font-size:12px;font-weight:700;padding:4px 8px;border-radius:8px;border:1.5px solid var(--scm-border);background:white;">
+                                <option value="전체">전체 상태</option>
+                                <option value="미조치">미조치</option>
+                                <option value="조치완료">조치완료</option>
+                            </select>
+                        </div>
+                        <div id="campaign-tracking-list"></div>
+                    </div>
                 </div>
 
                 <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;">
@@ -12723,6 +12751,10 @@ ${extraText}
                     <textarea id="campaign-hazard-content-${rowId}" rows="2" placeholder="위험요인 발굴 내용" style="border:1px solid var(--scm-border); border-radius:6px; padding:6px 8px; font-size:12px; outline:none; resize:vertical; font-family:inherit;"></textarea>
                     <textarea id="campaign-hazard-action-${rowId}" rows="2" placeholder="개선조치사항" style="border:1px solid var(--scm-border); border-radius:6px; padding:6px 8px; font-size:12px; outline:none; resize:vertical; font-family:inherit;"></textarea>
                 </div>
+                <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px;">
+                    <span style="font-size:11px; font-weight:700; color:var(--scm-navy);">개선조치 기한</span>
+                    <input type="date" id="campaign-hazard-due-${rowId}" style="border:1px solid var(--scm-border); border-radius:6px; padding:4px 8px; font-size:11.5px; outline:none;">
+                </div>
                 <label style="display:inline-flex; align-items:center; gap:5px; background:#F8FAFC; border:1px solid var(--scm-border); border-radius:6px; padding:3px 9px; cursor:pointer; font-size:11px; font-weight:600; color:var(--scm-navy);">
                     📷 사진 첨부
                     <input type="file" accept="image/*" multiple style="display:none;" onchange="campaignHazardPreviewPhoto(${rowId}, this)">
@@ -12763,12 +12795,13 @@ ${extraText}
                 const line = document.getElementById(`campaign-hazard-line-${rowId}`).value;
                 const content = document.getElementById(`campaign-hazard-content-${rowId}`).value.trim();
                 const action = document.getElementById(`campaign-hazard-action-${rowId}`).value.trim();
+                const dueDate = document.getElementById(`campaign-hazard-due-${rowId}`)?.value || '';
                 const photos = (_campaignHazardPhotos[rowId] || []).slice();
                 if (!content && !action && !photos.length) return; // 빈 행은 저장하지 않음
                 hazards.push({
                     id: Date.now() + Math.floor(Math.random() * 1000),
-                    line, content, action, photos,
-                    status: '미조치', dueDate: '', owner: '', doneDate: '',
+                    line, content, action, photos, afterPhotos: [],
+                    status: '미조치', dueDate, owner: '', doneDate: '',
                 });
             });
 
@@ -12823,31 +12856,125 @@ ${extraText}
             campaignSave(list);
             logActivity('안전캠페인', '수정', `[${camp.date}]${hz.line ? ' ' + hz.line : ''} 위험요인 상태 변경: ${hz.status}`);
             campaignRender();
-            campaignRenderTracking();
+            campaignTrackingRenderAll();
             showToast('✅ 상태가 변경되었습니다.', 'success');
+        }
+
+        // 개선조치 기한 설정/수정 (등록 후에도 언제든 변경 가능)
+        function campaignHazardSetDueDate(campaignId, hazardId, value) {
+            if (!IS_ADMIN) { showToast('⚠️ 기한 설정은 관리자 이상만 가능합니다.', 'warn'); return; }
+            const list = campaignLoad();
+            const camp = list.find(c => c.id === campaignId);
+            const hz = camp && (camp.hazards || []).find(h => h.id === hazardId);
+            if (!hz) return;
+            hz.dueDate = value;
+            campaignSave(list);
+            logActivity('안전캠페인', '수정', `[${camp.date}]${hz.line ? ' ' + hz.line : ''} 개선조치 기한 설정: ${value || '해제'}`);
+            campaignRender();
+            campaignTrackingRenderAll();
+            showToast('✅ 기한이 설정되었습니다.', 'success');
+        }
+
+        // 개선 후 사진 등록 (등록된 위험요인 항목에 바로 첨부, 관리자 이상)
+        function campaignHazardAfterPhotoAdd(campaignId, hazardId, input) {
+            if (!IS_ADMIN) { showToast('⚠️ 개선 후 사진 등록은 관리자 이상만 가능합니다.', 'warn'); return; }
+            const files = Array.from(input.files || []);
+            if (!files.length) return;
+            const list = campaignLoad();
+            const camp = list.find(c => c.id === campaignId);
+            const hz = camp && (camp.hazards || []).find(h => h.id === hazardId);
+            if (!hz) return;
+            if (!hz.afterPhotos) hz.afterPhotos = [];
+            let pending = files.length;
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    hz.afterPhotos.push({ name: file.name, dataUrl: e.target.result });
+                    pending--;
+                    if (pending === 0) {
+                        campaignSave(list);
+                        logActivity('안전캠페인', '수정', `[${camp.date}]${hz.line ? ' ' + hz.line : ''} 개선 후 사진 등록`);
+                        campaignRender();
+                        campaignTrackingRenderAll();
+                        showToast('✅ 개선 후 사진이 등록되었습니다.', 'success');
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+        function campaignOpenHazardAfterPhoto(campaignId, hazardId, idx) {
+            const camp = campaignLoad().find(c => c.id === campaignId);
+            const hz = camp && (camp.hazards || []).find(h => h.id === hazardId);
+            if (!hz || !hz.afterPhotos || !hz.afterPhotos[idx]) return;
+            const win = window.open('', '_blank');
+            win.document.write(`<html><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="${hz.afterPhotos[idx].dataUrl}" style="max-width:100%;max-height:100vh;object-fit:contain;"></body></html>`);
         }
 
         function campaignHazardCardHtml(camp, hz, showCampaignMeta) {
             const statusColor = hz.status === '조치완료' ? { bg: '#DCFCE7', color: '#166534' } : { bg: '#FEF3C7', color: '#92400E' };
+            const today = new Date().toISOString().slice(0, 10);
+            const isOverdue = !!hz.dueDate && hz.status !== '조치완료' && hz.dueDate < today;
+            const afterPhotos = hz.afterPhotos || [];
             return `
-                <div style="border:1px solid var(--scm-border); border-radius:8px; padding:10px 12px; margin-bottom:8px; background:#FFFBEB;">
+                <div style="border:1.5px solid ${isOverdue ? '#FCA5A5' : 'var(--scm-border)'}; border-radius:8px; padding:10px 12px; margin-bottom:8px; background:#FFFBEB;">
                     <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; margin-bottom:6px;">
                         <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                             ${hz.line ? `<span style="font-size:10.5px; font-weight:700; background:#FCE7F3; color:#DB2777; padding:2px 8px; border-radius:99px;">${lawEscapeHtml(hz.line)}</span>` : ''}
                             ${showCampaignMeta ? `<span style="font-size:11px; color:var(--scm-subtext);">${camp.date}</span>` : ''}
                             <span style="font-size:10.5px; font-weight:800; padding:2px 8px; border-radius:99px; background:${statusColor.bg}; color:${statusColor.color};">${hz.status}${hz.status === '조치완료' && hz.doneDate ? ' · ' + hz.doneDate : ''}</span>
+                            ${isOverdue ? `<span style="font-size:10.5px; font-weight:800; padding:2px 8px; border-radius:99px; background:#FEE2E2; color:#DC2626;">⏰ 기한초과</span>` : ''}
                         </div>
                         ${IS_ADMIN ? `<button onclick="campaignHazardToggleStatus(${camp.id}, ${hz.id})" style="font-size:10.5px;font-weight:700;color:var(--scm-navy);background:white;border:1px solid var(--scm-border);border-radius:6px;padding:3px 9px;cursor:pointer;">${hz.status === '조치완료' ? '미조치로 되돌리기' : '✅ 완료 처리'}</button>` : ''}
                     </div>
                     ${hz.content ? `<p style="font-size:12px; color:var(--scm-text); margin-bottom:3px;"><strong style="color:#92400E;">발굴:</strong> ${lawEscapeHtml(hz.content)}</p>` : ''}
-                    ${hz.action ? `<p style="font-size:12px; color:var(--scm-text);"><strong style="color:#166534;">개선조치:</strong> ${lawEscapeHtml(hz.action)}</p>` : ''}
-                    ${(hz.photos && hz.photos.length) ? `<div style="display:flex; gap:5px; flex-wrap:wrap; margin-top:6px;">
-                        ${hz.photos.map((p, i) => `<img src="${p.dataUrl}" onclick="campaignOpenHazardPhoto(${camp.id},${hz.id},${i})" style="width:52px;height:52px;object-fit:cover;border-radius:6px;border:1px solid var(--scm-border);cursor:pointer;">`).join('')}
-                    </div>` : ''}
+                    ${hz.action ? `<p style="font-size:12px; color:var(--scm-text); margin-bottom:3px;"><strong style="color:#166534;">개선조치:</strong> ${lawEscapeHtml(hz.action)}</p>` : ''}
+                    <div style="display:flex; align-items:center; gap:6px; margin:6px 0;">
+                        <span style="font-size:11px; font-weight:700; color:var(--scm-navy);">개선조치 기한:</span>
+                        ${IS_ADMIN
+                            ? `<input type="date" value="${hz.dueDate || ''}" onchange="campaignHazardSetDueDate(${camp.id}, ${hz.id}, this.value)" style="border:1px solid var(--scm-border); border-radius:6px; padding:3px 6px; font-size:11px; outline:none;">`
+                            : `<span style="font-size:11.5px; color:${isOverdue ? '#DC2626' : 'var(--scm-text)'}; font-weight:${isOverdue ? '700' : '400'};">${hz.dueDate || '미설정'}</span>`}
+                    </div>
+                    <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:8px;">
+                        <div>
+                            <p style="font-size:10.5px; font-weight:700; color:var(--scm-subtext); margin-bottom:4px;">발굴 사진</p>
+                            <div style="display:flex; gap:5px; flex-wrap:wrap;">
+                                ${(hz.photos && hz.photos.length) ? hz.photos.map((p, i) => `<img src="${p.dataUrl}" onclick="campaignOpenHazardPhoto(${camp.id},${hz.id},${i})" style="width:52px;height:52px;object-fit:cover;border-radius:6px;border:1px solid var(--scm-border);cursor:pointer;">`).join('') : `<span style="font-size:10.5px;color:var(--scm-subtext);">-</span>`}
+                            </div>
+                        </div>
+                        <div>
+                            <p style="font-size:10.5px; font-weight:700; color:#166534; margin-bottom:4px;">✅ 개선 후 사진</p>
+                            <div style="display:flex; gap:5px; flex-wrap:wrap; align-items:center;">
+                                ${afterPhotos.map((p, i) => `<img src="${p.dataUrl}" onclick="campaignOpenHazardAfterPhoto(${camp.id},${hz.id},${i})" style="width:52px;height:52px;object-fit:cover;border-radius:6px;border:1.5px solid #86EFAC;cursor:pointer;">`).join('')}
+                                ${IS_ADMIN ? `<label style="display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;border:1.5px dashed #86EFAC;border-radius:6px;cursor:pointer;font-size:18px;color:#16A34A;background:#F0FDF4;">
+                                    +<input type="file" accept="image/*" multiple style="display:none;" onchange="campaignHazardAfterPhotoAdd(${camp.id}, ${hz.id}, this)">
+                                </label>` : (!afterPhotos.length ? `<span style="font-size:10.5px;color:var(--scm-subtext);">-</span>` : '')}
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        // 위험요인 전체 조치율 — 안전캠페인 제목 아래 표시
+        function campaignRenderProgress() {
+            const el = document.getElementById('campaign-progress-summary');
+            if (!el) return;
+            const all = campaignLoad();
+            let total = 0, done = 0;
+            all.forEach(c => (c.hazards || []).forEach(h => { total++; if (h.status === '조치완료') done++; }));
+            if (!total) { el.innerHTML = ''; return; }
+            const pct = Math.round(done / total * 100);
+            el.innerHTML = `
+                <div style="display:flex; align-items:center; gap:8px; margin-top:8px;">
+                    <span style="font-size:11.5px; font-weight:700; color:var(--scm-navy); white-space:nowrap;">위험요인 조치율</span>
+                    <div style="flex:1; max-width:220px; background:#F1F5F9; border-radius:99px; height:8px; overflow:hidden;">
+                        <div style="width:${pct}%; height:100%; background:linear-gradient(90deg,#F472B6,#DB2777); border-radius:99px;"></div>
+                    </div>
+                    <span style="font-size:11.5px; font-weight:800; color:#DB2777; white-space:nowrap;">${pct}% (${done}/${total}건)</span>
                 </div>`;
         }
 
         function campaignRender() {
+            campaignRenderProgress();
             const writeBtn = document.getElementById('campaign-write-btn');
             if (writeBtn) writeBtn.style.display = IS_ADMIN ? 'block' : 'none';
             const listEl = document.getElementById('campaign-list');
@@ -12877,52 +13004,123 @@ ${extraText}
                 </div>`).join('');
         }
 
-        // ── 위험요인 추적관리 (전체 캠페인 통합 뷰) ──────────────────────────
-        let campaignTrackingLineFilter = '전체';
+        // ── 위험요인 추적관리 (전체 캠페인 통합 뷰 — 라인 카드 그리드 → 상세) ──
+        let campaignTrackingSelectedLine = null; // null = 라인 카드 그리드, 'CGL' 등 = 해당 라인 상세
         let campaignTrackingStatusFilter = '전체';
 
         function campaignShowTracking() {
             document.getElementById('campaign-list').classList.add('hidden');
             document.getElementById('campaign-form-wrap').classList.add('hidden');
             document.getElementById('campaign-tracking-wrap').classList.remove('hidden');
-            const lineSel = document.getElementById('campaign-tracking-line-filter');
-            lineSel.innerHTML = '<option value="전체">전체</option>' + CAMPAIGN_LINE_OPTS.map(l => `<option value="${l}">${l}</option>`).join('');
-            lineSel.value = campaignTrackingLineFilter;
-            document.getElementById('campaign-tracking-status-filter').value = campaignTrackingStatusFilter;
-            campaignRenderTracking();
+            campaignTrackingSelectedLine = null;
+            document.getElementById('campaign-tracking-detail-view').classList.add('hidden');
+            document.getElementById('campaign-tracking-grid-view').classList.remove('hidden');
+            campaignTrackingRenderAll();
         }
         function campaignHideTracking() {
             document.getElementById('campaign-tracking-wrap').classList.add('hidden');
             document.getElementById('campaign-list').classList.remove('hidden');
         }
-        function campaignTrackingSetLineFilter(v)   { campaignTrackingLineFilter = v;   campaignRenderTracking(); }
-        function campaignTrackingSetStatusFilter(v) { campaignTrackingStatusFilter = v; campaignRenderTracking(); }
+        function campaignTrackingSelectLine(line) {
+            campaignTrackingSelectedLine = line;
+            campaignTrackingStatusFilter = '전체';
+            document.getElementById('campaign-tracking-status-filter').value = '전체';
+            document.getElementById('campaign-tracking-grid-view').classList.add('hidden');
+            document.getElementById('campaign-tracking-detail-view').classList.remove('hidden');
+            campaignTrackingRenderDetail();
+        }
+        function campaignTrackingBackToGrid() {
+            campaignTrackingSelectedLine = null;
+            document.getElementById('campaign-tracking-detail-view').classList.add('hidden');
+            document.getElementById('campaign-tracking-grid-view').classList.remove('hidden');
+            campaignTrackingRenderGrid();
+        }
+        function campaignTrackingSetStatusFilter(v) { campaignTrackingStatusFilter = v; campaignTrackingRenderDetail(); }
 
-        function campaignRenderTracking() {
-            const listEl = document.getElementById('campaign-tracking-list');
-            if (!listEl) return;
-            const all = campaignLoad();
-            let rows = [];
-            all.forEach(c => (c.hazards || []).forEach(h => rows.push({ hz: h, camp: c })));
+        function campaignTrackingGetAllRows() {
+            const rows = [];
+            campaignLoad().forEach(c => (c.hazards || []).forEach(h => rows.push({ hz: h, camp: c })));
+            return rows;
+        }
+        function campaignProgressBarHtml(done, total, color) {
+            color = color || '#DB2777';
+            const pct = total ? Math.round(done / total * 100) : 0;
+            return `<div style="display:flex; align-items:center; gap:6px;">
+                <div style="flex:1; background:#F1F5F9; border-radius:99px; height:6px; overflow:hidden;">
+                    <div style="width:${pct}%; height:100%; background:${color}; border-radius:99px;"></div>
+                </div>
+                <span style="font-size:10.5px; font-weight:800; color:${color}; white-space:nowrap;">${pct}%</span>
+            </div>`;
+        }
 
+        function campaignTrackingRenderAll() {
+            campaignTrackingRenderOverall();
+            campaignTrackingRenderGrid();
+            if (campaignTrackingSelectedLine) campaignTrackingRenderDetail();
+        }
+
+        // 전체 진행률 요약
+        function campaignTrackingRenderOverall() {
+            const el = document.getElementById('campaign-tracking-overall');
+            if (!el) return;
+            const rows = campaignTrackingGetAllRows();
             const total = rows.length;
-            const openCount = rows.filter(r => r.hz.status !== '조치완료').length;
+            const done  = rows.filter(r => r.hz.status === '조치완료').length;
+            el.innerHTML = `
+                <div style="display:flex; align-items:center; gap:18px; flex-wrap:wrap;">
+                    <div><span style="font-size:11px;color:var(--scm-subtext);">전체 발굴</span><br><span style="font-size:18px;font-weight:800;color:var(--scm-text);">${total}건</span></div>
+                    <div><span style="font-size:11px;color:var(--scm-subtext);">미조치</span><br><span style="font-size:18px;font-weight:800;color:#DC2626;">${total - done}건</span></div>
+                    <div><span style="font-size:11px;color:var(--scm-subtext);">조치완료</span><br><span style="font-size:18px;font-weight:800;color:#059669;">${done}건</span></div>
+                    <div style="flex:1; min-width:180px;">
+                        <span style="font-size:11px;color:var(--scm-subtext);">전체 진행률</span>
+                        ${campaignProgressBarHtml(done, total)}
+                    </div>
+                </div>`;
+        }
 
-            if (campaignTrackingLineFilter !== '전체')   rows = rows.filter(r => r.hz.line === campaignTrackingLineFilter);
+        // 라인별 카드 그리드 (위험성평가표 라인 카드와 동일한 디자인)
+        function campaignTrackingRenderGrid() {
+            const grid = document.getElementById('campaign-tracking-line-grid');
+            if (!grid) return;
+            const rows = campaignTrackingGetAllRows();
+            const today = new Date().toISOString().slice(0, 10);
+            grid.innerHTML = CAMPAIGN_LINE_OPTS.map(line => {
+                const items = rows.filter(r => r.hz.line === line);
+                const done = items.filter(r => r.hz.status === '조치완료').length;
+                const overdue = items.filter(r => r.hz.dueDate && r.hz.status !== '조치완료' && r.hz.dueDate < today).length;
+                return `<button onclick="campaignTrackingSelectLine('${line}')" class="scm-card" style="padding:16px 12px; text-align:center; cursor:pointer; border:1.5px solid var(--scm-border); transition:all .15s;" onmouseover="this.style.borderColor='#DB2777'" onmouseout="this.style.borderColor='var(--scm-border)'">
+                    <p style="font-size:13.5px; font-weight:800; color:var(--scm-navy); margin:0 0 6px;">${line}</p>
+                    <p style="font-size:11px; color:var(--scm-subtext); margin:0 0 8px;">${items.length}건 등록</p>
+                    ${items.length ? campaignProgressBarHtml(done, items.length) : `<div style="height:6px;background:#F1F5F9;border-radius:99px;"></div>`}
+                    ${overdue > 0 ? `<p style="font-size:10.5px; font-weight:700; color:#DC2626; margin:6px 0 0;">⏰ 기한초과 ${overdue}건</p>` : ''}
+                </button>`;
+            }).join('');
+        }
+
+        // 특정 라인 클릭시 상세 목록
+        function campaignTrackingRenderDetail() {
+            const listEl = document.getElementById('campaign-tracking-list');
+            if (!listEl || !campaignTrackingSelectedLine) return;
+            const allForLine = campaignTrackingGetAllRows().filter(r => r.hz.line === campaignTrackingSelectedLine);
+            const doneForLine = allForLine.filter(r => r.hz.status === '조치완료').length;
+
+            const headerHtml = `<div class="scm-card p-4 mb-3">
+                <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+                    <h4 style="font-size:14px; font-weight:800; color:var(--scm-navy); margin:0;">🏭 ${lawEscapeHtml(campaignTrackingSelectedLine)}</h4>
+                    <span style="font-size:11.5px; color:var(--scm-subtext);">${allForLine.length}건 중 ${doneForLine}건 조치완료</span>
+                </div>
+                <div style="margin-top:8px;">${campaignProgressBarHtml(doneForLine, allForLine.length)}</div>
+            </div>`;
+
+            let rows = allForLine.slice();
             if (campaignTrackingStatusFilter !== '전체') rows = rows.filter(r => r.hz.status === campaignTrackingStatusFilter);
             rows.sort((a, b) => a.camp.date.localeCompare(b.camp.date)); // 오래된 미조치 항목이 먼저 보이도록
 
-            const summaryHtml = `<div class="scm-card p-4 mb-3" style="display:flex; gap:18px; flex-wrap:wrap;">
-                <div><span style="font-size:11px;color:var(--scm-subtext);">전체 발굴 건수</span><br><span style="font-size:18px;font-weight:800;color:var(--scm-text);">${total}건</span></div>
-                <div><span style="font-size:11px;color:var(--scm-subtext);">미조치</span><br><span style="font-size:18px;font-weight:800;color:#DC2626;">${openCount}건</span></div>
-                <div><span style="font-size:11px;color:var(--scm-subtext);">조치완료</span><br><span style="font-size:18px;font-weight:800;color:#059669;">${total - openCount}건</span></div>
-            </div>`;
-
             if (!rows.length) {
-                listEl.innerHTML = summaryHtml + `<div class="scm-card p-8 text-center" style="color:var(--scm-subtext);"><p class="text-3xl mb-2">🔍</p><p class="text-[13px]">해당 조건의 위험요인이 없습니다.</p></div>`;
+                listEl.innerHTML = headerHtml + `<div class="scm-card p-8 text-center" style="color:var(--scm-subtext);"><p class="text-3xl mb-2">🔍</p><p class="text-[13px]">해당 조건의 위험요인이 없습니다.</p></div>`;
                 return;
             }
-            listEl.innerHTML = summaryHtml + rows.map(r => campaignHazardCardHtml(r.camp, r.hz, true)).join('');
+            listEl.innerHTML = headerHtml + rows.map(r => campaignHazardCardHtml(r.camp, r.hz, true)).join('');
         }
 
         function nearRender() {
