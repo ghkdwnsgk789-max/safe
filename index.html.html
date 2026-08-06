@@ -3791,6 +3791,13 @@
         let CURRENT_SESSION = null;
         try { CURRENT_SESSION = JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null'); } catch (e) { CURRENT_SESSION = null; }
 
+        // ⚠️ 임시 조치: 로그인 화면을 잠시 건너뛰도록 설정 (요청에 따라 비활성화, 나중에 다시 요청 시 아래를
+        //    true로 되돌리면 원래대로 로그인 화면이 나타납니다)
+        const LOGIN_REQUIRED = false;
+        if (!LOGIN_REQUIRED && !CURRENT_SESSION) {
+            CURRENT_SESSION = { id: 0, name: '임시사용자', position: '', role: 'master', company: '' };
+        }
+
         // ============================================
         // 권한 플래그 — 로그인 세션의 역할(role)에서 파생
         // role: 'master' | 'admin' | 'user' | 'vendor'(협력업체)
