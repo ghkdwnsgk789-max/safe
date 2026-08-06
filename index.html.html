@@ -647,11 +647,14 @@
                     <div class="stat-num" style="color:#059669;" id="kpi-safe-days">—</div>
                     <div style="font-size:12px;color:var(--scm-subtext);margin-top:5px;">연속 무재해 달성 중</div>
                     <div style="margin-top:12px;height:5px;background:#D1FAE5;border-radius:99px;overflow:hidden;"><div class="progress-bar" style="height:100%;background:linear-gradient(90deg,#10B981,#059669);border-radius:99px;width:100%;"></div></div>
+                    <div id="safe-days-detail" style="margin-top:10px;font-size:10.5px;color:var(--scm-subtext);line-height:1.7;"></div>
 
                     <!-- 무재해 시작일 편집 패널 (마스터 전용, 평소엔 숨김) -->
                     <div id="safe-days-edit-panel" style="position:absolute; inset:0; background:white; border-radius:14px; border:1.5px solid #059669; padding:14px; z-index:10; display:none; flex-direction:column; gap:8px; justify-content:center; box-shadow:0 8px 20px rgba(0,0,0,0.12);">
                         <label style="font-size:11px; font-weight:700; color:#065F46;">무재해 시작일</label>
                         <input type="date" id="safe-days-start-input" style="border:1.5px solid #A7F3D0; border-radius:8px; padding:6px 8px; font-size:12.5px; outline:none;">
+                        <label style="font-size:11px; font-weight:700; color:#065F46;margin-top:4px;">무재해 1배수 일수 <span style="font-weight:500;color:#94A3B8;">(예: 380 → 2배수는 760일, 선택)</span></label>
+                        <input type="number" min="1" step="1" id="safe-days-1x-input" placeholder="예: 380" style="border:1.5px solid #A7F3D0; border-radius:8px; padding:6px 8px; font-size:12.5px; outline:none;">
                         <div style="display:flex; gap:6px;">
                             <button onclick="safeDaysCancelEdit()" style="flex:1; font-size:11.5px; font-weight:700; padding:6px; border-radius:8px; border:1px solid #E2E8F0; background:white; color:#64748B; cursor:pointer;">취소</button>
                             <button onclick="safeDaysSaveEdit()" style="flex:1; font-size:11.5px; font-weight:700; padding:6px; border-radius:8px; border:none; background:#059669; color:white; cursor:pointer;">저장</button>
@@ -9333,20 +9336,54 @@ ${extraText}
         //  무재해 일수 — 마스터만 시작일 수정 가능 (매일 자동 증가)
         // ══════════════════════════════════════════════════════════════
         const SAFE_DAYS_START_KEY = 'seahcm_safe_days_start';
+        const SAFE_DAYS_1X_KEY    = 'seahcm_safe_days_1x_days'; // 무재해 1배수 일수 (수동 입력, 예: 380)
         function safeDaysGetStart() {
             return localStorage.getItem(SAFE_DAYS_START_KEY) || '2022-10-29';
+        }
+        function safeDaysGet1x() {
+            const v = parseInt(localStorage.getItem(SAFE_DAYS_1X_KEY), 10);
+            return (Number.isFinite(v) && v > 0) ? v : null;
         }
         function homeRenderSafeDays() {
             const kdEl = document.getElementById('kpi-safe-days');
             if (!kdEl) return;
-            const start = new Date(safeDaysGetStart());
-            const safeDays = Math.max(0, Math.floor((new Date() - start) / 86400000));
+            const startStr = safeDaysGetStart();
+            const start = new Date(startStr);
+            const today = new Date();
+            const safeDays = Math.max(0, Math.floor((today - start) / 86400000));
             kdEl.textContent = safeDays.toLocaleString() + '일';
+
+            const detailEl = document.getElementById('safe-days-detail');
+            if (!detailEl) return;
+
+            const lines = [`🏁 시작일: ${startStr}`];
+
+            const oneXDays = safeDaysGet1x();
+            if (oneXDays) {
+                const twoXDays = oneXDays * 2;
+                const twoXDate = new Date(start.getTime() + twoXDays * 86400000);
+                const ddayNum = Math.ceil((twoXDate - today) / 86400000);
+                const twoXDateStr = twoXDate.toISOString().slice(0,10);
+                lines.push(`📐 1배수 ${oneXDays.toLocaleString()}일 · 2배수 ${twoXDays.toLocaleString()}일`);
+                if (ddayNum > 0) {
+                    lines.push(`🎯 2배수까지 D-${ddayNum} (목표 ${twoXDateStr})`);
+                } else if (ddayNum === 0) {
+                    lines.push(`🎉 오늘 2배수 달성일입니다! (${twoXDateStr})`);
+                } else {
+                    lines.push(`🎉 2배수 달성! (D+${Math.abs(ddayNum)}, 목표 ${twoXDateStr})`);
+                }
+            } else {
+                lines.push(`🎯 2배수 D-day: 1배수 일수를 입력하면 자동 계산됩니다`);
+            }
+
+            detailEl.innerHTML = lines.map(l => `<div>${l}</div>`).join('');
         }
         function safeDaysOpenEdit() {
             if (!IS_MASTER) { showToast('⚠️ 무재해 일수 수정은 마스터만 가능합니다.', 'warn'); return; }
             const input = document.getElementById('safe-days-start-input');
             if (input) input.value = safeDaysGetStart();
+            const input1x = document.getElementById('safe-days-1x-input');
+            if (input1x) input1x.value = safeDaysGet1x() || '';
             const panel = document.getElementById('safe-days-edit-panel');
             if (panel) panel.style.display = 'flex';
         }
@@ -9359,9 +9396,16 @@ ${extraText}
             const val = document.getElementById('safe-days-start-input').value;
             if (!val) { showToast('⚠️ 무재해 시작일을 선택해 주세요.', 'warn'); return; }
             if (new Date(val) > new Date()) { showToast('⚠️ 무재해 시작일은 오늘 이전 날짜여야 합니다.', 'warn'); return; }
+            const val1xRaw = document.getElementById('safe-days-1x-input')?.value || '';
+            const val1x = val1xRaw ? parseInt(val1xRaw, 10) : null;
+            if (val1xRaw && (!Number.isFinite(val1x) || val1x <= 0)) {
+                showToast('⚠️ 무재해 1배수 일수는 1 이상의 숫자로 입력해 주세요.', 'warn'); return;
+            }
             const oldVal = safeDaysGetStart();
             localStorage.setItem(SAFE_DAYS_START_KEY, val);
-            logActivity('홈 대시보드', '수정', `무재해 시작일 변경: ${oldVal} → ${val}`);
+            if (val1x) localStorage.setItem(SAFE_DAYS_1X_KEY, String(val1x));
+            else localStorage.removeItem(SAFE_DAYS_1X_KEY);
+            logActivity('홈 대시보드', '수정', `무재해 시작일 변경: ${oldVal} → ${val}${val1x ? ` / 1배수 일수: ${val1x}일` : ''}`);
             safeDaysCancelEdit();
             homeRenderSafeDays();
             showToast('✅ 무재해 일수가 갱신되었습니다.', 'success');
@@ -14682,7 +14726,7 @@ ${extraText}
                 return;
             }
             el.innerHTML = active.map(n => `
-                <div class="flex items-center justify-between py-2.5 cursor-pointer hover:bg-slate-50 -mx-1 px-1 rounded transition-colors" onclick="noticeGoDetail('${n.id}')">
+                <div class="flex items-center justify-between py-2.5 cursor-pointer hover:bg-white/5 -mx-1 px-1 rounded transition-colors" onclick="noticeGoDetail('${n.id}')">
                     <div class="flex items-center gap-2 min-w-0">
                         ${n.pinned ? '<span class="shrink-0 text-[10px] font-extrabold px-1.5 py-0.5 rounded" style="background:#E53E3E; color:white;">공지</span>' : ''}
                         <span class="text-[13px] font-medium truncate" style="color:var(--scm-text);">${n.subject}</span>
