@@ -10894,9 +10894,11 @@ ${extraText}
                     arr[idx].afterPhotos.push({ name: file.name, dataUrl: e.target.result });
                     loaded++;
                     if (loaded === files.length) {
+                        arr[idx].status   = '완료';
+                        arr[idx].doneDate = new Date().toISOString().slice(0,10);
                         data[month] = arr;
                         patrolSave(data);
-                        showToast(`📷 개선 후 사진 ${files.length}장 등록 완료.`, 'success');
+                        showToast(`📷 개선 후 사진 ${files.length}장 등록 완료. 상태가 '완료'로 자동 변경되었습니다.`, 'success');
                         patrolRenderDetail();
                     }
                 };
@@ -11314,9 +11316,16 @@ ${extraText}
             const key = type === 'before' ? 'beforePhotos' : 'afterPhotos';
             if (!arr[idx][key]) return;
             arr[idx][key].splice(photoIdx, 1);
+            let extraMsg = '';
+            // 개선 후 사진이 하나도 남지 않으면 '완료' 상태를 되돌려 미완료로 전환
+            if (type === 'after' && arr[idx][key].length === 0 && arr[idx].status === '완료') {
+                arr[idx].status = '미완료';
+                arr[idx].doneDate = '';
+                extraMsg = ' 개선 후 사진이 없어 상태가 다시 \'미완료\'로 변경되었습니다.';
+            }
             data[patrolCurMonth] = arr;
             patrolSave(data);
-            showToast(`🗑 ${typeLabel} 사진이 삭제되었습니다.`, 'success');
+            showToast(`🗑 ${typeLabel} 사진이 삭제되었습니다.${extraMsg}`, 'success');
             patrolRenderDetail();
         }
 
