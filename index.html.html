@@ -12726,7 +12726,15 @@ ${extraText}
         let _boardEditId = null;
 
         function boardLoad(key) { try { return JSON.parse(localStorage.getItem(BOARD_CONFIGS[key].storageKey) || '[]'); } catch (e) { return []; } }
-        function boardSave(key, list) { localStorage.setItem(BOARD_CONFIGS[key].storageKey, JSON.stringify(list)); }
+        function boardSave(key, list) {
+            try {
+                localStorage.setItem(BOARD_CONFIGS[key].storageKey, JSON.stringify(list));
+                return true;
+            } catch (err) {
+                console.error('boardSave 오류:', err);
+                return false;
+            }
+        }
 
         function boardOpenForm(key, editId) {
             const cfg = BOARD_CONFIGS[key];
@@ -12808,11 +12816,10 @@ ${extraText}
             const content = document.getElementById(`board-${key}-content`).value.trim();
             if (!title) { showToast('⚠️ 제목을 입력해 주세요.', 'warn'); return; }
             const list = boardLoad(key);
-            if (_boardEditId != null) {
+            const editing = _boardEditId != null;
+            if (editing) {
                 const idx = list.findIndex(p => p.id === _boardEditId);
                 if (idx !== -1) list[idx] = { ...list[idx], title, content, attachments: _boardAttachFiles.slice() };
-                logActivity(cfg.label, '수정', `"${title}" 게시글 수정`);
-                showToast('✅ 게시글이 수정되었습니다.', 'success');
             } else {
                 list.unshift({
                     id: Date.now(), title, content,
@@ -12820,10 +12827,17 @@ ${extraText}
                     author: CURRENT_SESSION ? CURRENT_SESSION.name : '',
                     createdAt: new Date().toISOString(),
                 });
-                logActivity(cfg.label, '등록', `"${title}" 게시글 등록`);
-                showToast('✅ 게시글이 등록되었습니다.', 'success');
             }
-            boardSave(key, list);
+
+            // 저장을 먼저 시도하고, 성공했을 때만 성공 처리(목록 이동)를 진행한다.
+            // (첨부파일 용량이 너무 크면 localStorage 저장이 실패할 수 있음)
+            const saved = boardSave(key, list);
+            if (!saved) {
+                showToast('⚠️ 저장에 실패했습니다. 첨부파일 용량이 너무 크지 않은지 확인해 주세요 (브라우저 저장공간 초과 가능성).', 'warn');
+                return;
+            }
+            logActivity(cfg.label, editing ? '수정' : '등록', `"${title}" 게시글 ${editing ? '수정' : '등록'}`);
+            showToast(editing ? '✅ 게시글이 수정되었습니다.' : '✅ 게시글이 등록되었습니다.', 'success');
             boardCancelForm(key);
             boardRender(key);
         }
