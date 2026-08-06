@@ -1881,7 +1881,7 @@
                         </div>
                         <div style="padding:14px 16px;">
                             <div style="margin-bottom:10px;">
-                                <button onclick="xlsxDownloadTemplate()" style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;background:#166534;color:white;border:none;border-radius:8px;padding:9px 14px;font-size:12.5px;font-weight:700;cursor:pointer;">⬇️ 표준 양식 다운로드</button>
+                                <button onclick="xlsxDownloadTemplate('patrol')" style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;background:#166534;color:white;border:none;border-radius:8px;padding:9px 14px;font-size:12.5px;font-weight:700;cursor:pointer;">⬇️ 표준 양식 다운로드 (입력폼과 동일한 순서)</button>
                             </div>
                             <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
                                 <label style="display:flex;align-items:center;gap:6px;background:#F0FDF4;border:1.5px dashed #86EFAC;border-radius:8px;padding:8px 14px;cursor:pointer;font-size:12.5px;font-weight:600;color:#166534;">
@@ -8917,14 +8917,15 @@ ${extraText}
 
                 document.getElementById('xlsx-analyze-msg').textContent = '컬럼 자동 분석 중...';
 
-                // ── 헤더 키워드 기반 로컬 매핑 (우선순위 + 중복 방지) ────
+                // ── 헤더 키워드 기반 로컬 매핑 (우선순위 + 중복 방지, 담당라인은 loc보다 먼저 검사) ────
                 const FIELD_RULES2 = [
+                    { field:'line',      kws:['담당라인','담당 라인'] },
                     { field:'loc',       kws:['발견 장소','발생위치','점검장소','장소','위치','구역','공장','라인'] },
                     { field:'content',   kws:['위험요인 내용','지적사항','불안전상태','위험요인','지적','내용'] },
                     { field:'level',     kws:['위험등급','위험도','등급'] },
                     { field:'foundDate', kws:['발견일','점검날짜','점검일','발생일','날짜','일자'] },
                     { field:'dueDate',   kws:['개선기한','조치기한','완료예정일','기한'] },
-                    { field:'owner',     kws:['담당자','조치부서','담당부서','책임자','담당'] },
+                    { field:'owner',     kws:['조치부서','담당부서','책임자','담당자','담당'] },
                     { field:'action',    kws:['개선조치 내용','조치내용','개선내용','조치사항','대책'] },
                     { field:'status',    kws:['완료여부','처리상태','상태'] },
                 ];
@@ -8980,6 +8981,7 @@ ${extraText}
                 _xlsxRows = dataRows.map((r, ri) => ({
                     _rowIdx  : ri,
                     loc      : mapping.loc      !== null ? cellToStr(r[mapping.loc])      : '',
+                    line     : mapping.line     !== null ? cellToStr(r[mapping.line])     : '',
                     content  : mapping.content  !== null ? cellToStr(r[mapping.content])  : '',
                     level    : mapping.level    !== null ? mapLevel(r[mapping.level])     : '중',
                     foundDate: mapping.foundDate!== null ? cellToStr(r[mapping.foundDate]): today,
@@ -8992,9 +8994,9 @@ ${extraText}
                 // 4) 매핑 요약 정보
                 const mappedFields = Object.entries(mapping)
                     .filter(([,v])=>v!==null)
-                    .map(([k,v])=>`<strong>${{loc:'장소',content:'위험요인',level:'등급',foundDate:'발견일',dueDate:'기한',owner:'담당자',action:'조치내용',status:'상태'}[k]}</strong>→${headerRow[v]}`)
+                    .map(([k,v])=>`<strong>${{loc:'장소',line:'담당라인',content:'위험요인',level:'등급',foundDate:'발견일',dueDate:'기한',owner:'담당자',action:'조치내용',status:'상태'}[k]}</strong>→${headerRow[v]}`)
                     .join(' · ');
-                const unmapped = Object.entries(mapping).filter(([,v])=>v===null).map(([k])=>({loc:'장소',content:'위험요인',level:'등급',foundDate:'발견일',dueDate:'기한',owner:'담당자',action:'조치내용',status:'상태'}[k]));
+                const unmapped = Object.entries(mapping).filter(([k,v])=>v===null && !(k==='line' && _xlsxMode!=='patrol')).map(([k])=>({loc:'장소',line:'담당라인',content:'위험요인',level:'등급',foundDate:'발견일',dueDate:'기한',owner:'담당자',action:'조치내용',status:'상태'}[k]));
 
                 document.getElementById('xlsx-mapping-info').innerHTML =
                     `📌 컬럼 자동 매핑: ${mappedFields || '(표준 양식 권장)'}` +
@@ -9027,6 +9029,7 @@ ${extraText}
         function xlsxRenderPreview() {
             const cols = [
                 {key:'loc',      label:'발견 장소', editable:true},
+                ...(_xlsxMode==='patrol' ? [{key:'line', label:'담당라인', editable:true}] : []),
                 {key:'content',  label:'위험요인',  editable:true},
                 {key:'level',    label:'등급',      editable:true, type:'select', opts:['상','중','하']},
                 {key:'foundDate',label:'발견일',    editable:true, type:'date'},
@@ -9103,7 +9106,7 @@ ${extraText}
                 if (!data[monthVal]) data[monthVal] = [];
                 const newItems = _xlsxRows.map(r=>({
                     id:Date.now()+Math.random(),
-                    loc:r.loc, content:r.content, owner:r.owner||'',
+                    loc:r.loc, line:r.line||'', content:r.content, owner:r.owner||'',
                     level:r.level||'중', foundDate:r.foundDate||today,
                     dueDate:r.dueDate||'', action:r.action||'',
                     status:r.status||'미완료', doneDate:'', createdAt:new Date().toISOString()
@@ -9133,16 +9136,30 @@ ${extraText}
             }
         }
 
-        // 표준 양식 다운로드
-        function xlsxDownloadTemplate() {
+        // 표준 양식 다운로드 (모드별로 실제 입력폼과 동일한 컬럼 순서로 제공)
+        function xlsxDownloadTemplate(modeOverride) {
             if (typeof XLSX === 'undefined') { showToast('⚠️ 잠시 후 다시 시도해 주세요.','warn'); return; }
+            const mode = modeOverride || _xlsxMode;
             const wb = XLSX.utils.book_new();
-            const headers = ['발견 장소','위험요인 내용','위험등급(상/중/하)','발견일(YYYY-MM-DD)','개선기한(YYYY-MM-DD)','담당자','개선조치 내용','완료여부(완료/미완료)'];
-            const sample  = [
-                ['3공장 프레스 구역','방호장치 미설치','상','2026-07-15','2026-07-20','김안전','방호장치 즉시 설치','미완료'],
-                ['야적장','낙하물 방지망 훼손','중','2026-07-15','2026-07-30','이담당','방지망 교체','미완료'],
-                ['1공장 통로','안전선 미표시','하','2026-07-15','2026-08-15','박부장','안전선 도색','완료'],
-            ];
+            let headers, sample;
+
+            if (mode === 'patrol') {
+                // "직접 입력 등록" 카드형 폼과 동일한 순서: 위험등급·상태·지적사항·점검날짜·발견 장소·담당라인·조치사항·조치부서·개선기한
+                headers = ['위험등급(상/중/하)','상태(완료/미완료)','지적사항(위험요인 내용)','점검날짜(YYYY-MM-DD)','발견 장소','담당라인(CPL/CRM/CGL/1CCL/2CCL/3CCL/기계정비반/전기정비반/시험검사반/공정물류반/기타)','조치사항(개선 조치 내용)','조치부서(생산팀/설비팀/안전환경팀/변화관리팀/품질경영팀)','개선기한(YYYY-MM-DD)'];
+                sample  = [
+                    ['상','미완료','방호장치 미설치','2026-07-15','3공장 프레스 구역','CPL','방호장치 즉시 설치','설비팀','2026-07-20'],
+                    ['중','미완료','낙하물 방지망 훼손','2026-07-15','야적장','공정물류반','방지망 교체','생산팀','2026-07-30'],
+                    ['하','완료','안전선 미표시','2026-07-15','1공장 통로','CRM','안전선 도색','안전환경팀','2026-08-15'],
+                ];
+            } else {
+                headers = ['발견 장소','위험요인 내용','위험등급(상/중/하)','발견일(YYYY-MM-DD)','개선기한(YYYY-MM-DD)','담당자','개선조치 내용','완료여부(완료/미완료)'];
+                sample  = [
+                    ['3공장 프레스 구역','방호장치 미설치','상','2026-07-15','2026-07-20','김안전','방호장치 즉시 설치','미완료'],
+                    ['야적장','낙하물 방지망 훼손','중','2026-07-15','2026-07-30','이담당','방지망 교체','미완료'],
+                    ['1공장 통로','안전선 미표시','하','2026-07-15','2026-08-15','박부장','안전선 도색','완료'],
+                ];
+            }
+
             const ws = XLSX.utils.aoa_to_sheet([headers, ...sample]);
             ws['!cols'] = headers.map(()=>({wch:20}));
             XLSX.utils.book_append_sheet(wb, ws, '위험요인 발굴 목록');
@@ -10856,14 +10873,15 @@ ${extraText}
                     const dataRows  = raw.slice(1).filter(r => r.some(c => String(c).trim()));
                     if (!dataRows.length) throw new Error('데이터 행이 없습니다.');
 
-                    // 컬럼 우선순위: 더 구체적인 키워드를 먼저 매칭
+                    // 컬럼 우선순위: 더 구체적인 키워드를 먼저 매칭 (담당라인은 loc보다 먼저 검사해 '라인' 충돌 방지)
                     const FIELD_RULES = [
+                        { field:'line',      kws:['담당라인','담당 라인'] },
                         { field:'loc',       kws:['발견 장소','발생위치','점검장소','장소','위치','구역','공장','라인'] },
                         { field:'content',   kws:['위험요인 내용','지적사항','불안전상태','위험요인','지적','내용'] },
                         { field:'level',     kws:['위험등급','위험도','등급'] },
                         { field:'foundDate', kws:['발견일','점검날짜','점검일','발생일','날짜','일자'] },
                         { field:'dueDate',   kws:['개선기한','조치기한','완료예정일','기한'] },
-                        { field:'owner',     kws:['담당자','조치부서','담당부서','책임자','담당'] },
+                        { field:'owner',     kws:['조치부서','담당부서','책임자','담당자','담당'] },
                         { field:'action',    kws:['개선조치 내용','조치내용','개선내용','조치사항','대책'] },
                         { field:'status',    kws:['완료여부','처리상태','상태'] },
                     ];
@@ -10904,6 +10922,7 @@ ${extraText}
                     const stRaw = String(get('status')||'').trim();
                     extracted = {
                         loc      : cellToStr(get('loc')),
+                        line     : cellToStr(get('line')),
                         content  : cellToStr(get('content')),
                         level    : /^(상|A|1|긴급|즉시)/i.test(lvRaw) ? '상' : /^(하|C|3|경미|낮)/i.test(lvRaw) ? '하' : '중',
                         foundDate: cellToStr(get('foundDate')),
@@ -10921,6 +10940,7 @@ ${extraText}
                 // ── 폼에 자동 채우기 ──────────────────────────────────
                 const fieldMap = {
                     'patrol-loc'         : extracted.loc,
+                    'patrol-line'        : extracted.line,
                     'patrol-content'     : extracted.content,
                     'patrol-action'      : extracted.action,
                     'patrol-owner'       : extracted.owner,
