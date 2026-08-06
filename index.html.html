@@ -484,6 +484,7 @@
                                 <button class="mega-item-btn" onclick="switchTab('library'); setTimeout(()=>libraryShowView('lawsearch','nuclear'),80)">원자력안전법 검토</button>
                                 <button class="mega-item-btn" onclick="switchTab('library'); setTimeout(()=>libraryShowView('lawsearch','fire'),80)">소방관련 법 검토</button>
                                 <button class="mega-item-btn" onclick="switchTab('library'); setTimeout(()=>libraryShowView('news'),80)">중대재해 뉴스 및 사고사례 분석</button>
+                                <button class="mega-item-btn" onclick="switchTab('library'); setTimeout(()=>libraryShowView('newsarchive'),80)">중대재해 뉴스 아카이브</button>
                             </div>
                         </div>
                     </div>
@@ -3477,6 +3478,39 @@
                     </div>
                 </div>
             </div>
+
+            <!-- [D] 중대재해 뉴스 아카이브 (누적 최대 500건, Vercel Blob + 매일 자동수집) -->
+            <div id="library-view-newsarchive" class="hidden space-y-6">
+                <div class="flex items-center gap-2 text-[13px]">
+                    <button onclick="libraryShowView('menu')" class="font-bold hover:underline" style="color: var(--scm-subtext);">← 자료실</button>
+                    <span style="color: var(--scm-border);">/</span>
+                    <span class="font-bold" style="color: var(--scm-text);">중대재해 뉴스 아카이브</span>
+                </div>
+
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-black" style="color: var(--scm-text);">중대재해 뉴스 아카이브</h1>
+                    <p class="text-[13px] sm:text-[14px] mt-3 leading-relaxed" style="color: var(--scm-subtext); max-width: 640px;">중대재해 관련 키워드로 매일 자동 수집된 기사 목록입니다. 기사 제목과 링크는 구글 뉴스 검색 결과를 기반으로 수집되며, 각 기사의 저작권은 해당 언론사에 있습니다. 원문 버튼을 누르면 언론사 페이지로 이동합니다. (최대 500건 누적, 초과분은 오래된 순서로 자동 삭제됩니다)</p>
+                </div>
+
+                <div class="scm-card p-6">
+                    <div class="flex items-center justify-between flex-wrap gap-2 mb-3">
+                        <h2 class="text-lg font-black" style="color: var(--scm-text);">뉴스 큐레이션 카드</h2>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span id="newsarchive-count-label" style="font-size:12px; color: var(--scm-subtext); font-weight:700;"></span>
+                            <button onclick="newsArchiveFetch()" style="font-size:12px;font-weight:700;color:var(--scm-navy);background:white;border:1px solid var(--scm-border);border-radius:8px;padding:6px 12px;cursor:pointer;">🔄 새로고침</button>
+                        </div>
+                    </div>
+
+                    <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">제목 검색</label>
+                    <input id="newsarchive-title-search" type="text" placeholder="뉴스 제목을 입력하세요" oninput="newsArchiveRenderList()" class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2 mb-4" style="border-color: var(--scm-border); color: var(--scm-text); background:white;">
+
+                    <div id="newsarchive-category-chips" class="flex gap-2 flex-wrap mb-4"></div>
+
+                    <div id="newsarchive-list-wrap" style="overflow-x:auto;">
+                        <div id="newsarchive-list"></div>
+                    </div>
+                </div>
+            </div>
         </section>
 
         <!-- ==============================================
@@ -3496,7 +3530,7 @@
                         <p class="text-[13px] mt-1" style="color:var(--scm-subtext);">법 제4조 13개 의무사항 이행현황을 반기별로 취합하여 경영책임자에게 보고합니다.</p>
                     </div>
                     <div class="flex items-center gap-2 flex-wrap shrink-0">
-                        <select id="hbr-year" onchange="hbrLoadDashboard()" class="border rounded-lg px-3 py-2 text-[13px] font-bold focus:outline-none" style="border-color:var(--scm-border);color:var(--scm-text);"></select>
+                        <select id="hbr-year" onchange="hbrLoadDashboard()" class="border rounded-lg px-3 py-2 text-[13px] font-bold focus:outline-none" style="border-color:var(--scm-border);color:var(--scm-text);background:white;"></select>
                         <div class="flex rounded-lg overflow-hidden border" style="border-color:var(--scm-border);">
                             <button id="hbr-h1-btn" onclick="hbrSetHalf(1)" class="px-3 py-2 text-[12.5px] font-bold transition-colors" style="background:var(--scm-navy);color:white;">상반기 (1~6월)</button>
                             <button id="hbr-h2-btn" onclick="hbrSetHalf(2)" class="px-3 py-2 text-[12.5px] font-bold transition-colors" style="color:var(--scm-subtext);background:white;">하반기 (7~12월)</button>
@@ -3594,7 +3628,7 @@
                             <p id="hbr-detail-desc" class="text-[12.5px] leading-relaxed" style="color:var(--scm-subtext);"></p>
                         </div>
                         <div class="flex gap-2 shrink-0 flex-wrap">
-                            <button onclick="hbrSave('wip')" class="border text-[12px] font-bold px-3 py-2 rounded-lg hover:bg-slate-50" style="border-color:var(--scm-border);color:var(--scm-text);">💾 임시저장</button>
+                            <button onclick="hbrSave('wip')" class="border text-[12px] font-bold px-3 py-2 rounded-lg hover:bg-slate-50" style="border-color:var(--scm-border);color:var(--scm-text);background:white;">💾 임시저장</button>
                             <button onclick="hbrSave('done')" class="text-white text-[12px] font-bold px-3 py-2 rounded-lg hover:opacity-90" style="background:#E53E3E;">✅ 이행완료</button>
                             <button onclick="hbrPrint()" class="text-white text-[12px] font-bold px-3 py-2 rounded-lg hover:opacity-90" style="background:var(--scm-navy);">📄 서식출력</button>
                         </div>
@@ -3659,14 +3693,14 @@
                 <!-- 메모 -->
                 <div class="scm-card p-5">
                     <h3 class="text-[13px] font-extrabold mb-3" style="color:var(--scm-navy);">📝 특이사항 / 메모</h3>
-                    <textarea id="hbr-memo" rows="4" placeholder="이행 과정의 특이사항, 향후 개선계획, 경영책임자 전달사항 등을 입력하세요." class="w-full border rounded-xl px-4 py-3 text-[13px] focus:outline-none focus:ring-2 resize-none" style="border-color:var(--scm-border);color:var(--scm-text);"></textarea>
+                    <textarea id="hbr-memo" rows="4" placeholder="이행 과정의 특이사항, 향후 개선계획, 경영책임자 전달사항 등을 입력하세요." class="w-full border rounded-xl px-4 py-3 text-[13px] focus:outline-none focus:ring-2 resize-none" style="border-color:var(--scm-border);color:var(--scm-text);background:white;"></textarea>
                 </div>
 
                 <!-- 하단 버튼 -->
                 <div class="flex justify-between items-center pb-4">
-                    <button onclick="hbrShowMain()" class="border text-[13px] font-bold px-5 py-2.5 rounded-lg hover:bg-slate-50" style="border-color:var(--scm-border);color:var(--scm-text);">← 목록으로</button>
+                    <button onclick="hbrShowMain()" class="border text-[13px] font-bold px-5 py-2.5 rounded-lg hover:bg-slate-50" style="border-color:var(--scm-border);color:var(--scm-text);background:white;">← 목록으로</button>
                     <div class="flex gap-2">
-                        <button onclick="hbrSave('wip')" class="border text-[13px] font-bold px-5 py-2.5 rounded-lg hover:bg-slate-50" style="border-color:var(--scm-border);color:var(--scm-text);">💾 임시저장</button>
+                        <button onclick="hbrSave('wip')" class="border text-[13px] font-bold px-5 py-2.5 rounded-lg hover:bg-slate-50" style="border-color:var(--scm-border);color:var(--scm-text);background:white;">💾 임시저장</button>
                         <button onclick="hbrSave('done')" class="text-white text-[13px] font-bold px-5 py-2.5 rounded-lg hover:opacity-90" style="background:#E53E3E;">✅ 이행완료 확인</button>
                     </div>
                 </div>
@@ -4211,7 +4245,7 @@
             library: {
                 icon: '📚',
                 color: '#0F766E',
-                items: ['산업안전보건법 검토', '위험물안전관리법 검토', '원자력안전법 검토', '소방관련 법 검토', '중대재해 뉴스 및 사고사례 분석']
+                items: ['산업안전보건법 검토', '위험물안전관리법 검토', '원자력안전법 검토', '소방관련 법 검토', '중대재해 뉴스 및 사고사례 분석', '중대재해 뉴스 아카이브']
             },
             risk: {
                 icon: '⚠️',
@@ -4267,25 +4301,30 @@
                 const libraryGroup = (tabId === 'library') ? LIBRARY_ITEM_TO_GROUP[item] : null;
                 const eventView    = (tabId === 'event') ? EVENT_ITEM_TO_VIEW[item] : null;
                 const isNewsItem   = (tabId === 'library' && item === '중대재해 뉴스 및 사고사례 분석');
+                const isNewsArchiveItem = (tabId === 'library' && item === '중대재해 뉴스 아카이브');
                 // 경영방침, 목표 → 전용 서브뷰 연결
                 const onclick = (tabId === 'management' && item === '경영방침, 목표')
                     ? `mgmtOpenPolicy()`
                     : isNewsItem
                         ? `libraryShowView('news')`
-                        : libraryGroup
-                            ? `libraryShowView('lawsearch','${libraryGroup}')`
-                            : eventView
-                                ? `eventShowView('${eventView}')`
-                                : `showComingSoon('${item.replace(/'/g, "\\'")}')`;
+                        : isNewsArchiveItem
+                            ? `libraryShowView('newsarchive')`
+                            : libraryGroup
+                                ? `libraryShowView('lawsearch','${libraryGroup}')`
+                                : eventView
+                                    ? `eventShowView('${eventView}')`
+                                    : `showComingSoon('${item.replace(/'/g, "\\'")}')`;
                 const badge = (tabId === 'management' && item === '경영방침, 목표')
                     ? `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded mt-1 inline-block" style="background:#DBEAFE;color:#1D4ED8;">파일 열람</span>`
                     : isNewsItem
                         ? `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded mt-1 inline-block" style="background:#FEE2E2;color:#B91C1C;">뉴스 실시간 조회</span>`
-                        : libraryGroup
-                            ? `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded mt-1 inline-block" style="background:#CCFBF1;color:#0F766E;">법령 통합 검색</span>`
-                            : eventView
-                                ? `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded mt-1 inline-block" style="background:#FCE7F3;color:#DB2777;">바로가기</span>`
-                                : `<p class="text-[11px] mt-1" style="color: var(--scm-subtext);">바로가기 →</p>`;
+                        : isNewsArchiveItem
+                            ? `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded mt-1 inline-block" style="background:#FEF3C7;color:#92400E;">누적 500건</span>`
+                            : libraryGroup
+                                ? `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded mt-1 inline-block" style="background:#CCFBF1;color:#0F766E;">법령 통합 검색</span>`
+                                : eventView
+                                    ? `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded mt-1 inline-block" style="background:#FCE7F3;color:#DB2777;">바로가기</span>`
+                                    : `<p class="text-[11px] mt-1" style="color: var(--scm-subtext);">바로가기 →</p>`;
                 return `
                 <button onclick="${onclick}" class="scm-card p-5 text-left hover:shadow-md hover:-translate-y-0.5 transition-all group">
                     <div class="w-10 h-10 rounded-lg flex items-center justify-center text-base mb-3" style="background: ${data.color}1A; color: ${data.color};">
@@ -7140,17 +7179,19 @@
             // 공통 헬퍼: 입력셀 생성
             const cell = (id, type='text', placeholder='', rows=2, opts=[]) => {
                 if (type === 'textarea') return `<textarea id="hbrf-${id}" rows="${rows}" placeholder="${placeholder}"
-                    style="width:100%;border:none;outline:none;resize:vertical;font-size:12.5px;padding:6px 8px;color:#1E293B;background:transparent;font-family:inherit;">${F[id]||''}</textarea>`;
+                    style="width:100%;border:none;outline:none;resize:vertical;font-size:12.5px;padding:6px 8px;color:#1E293B;background:white;font-family:inherit;">${F[id]||''}</textarea>`;
                 if (type === 'select') return `<select id="hbrf-${id}"
-                    style="width:100%;border:none;outline:none;font-size:12.5px;padding:6px 8px;color:#1E293B;background:transparent;">
+                    style="width:100%;border:none;outline:none;font-size:12.5px;padding:6px 8px;color:#1E293B;background:white;">
                     ${opts.map(o=>`<option value="${o}" ${o===(F[id]||opts[0])?'selected':''}>${o}</option>`).join('')}</select>`;
                 return `<input type="${type}" id="hbrf-${id}" value="${F[id]||''}" placeholder="${placeholder}"
-                    style="width:100%;border:none;outline:none;font-size:12.5px;padding:6px 8px;color:#1E293B;background:transparent;">`;
+                    style="width:100%;border:none;outline:none;font-size:12.5px;padding:6px 8px;color:#1E293B;background:white;">`;
             };
             // 26년도 목표·실적 전용 — 굵은 글씨
-            const boldCell = (id, placeholder='') =>
+            // ⚠️ 호출부에서 boldCell(id, 'text', 기본값) 형태(3개 인자)로 쓰고 있어서,
+            //   두 번째 인자(type)는 항상 'text'로 무시하고 세 번째 인자를 실제 기본값(placeholder)으로 받는다.
+            const boldCell = (id, _type, placeholder='') =>
                 `<input type="text" id="hbrf-${id}" value="${F[id]||''}" placeholder="${placeholder}"
-                    style="width:100%;border:none;outline:none;font-size:12.5px;padding:6px 8px;color:#1E293B;background:transparent;font-weight:700;">`;
+                    style="width:100%;border:none;outline:none;font-size:12.5px;padding:6px 8px;color:#1E293B;background:white;font-weight:700;">`;
 
             // 공통 표 스타일
             const TS = `style="width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:0;"`;
@@ -15050,7 +15091,7 @@ ${extraText}
 
         let currentLawGroup = 'osha';
 
-        const LIBRARY_VIEWS = ['library-view-menu', 'library-view-lawsearch', 'library-view-news'];
+        const LIBRARY_VIEWS = ['library-view-menu', 'library-view-lawsearch', 'library-view-news', 'library-view-newsarchive'];
         function libraryShowView(view, groupKey) {
             if (groupKey) currentLawGroup = groupKey;
             LIBRARY_VIEWS.forEach(v => {
@@ -15058,6 +15099,7 @@ ${extraText}
                 if (el) el.classList.toggle('hidden', v !== `library-view-${view}`);
             });
             if (view === 'news') { newsSearchFetch(); }
+            if (view === 'newsarchive') { newsArchiveFetch(); }
             if (view === 'lawsearch') {
                 const g = LAW_GROUPS[currentLawGroup];
                 const bc = document.getElementById('lawsearch-breadcrumb');
@@ -15173,7 +15215,103 @@ ${extraText}
             </table>`;
         }
 
-        const LAW_GOKR_SEARCH = 'https://www.law.go.kr/lsSc.do?menuId=1&subMenuId=15&tabMenuId=81&query=';
+        // ══════════════════════════════════════════════════════════════
+        //  중대재해 뉴스 아카이브 — /api/news-archive (Vercel Blob에 누적 저장된
+        //  최대 500건)를 조회한다. 실제 수집은 /api/news-collect가 매일 자동(Cron)으로
+        //  수행하며, 여기서는 그 결과를 읽어서 보여주기만 한다.
+        // ══════════════════════════════════════════════════════════════
+        const NEWS_ARCHIVE_ENDPOINT = '/api/news-archive';
+        const NEWS_ARCHIVE_CATEGORY_COLORS = {
+            '중대재해':          { bg: '#FEE2E2', color: '#B91C1C' },
+            '지자체/공공기관':    { bg: '#DCFCE7', color: '#166534' },
+            '건설안전':          { bg: '#FEF3C7', color: '#92400E' },
+            '안전보건관리체계':   { bg: '#DBEAFE', color: '#1D4ED8' },
+            '법령/제도':         { bg: '#EDE9FE', color: '#6D28D9' },
+            '기타안전뉴스':       { bg: '#F1F5F9', color: '#475569' },
+            '제조업안전':         { bg: '#FCE7F3', color: '#BE185D' },
+            '위험성평가':         { bg: '#FFEDD5', color: '#C2410C' },
+            'PSM/화학안전':       { bg: '#CFFAFE', color: '#0E7490' },
+        };
+        let _newsArchiveArticles = [];
+        let _newsArchiveCategoryFilter = '전체';
+
+        async function newsArchiveFetch() {
+            const listEl = document.getElementById('newsarchive-list');
+            const countEl = document.getElementById('newsarchive-count-label');
+            if (listEl) listEl.innerHTML = `<div class="p-8 text-center" style="color:var(--scm-subtext);">🔄 아카이브를 불러오는 중입니다...</div>`;
+            try {
+                const res = await fetch(NEWS_ARCHIVE_ENDPOINT);
+                if (!res.ok) throw new Error(`API 응답 오류 (HTTP ${res.status})`);
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+                _newsArchiveArticles = data.articles || [];
+                const updatedLabel = data.updatedAt ? new Date(data.updatedAt).toLocaleString('ko-KR') : '아직 없음';
+                if (countEl) countEl.textContent = `${_newsArchiveArticles.length}건 · 최신화 ${updatedLabel}`;
+                newsArchiveRenderCategoryChips();
+                newsArchiveRenderList();
+            } catch (err) {
+                if (listEl) listEl.innerHTML = `
+                    <div class="p-6" style="border:1.5px solid #FDE68A; background:#FFFBEB; border-radius:10px;">
+                        <p style="font-size:13px; font-weight:700; color:#92400E;">⚠️ 아카이브를 불러오지 못했습니다.</p>
+                        <p style="font-size:12px; margin-top:6px; color:#B45309;">오류 내용: ${lawEscapeHtml(err.message || String(err))}</p>
+                        <p style="font-size:12px; margin-top:10px; color:#78350F;">Vercel에 news-archive / news-collect 서버리스 함수와 Blob 저장소가 설정되어 있는지 확인해 주세요. 아직 한 번도 자동수집(Cron)이 실행되지 않았다면 목록이 비어있을 수 있습니다.</p>
+                    </div>`;
+                if (countEl) countEl.textContent = '';
+            }
+        }
+
+        function newsArchiveRenderCategoryChips() {
+            const wrap = document.getElementById('newsarchive-category-chips');
+            if (!wrap) return;
+            const cats = ['전체', ...Object.keys(NEWS_ARCHIVE_CATEGORY_COLORS)];
+            wrap.innerHTML = cats.map(c => {
+                const on = c === _newsArchiveCategoryFilter;
+                const style = c === '전체'
+                    ? { bg: on ? '#1B3A6B' : 'white', color: on ? 'white' : 'var(--scm-subtext)', border: on ? '#1B3A6B' : 'var(--scm-border)' }
+                    : { bg: on ? NEWS_ARCHIVE_CATEGORY_COLORS[c].color : 'white', color: on ? 'white' : NEWS_ARCHIVE_CATEGORY_COLORS[c].color, border: on ? NEWS_ARCHIVE_CATEGORY_COLORS[c].color : 'var(--scm-border)' };
+                return `<button onclick="newsArchiveSetCategoryFilter('${c}')" style="font-size:12px;font-weight:700;padding:5px 13px;border-radius:99px;cursor:pointer;background:${style.bg};color:${style.color};border:1.5px solid ${style.border};">${c}</button>`;
+            }).join('');
+        }
+        function newsArchiveSetCategoryFilter(c) {
+            _newsArchiveCategoryFilter = c;
+            newsArchiveRenderCategoryChips();
+            newsArchiveRenderList();
+        }
+
+        function newsArchiveRenderList() {
+            const listEl = document.getElementById('newsarchive-list');
+            if (!listEl) return;
+            const q = (document.getElementById('newsarchive-title-search')?.value || '').trim();
+            let items = _newsArchiveArticles;
+            if (_newsArchiveCategoryFilter !== '전체') items = items.filter(a => a.category === _newsArchiveCategoryFilter);
+            if (q) items = items.filter(a => a.title.includes(q));
+
+            if (!items.length) {
+                listEl.innerHTML = `<p style="padding:24px; text-align:center; font-size:13px; color:var(--scm-subtext);">해당 조건의 기사가 없습니다.</p>`;
+                return;
+            }
+            listEl.innerHTML = `<table style="border-collapse:collapse; width:100%; font-size:12.5px; min-width:620px;">
+                <thead><tr style="background:#F8FAFC;">
+                    <th style="border:1px solid var(--scm-border); padding:8px; text-align:left;">분류</th>
+                    <th style="border:1px solid var(--scm-border); padding:8px; text-align:left;">제목</th>
+                    <th style="border:1px solid var(--scm-border); padding:8px;">원문</th>
+                    <th style="border:1px solid var(--scm-border); padding:8px;">언론사</th>
+                    <th style="border:1px solid var(--scm-border); padding:8px;">날짜</th>
+                </tr></thead>
+                <tbody>
+                    ${items.map(a => {
+                        const cc = NEWS_ARCHIVE_CATEGORY_COLORS[a.category] || { bg: '#F1F5F9', color: 'var(--scm-subtext)' };
+                        return `<tr>
+                            <td style="border:1px solid var(--scm-border); padding:8px;"><span style="font-size:11px; font-weight:700; padding:3px 9px; border-radius:99px; background:${cc.bg}; color:${cc.color}; white-space:nowrap;">${lawEscapeHtml(a.category)}</span></td>
+                            <td style="border:1px solid var(--scm-border); padding:8px; color:var(--scm-text); font-weight:600;">${lawEscapeHtml(a.title)}</td>
+                            <td style="border:1px solid var(--scm-border); padding:8px; text-align:center;"><a href="${a.link}" target="_blank" rel="noopener" style="font-size:11px; font-weight:700; color:white; background:#1B3A6B; padding:4px 10px; border-radius:6px; text-decoration:none; white-space:nowrap;">원문</a></td>
+                            <td style="border:1px solid var(--scm-border); padding:8px; text-align:center; color:var(--scm-subtext); white-space:nowrap;">${lawEscapeHtml(a.source || '-')}</td>
+                            <td style="border:1px solid var(--scm-border); padding:8px; text-align:center; color:var(--scm-subtext); white-space:nowrap;">${newsFormatDate(a.pubDate)}</td>
+                        </tr>`;
+                    }).join('')}
+                </tbody>
+            </table>`;
+        }
         const LAW_API_ENDPOINT = '/api/law-search';
 
         function lawSearchRenderCards() {
