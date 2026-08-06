@@ -12755,13 +12755,22 @@ ${extraText}
                     <textarea id="board-${key}-content" rows="6" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:8px 10px;font-size:12.5px;outline:none;resize:vertical;font-family:inherit;">${existing ? existing.content || '' : ''}</textarea>
                 </div>
                 <div style="border:1.5px solid var(--scm-border);border-radius:8px;overflow:hidden;">
-                    <div style="background:#F8FAFC;padding:6px 12px;font-size:12px;font-weight:700;border-bottom:1px solid var(--scm-border);display:flex;align-items:center;justify-content:space-between;">
-                        <span>▶ 첨부파일</span>
-                        <label style="display:inline-flex;align-items:center;gap:5px;background:white;border:1px solid var(--scm-border);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:11.5px;font-weight:600;color:var(--scm-navy);">
-                            📎 파일 첨부
-                            <input type="file" id="board-${key}-file-input" multiple style="display:none;" onchange="boardPreviewFile('${key}')">
-                        </label>
+                    <div style="background:#F8FAFC;padding:6px 12px;font-size:12px;font-weight:700;border-bottom:1px solid var(--scm-border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+                        <span>▶ 첨부 (용량 큰 자료는 링크를 권장합니다)</span>
+                        <div style="display:flex; gap:6px;">
+                            <button type="button" onclick="boardShowLinkInput('${key}')" style="display:inline-flex;align-items:center;gap:5px;background:white;border:1px solid var(--scm-border);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:11.5px;font-weight:600;color:var(--scm-navy);">🔗 링크로 등록</button>
+                            <label style="display:inline-flex;align-items:center;gap:5px;background:white;border:1px solid var(--scm-border);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:11.5px;font-weight:600;color:var(--scm-navy);">
+                                📎 파일 직접 첨부
+                                <input type="file" id="board-${key}-file-input" multiple style="display:none;" onchange="boardPreviewFile('${key}')">
+                            </label>
+                        </div>
                     </div>
+                    <div id="board-${key}-link-input-row" class="hidden" style="padding:8px; border-bottom:1px solid var(--scm-border); display:flex; gap:6px;">
+                        <input id="board-${key}-link-name" placeholder="자료명 (예: 1월 안전환경점검의 날 행사 자료)" style="flex:1; border:1px solid var(--scm-border); border-radius:6px; padding:6px 8px; font-size:12px; outline:none;">
+                        <input id="board-${key}-link-url" placeholder="https://drive.google.com/... 등 공유 링크 붙여넣기" style="flex:2; border:1px solid var(--scm-border); border-radius:6px; padding:6px 8px; font-size:12px; outline:none;">
+                        <button type="button" onclick="boardAddLink('${key}')" style="font-size:11.5px;font-weight:700;color:white;background:#0F766E;border:none;border-radius:6px;padding:6px 12px;cursor:pointer;white-space:nowrap;">추가</button>
+                    </div>
+                    <p style="font-size:10.5px; color:var(--scm-subtext); padding:6px 12px 0; margin:0;">💡 큰 용량 자료는 구글 드라이브 등에 올리고 "공유 링크"를 복사해서 붙여넣어 주세요 (일반 파일 첨부는 8MB 이하만 가능합니다).</p>
                     <div id="board-${key}-file-preview" style="min-height:36px; padding:8px;"></div>
                 </div>
                 <div style="display:flex; justify-content:flex-end; gap:8px;">
@@ -12790,14 +12799,31 @@ ${extraText}
             });
         }
 
+        function boardShowLinkInput(key) {
+            const row = document.getElementById(`board-${key}-link-input-row`);
+            if (row) row.classList.toggle('hidden');
+        }
+        function boardAddLink(key) {
+            const nameInput = document.getElementById(`board-${key}-link-name`);
+            const urlInput  = document.getElementById(`board-${key}-link-url`);
+            const name = nameInput.value.trim();
+            const url  = urlInput.value.trim();
+            if (!url) { showToast('⚠️ 링크 주소를 입력해 주세요.', 'warn'); return; }
+            if (!/^https?:\/\//i.test(url)) { showToast('⚠️ http:// 또는 https:// 로 시작하는 주소를 입력해 주세요.', 'warn'); return; }
+            _boardAttachFiles.push({ name: name || url, isLink: true, url });
+            nameInput.value = ''; urlInput.value = '';
+            boardRenderFilePreview(key);
+            showToast('✅ 링크가 추가되었습니다.', 'success');
+        }
+
         function boardRenderFilePreview(key) {
             const el = document.getElementById(`board-${key}-file-preview`);
             if (!el) return;
             el.innerHTML = _boardAttachFiles.map((f, i) => `
-                <div style="display:inline-flex;align-items:center;gap:5px;background:#F1F5F9;border-radius:6px;padding:4px 8px;margin:2px;font-size:11px;">
-                    📄 ${f.name}
+                <div style="display:inline-flex;align-items:center;gap:5px;background:${f.isLink ? '#F0FDF4' : '#F1F5F9'};border-radius:6px;padding:4px 8px;margin:2px;font-size:11px;">
+                    ${f.isLink ? '🔗' : '📄'} ${lawEscapeHtml(f.name)}
                     <button onclick="boardRemoveFile(${i}, '${key}')" style="color:#DC2626;background:none;border:none;cursor:pointer;font-weight:700;">✕</button>
-                </div>`).join('') || '<span style="font-size:11px;color:var(--scm-subtext);">첨부된 파일 없음</span>';
+                </div>`).join('') || '<span style="font-size:11px;color:var(--scm-subtext);">첨부된 자료 없음</span>';
         }
         function boardRemoveFile(idx, key) { _boardAttachFiles.splice(idx, 1); boardRenderFilePreview(key); }
 
@@ -12902,7 +12928,10 @@ ${extraText}
                         <div style="margin-top:18px; border-top:1px solid var(--scm-border); padding-top:14px;">
                             <p style="font-size:12px;font-weight:700;color:var(--scm-navy);margin-bottom:8px;">📎 첨부파일 (${post.attachments.length})</p>
                             <div style="display:flex; flex-direction:column; gap:6px;">
-                                ${post.attachments.map(a => `<a href="${a.dataUrl}" download="${a.name}" style="display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--scm-navy); text-decoration:none; background:#F8FAFC; border-radius:8px; padding:8px 12px;">📄 ${lawEscapeHtml(a.name)} <span style="margin-left:auto; font-size:11px; color:var(--scm-subtext);">다운로드 ↓</span></a>`).join('')}
+                                ${post.attachments.map(a => a.isLink
+                                    ? `<a href="${a.url}" target="_blank" rel="noopener" style="display:flex; align-items:center; gap:6px; font-size:12.5px; color:#0F766E; text-decoration:none; background:#F0FDF4; border-radius:8px; padding:8px 12px;">🔗 ${lawEscapeHtml(a.name)} <span style="margin-left:auto; font-size:11px; color:var(--scm-subtext);">열기 ↗</span></a>`
+                                    : `<a href="${a.dataUrl}" download="${a.name}" style="display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--scm-navy); text-decoration:none; background:#F8FAFC; border-radius:8px; padding:8px 12px;">📄 ${lawEscapeHtml(a.name)} <span style="margin-left:auto; font-size:11px; color:var(--scm-subtext);">다운로드 ↓</span></a>`
+                                ).join('')}
                             </div>
                         </div>` : ''}
                 </div>`;
