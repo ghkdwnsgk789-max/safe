@@ -1940,15 +1940,15 @@
                                 <div style="padding:4px 8px;display:flex;align-items:center;"><input type="date" id="patrol-due" style="width:100%;border:none;outline:none;font-size:12px;color:#F1F5F9;font-weight:700;background:transparent;padding:4px 0;color-scheme:dark;"></div>
                             </div>
                             <!-- 개선 전 사진 (마스터) -->
-                            <div style="margin-top:10px;border:1.5px solid #FECACA;border-radius:8px;overflow:hidden;">
+                            <div id="patrol-before-dropzone" ondragover="patrolDragOver(event)" ondragleave="patrolDragLeave(event)" ondrop="patrolDropBefore(event)" style="margin-top:10px;border:1.5px solid #FECACA;border-radius:8px;overflow:hidden;transition:outline 0.15s;">
                                 <div style="background:#FEF2F2;color:#991B1B;padding:6px 12px;font-size:12px;font-weight:700;border-bottom:1px solid #FECACA;display:flex;align-items:center;justify-content:space-between;">
-                                    <span>▶ 개선 전 사진</span>
+                                    <span>▶ 개선 전 사진 <span style="font-weight:500;font-size:10.5px;opacity:0.75;">(사진을 여기로 드래그해도 첨부됩니다)</span></span>
                                     <label style="display:inline-flex;align-items:center;gap:5px;background:white;border:1px solid #FECACA;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:11.5px;font-weight:600;color:#991B1B;">
                                         📷 사진 첨부
                                         <input type="file" id="patrol-before-photo" accept="image/*" multiple style="display:none;" onchange="patrolPreviewPhoto('before',this)">
                                     </label>
                                 </div>
-                                <div id="patrol-before-preview" style="min-height:160px;"></div>
+                                <div id="patrol-before-preview" style="min-height:160px;display:flex;align-items:center;justify-content:center;color:#CBD5E1;font-size:11.5px;">📷 사진을 여기로 드래그하거나 위 버튼으로 첨부하세요</div>
                             </div>
                             <div style="display:flex;justify-content:flex-end;margin-top:12px;">
                                 <button onclick="patrolRegister()" style="background:#1B3A6B;color:white;border:none;border-radius:8px;padding:8px 22px;font-size:13px;font-weight:700;cursor:pointer;">등록</button>
@@ -9175,107 +9175,18 @@ ${extraText}
             showToast('📥 표준 양식이 다운로드되었습니다.', 'success');
         }
 
-        // 매월 패트롤 "액셀 파일로 자동 기입" 전용 — "직접 입력 등록" 카드형 폼과 동일한
-        // 라벨-값 구조(테두리·헤더 색상)의 단건 점검서 양식을 다운로드한다.
-        async function patrolDownloadFormTemplate() {
-            if (typeof ExcelJS === 'undefined') { showToast('⚠️ 잠시 후 다시 시도해 주세요.','warn'); return; }
+        // 매월 패트롤 "액셀 파일로 자동 기입" 전용 — 사용자가 직접 다듬은 점검서 양식(병합 셀·색상·
+        // 개선 전/후 사진 첨부란·날짜 검증·개선기한 자동계산 포함)을 그대로 다운로드한다.
+        // (엑셀 서식은 셀 병합/테두리/데이터유효성 등을 그대로 재현해야 하므로, 코드로 매번 새로
+        //  그리는 대신 검증된 원본 파일을 base64로 내장해두고 그대로 내려준다.)
+        const PATROL_FORM_TEMPLATE_B64 = "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";
+
+        function patrolDownloadFormTemplate() {
             try {
-                const wb = new ExcelJS.Workbook();
-                const ws = wb.addWorksheet('위험요인 발굴 점검서');
-                ws.columns = [{width:14},{width:24},{width:14},{width:24},{width:14},{width:24}];
-
-                const NAVY  = 'FF1B3A6B', NAVY2 = 'FF2D4A7A', NAVY3 = 'FF253D6B';
-                const WHITE = 'FFFFFFFF', VALBG = 'FFF7FAFF', BORDER = 'FFCBD5E1';
-
-                function styleLabel(cell, bg) {
-                    cell.font = { bold:true, color:{argb:WHITE}, size:11 };
-                    cell.fill = { type:'pattern', pattern:'solid', fgColor:{argb:bg||NAVY} };
-                    cell.alignment = { vertical:'middle', horizontal:'center', wrapText:true };
-                    cell.border = { top:{style:'thin',color:{argb:BORDER}}, left:{style:'thin',color:{argb:BORDER}}, bottom:{style:'thin',color:{argb:BORDER}}, right:{style:'thin',color:{argb:BORDER}} };
-                }
-                function styleValue(cell) {
-                    cell.font = { size:11, color:{argb:'FF1B3A6B'} };
-                    cell.fill = { type:'pattern', pattern:'solid', fgColor:{argb:VALBG} };
-                    cell.alignment = { vertical:'middle', horizontal:'left', wrapText:true };
-                    cell.border = { top:{style:'thin',color:{argb:BORDER}}, left:{style:'thin',color:{argb:BORDER}}, bottom:{style:'thin',color:{argb:BORDER}}, right:{style:'thin',color:{argb:BORDER}} };
-                }
-
-                // 제목
-                ws.mergeCells('A1:F1');
-                const title = ws.getCell('A1');
-                title.value = '⚠️ 현장 패트롤 위험요인 발굴 · 개선실행계획서';
-                title.font = { bold:true, size:14, color:{argb:WHITE} };
-                title.fill = { type:'pattern', pattern:'solid', fgColor:{argb:NAVY} };
-                title.alignment = { vertical:'middle', horizontal:'center' };
-                ws.getRow(1).height = 28;
-
-                // Row2: 위험등급 / 상태
-                ws.getCell('A2').value = '위험등급'; styleLabel(ws.getCell('A2'));
-                styleValue(ws.getCell('B2'));
-                ws.getCell('C2').value = '상태';     styleLabel(ws.getCell('C2'), NAVY3);
-                styleValue(ws.getCell('D2'));
-                ws.getRow(2).height = 22;
-
-                // Row3: 지적사항 / 점검날짜
-                ws.getCell('A3').value = '지적사항'; styleLabel(ws.getCell('A3'));
-                ws.mergeCells('B3:D3'); styleValue(ws.getCell('B3'));
-                ws.getCell('E3').value = '점검날짜'; styleLabel(ws.getCell('E3'), NAVY3);
-                styleValue(ws.getCell('F3'));
-                ws.getRow(3).height = 22;
-
-                // Row4: 발견 장소 / 담당라인
-                ws.getCell('A4').value = '발견 장소'; styleLabel(ws.getCell('A4'), NAVY2);
-                styleValue(ws.getCell('B4'));
-                ws.getCell('C4').value = '담당라인'; styleLabel(ws.getCell('C4'), NAVY2);
-                styleValue(ws.getCell('D4'));
-                ws.getRow(4).height = 22;
-
-                // Row5: 조치사항 / 조치부서 / 개선기한
-                ws.getCell('A5').value = '조치사항'; styleLabel(ws.getCell('A5'));
-                styleValue(ws.getCell('B5'));
-                ws.getCell('C5').value = '조치부서'; styleLabel(ws.getCell('C5'), NAVY3);
-                styleValue(ws.getCell('D5'));
-                ws.getCell('E5').value = '개선기한'; styleLabel(ws.getCell('E5'), NAVY3);
-                styleValue(ws.getCell('F5'));
-                ws.getRow(5).height = 22;
-
-                // 작성 안내
-                ws.mergeCells('A6:F6');
-                const note = ws.getCell('A6');
-                note.value = '※ 위험등급: 상/중/하 중 하나 입력 · 상태: 완료/미완료 중 하나 입력 · 날짜는 YYYY-MM-DD 형식 (예: 2026-07-15) · 담당라인: CPL/CRM/CGL/1CCL/2CCL/3CCL/기계정비반/전기정비반/시험검사반/공정물류반/기타 중 입력 · 조치부서: 생산팀/설비팀/안전환경팀/변화관리팀/품질경영팀 중 입력';
-                note.font = { italic:true, size:9, color:{argb:'FF64748B'} };
-                note.alignment = { wrapText:true, vertical:'top', horizontal:'left' };
-                ws.getRow(6).height = 42;
-
-                // 참고용 작성 예시 (별도 시트 — AI 자동기입 파싱 시 첫 번째 시트만 읽으므로 영향 없음)
-                const ws2 = wb.addWorksheet('작성 예시');
-                ws2.columns = [{width:14},{width:24},{width:14},{width:24},{width:14},{width:24}];
-                ws2.mergeCells('A1:F1');
-                const t2 = ws2.getCell('A1');
-                t2.value = '📋 작성 예시 (참고용 — 실제 등록에는 반영되지 않습니다)';
-                t2.font = { bold:true, size:13, color:{argb:WHITE} };
-                t2.fill = { type:'pattern', pattern:'solid', fgColor:{argb:NAVY} };
-                t2.alignment = { vertical:'middle', horizontal:'center' };
-                ws2.getRow(1).height = 26;
-
-                const exRows = [
-                    ['위험등급','상',     '상태',    '미완료'],
-                    ['지적사항','방호장치 미설치', '점검날짜','2026-07-15'],
-                    ['발견 장소','3공장 프레스 구역','담당라인','CPL'],
-                    ['조치사항','방호장치 즉시 설치','조치부서','설비팀'],
-                ];
-                exRows.forEach((r, i) => {
-                    const rn = i + 2;
-                    ws2.getCell(`A${rn}`).value = r[0]; styleLabel(ws2.getCell(`A${rn}`), NAVY2);
-                    ws2.getCell(`B${rn}`).value = r[1]; styleValue(ws2.getCell(`B${rn}`));
-                    ws2.getCell(`C${rn}`).value = r[2]; styleLabel(ws2.getCell(`C${rn}`), NAVY2);
-                    ws2.getCell(`D${rn}`).value = r[3]; styleValue(ws2.getCell(`D${rn}`));
-                });
-                ws2.getCell('E5').value = '개선기한'; styleLabel(ws2.getCell('E5'), NAVY2);
-                ws2.getCell('F5').value = '2026-07-20'; styleValue(ws2.getCell('F5'));
-
-                const buf  = await wb.xlsx.writeBuffer();
-                const blob = new Blob([buf], { type:'application/octet-stream' });
+                const bin = atob(PATROL_FORM_TEMPLATE_B64);
+                const bytes = new Uint8Array(bin.length);
+                for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+                const blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
                 const url  = URL.createObjectURL(blob);
                 const a    = document.createElement('a');
                 a.href = url;
@@ -9284,10 +9195,10 @@ ${extraText}
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
-                showToast('📥 점검서 양식(폼 형태)이 다운로드되었습니다.', 'success');
+                showToast('📥 점검서 양식(폼 형태)이 다운로드되었습니다. 점검날짜 셀을 클릭하면 달력 아이콘으로 날짜를 선택할 수 있고, 위험등급+점검날짜를 입력하면 개선기한이 자동 계산됩니다.', 'success');
             } catch (err) {
                 console.error('[patrolDownloadFormTemplate]', err);
-                showToast('⚠️ 양식 생성 중 오류가 발생했습니다.', 'warn');
+                showToast('⚠️ 양식 다운로드 중 오류가 발생했습니다.', 'warn');
             }
         }
 
@@ -10876,6 +10787,31 @@ ${extraText}
             });
         }
 
+        // ── 드래그 앤 드롭으로 사진 첨부 (개선 전 사진 / 개선 후 사진 공통) ──
+        function patrolDragOver(ev) {
+            ev.preventDefault();
+            if (ev.dataTransfer) ev.dataTransfer.dropEffect = 'copy';
+            ev.currentTarget.style.outline = '2px dashed #F87171';
+            ev.currentTarget.style.outlineOffset = '-2px';
+        }
+        function patrolDragLeave(ev) {
+            ev.currentTarget.style.outline = '';
+        }
+        function patrolDropBefore(ev) {
+            ev.preventDefault();
+            ev.currentTarget.style.outline = '';
+            const files = Array.from(ev.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+            if (!files.length) { showToast('⚠️ 이미지 파일만 드래그해서 첨부할 수 있습니다.', 'warn'); return; }
+            patrolPreviewPhoto('before', { files });
+        }
+        function patrolDropAfter(ev, id) {
+            ev.preventDefault();
+            ev.currentTarget.style.outline = '';
+            const files = Array.from(ev.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+            if (!files.length) { showToast('⚠️ 이미지 파일만 드래그해서 첨부할 수 있습니다.', 'warn'); return; }
+            patrolAddAfterPhoto(id, { files });
+        }
+
         // 카드에서 개선 후 사진 추가 (일반관리자+마스터)
         function patrolAddAfterPhoto(id, input) {
             const data  = patrolLoad();
@@ -10961,29 +10897,50 @@ ${extraText}
                                 // 같은 행에서 오른쪽 값 찾기
                                 const row = raw[cell.row];
                                 for (let c2 = cell.col+1; c2 < row.length; c2++) {
-                                    const v2 = String(row[c2]||'').trim();
-                                    if (v2 && !['None','null'].includes(v2)) return v2;
+                                    const raw2 = row[c2];
+                                    const v2 = String(raw2||'').trim();
+                                    if (v2 && !['None','null'].includes(v2)) return raw2;
                                 }
                             }
                         }
                         return '';
                     }
 
-                    const levelRaw = findNext(['위험등급']);
-                    const content  = findNext(['지적사항']);
-                    const loc      = findNext(['발견 장소']);
-                    const line     = findNext(['담당라인']);
-                    const action   = findNext(['조치사항']);
-                    const owner    = findNext(['조치부서']);
-                    const status   = findNext(['상태']);
-                    const found    = findNext(['점검날짜','점검일']);
-                    const due      = findNext(['개선기한']);
+                    // 엑셀 날짜 셀(Date 객체) → YYYY-MM-DD 문자열, 그 외는 일반 문자열 변환
+                    function cellVal(v) {
+                        if (v instanceof Date) {
+                            const y = v.getFullYear(), m = String(v.getMonth()+1).padStart(2,'0'), d = String(v.getDate()).padStart(2,'0');
+                            return `${y}-${m}-${d}`;
+                        }
+                        return String(v||'').trim();
+                    }
+
+                    const levelRaw = cellVal(findNext(['위험등급']));
+                    const content  = cellVal(findNext(['지적사항']));
+                    const loc      = cellVal(findNext(['발견 장소']));
+                    const line     = cellVal(findNext(['담당라인']));
+                    const action   = cellVal(findNext(['조치사항']));
+                    const owner    = cellVal(findNext(['조치부서']));
+                    const status   = cellVal(findNext(['상태']));
+                    const found    = cellVal(findNext(['점검날짜','점검일']));
+                    const due      = cellVal(findNext(['개선기한']));
+
+                    // "2026년 7월 15일" / "2026 . 7 . 15" / "2026/7/15" 등 다양한 표기를 YYYY-MM-DD로 정규화
+                    function normDate(s) {
+                        const t = String(s||'').trim();
+                        if (!t) return '';
+                        let m = t.match(/(\d{4})\D+(\d{1,2})\D+(\d{1,2})/); // 년/월/일, ./,/ / 등 구분자 공통 처리
+                        if (m) return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+                        m = t.match(/(\d+)월\s*(\d+)일/); // 연도 없이 월/일만 있는 경우 → 현재 연도 사용
+                        if (m) return `${new Date().getFullYear()}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}`;
+                        return t;
+                    }
 
                     extracted = {
                         loc, line, content,
                         level    : levelRaw.replace(/[()（）]/g,'').split(/[^가-힣A-Za-z]/)[0],
-                        foundDate: found.replace(/(\d+)월(\d+)일/, (_, m, d) => `${new Date().getFullYear()}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`),
-                        dueDate  : due.replace(/(\d+)월(\d+)일/, (_, m, d) => `${new Date().getFullYear()}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`),
+                        foundDate: normDate(found),
+                        dueDate  : normDate(due),
                         owner, action,
                         status   : /완료/i.test(status) && !/미완료/i.test(status) ? '완료' : '미완료',
                     };
@@ -11490,8 +11447,8 @@ ${extraText}
                             <div>${beforeHtml}</div>
                         </div>
                         <div style="overflow:hidden;">
-                            <div style="background:#F0FDF4;color:#166534;padding:6px 10px;font-size:11.5px;font-weight:700;border-bottom:1px solid #86EFAC;">▶ 개선 후 사진</div>
-                            <div>${afterHtml}</div>
+                            <div style="background:#F0FDF4;color:#166534;padding:6px 10px;font-size:11.5px;font-weight:700;border-bottom:1px solid #86EFAC;">▶ 개선 후 사진${IS_ADMIN?' <span style="font-weight:500;font-size:10px;opacity:0.75;">(드래그로도 첨부 가능)</span>':''}</div>
+                            <div ${IS_ADMIN?`ondragover="patrolDragOver(event)" ondragleave="patrolDragLeave(event)" ondrop="patrolDropAfter(event,${item.id})"`:''}>${afterHtml}</div>
                             ${afterAddBtn}
                         </div>
                     </div>
