@@ -691,7 +691,7 @@
                         </div>
                         <div class="flex gap-2">
                             <button onclick="document.getElementById('weather-key-banner').classList.remove('hidden'); document.getElementById('weather-error').classList.add('hidden');" class="flex-1 text-[12px] font-bold px-3 py-2 rounded-lg" style="background: var(--scm-navy); color: white;">🔑 키 재입력</button>
-                            <button onclick="weatherFetch(true)" class="flex-1 text-[12px] font-bold px-3 py-2 rounded-lg border hover:bg-slate-50" style="border-color: var(--scm-border); color: var(--scm-text);">🔄 다시 시도</button>
+                            <button onclick="weatherFetch(true)" class="flex-1 text-[12px] font-bold px-3 py-2 rounded-lg border hover:bg-slate-50" style="border-color: var(--scm-border); color: var(--scm-text); background:white;">🔄 다시 시도</button>
                         </div>
                     </div>
                     <!-- 날씨 데이터 — 원형 게이지 + 수치 그리드 -->
@@ -812,7 +812,7 @@
             <div class="scm-card p-5">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center gap-2"><span>🔔</span><h3 class="font-extrabold text-[15px]" style="color: var(--scm-text);">업무 알리미</h3></div>
-                    <button onclick="reminderOpenCalendar()" class="text-xs font-bold px-3 py-1.5 rounded-lg border flex items-center gap-1.5 hover:bg-slate-50 transition-colors" style="border-color: var(--scm-border); color: var(--scm-text);">📅 알림 관리</button>
+                    <button onclick="reminderOpenCalendar()" class="text-xs font-bold px-3 py-1.5 rounded-lg border flex items-center gap-1.5 hover:bg-slate-50 transition-colors" style="border-color: var(--scm-border); color: var(--scm-text); background:white;">📅 알림 관리</button>
                 </div>
                 <div id="home-reminder-list">
                     <div class="flex items-center justify-center py-6 text-[13px]" style="color: var(--scm-subtext);">등록된 업무 알림이 없습니다</div>
@@ -831,9 +831,9 @@
                             <!-- 캘린더 -->
                             <div>
                                 <div class="flex items-center justify-between mb-3">
-                                    <button onclick="reminderPrevMonth()" class="text-[13px] font-bold px-2.5 py-1.5 rounded-lg border hover:bg-slate-50" style="border-color: var(--scm-border); color: var(--scm-text);">◀</button>
+                                    <button onclick="reminderPrevMonth()" class="text-[13px] font-bold px-2.5 py-1.5 rounded-lg border hover:bg-slate-50" style="border-color: var(--scm-border); color: var(--scm-text); background:white;">◀</button>
                                     <span id="reminder-cal-title" class="text-[14.5px] font-black" style="color: var(--scm-navy);"></span>
-                                    <button onclick="reminderNextMonth()" class="text-[13px] font-bold px-2.5 py-1.5 rounded-lg border hover:bg-slate-50" style="border-color: var(--scm-border); color: var(--scm-text);">▶</button>
+                                    <button onclick="reminderNextMonth()" class="text-[13px] font-bold px-2.5 py-1.5 rounded-lg border hover:bg-slate-50" style="border-color: var(--scm-border); color: var(--scm-text); background:white;">▶</button>
                                 </div>
                                 <div id="reminder-cal-weekdays" style="display:grid; grid-template-columns:repeat(7,1fr); gap:3px; margin-bottom:4px; font-size:11px; font-weight:700; text-align:center; color:var(--scm-subtext);"></div>
                                 <div id="reminder-cal-grid" style="display:grid; grid-template-columns:repeat(7,1fr); gap:3px;"></div>
@@ -2229,7 +2229,7 @@
 
                 <!-- 검색 -->
                 <div class="relative">
-                    <input id="mat-search" type="text" placeholder="자료명, 키워드로 검색" oninput="matRender()" class="w-full border rounded-lg pl-9 pr-3 py-2.5 text-[13px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); color: var(--scm-text);">
+                    <input id="mat-search" type="text" placeholder="자료명, 키워드로 검색" oninput="matRender()" class="w-full border rounded-lg pl-9 pr-3 py-2.5 text-[13px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); color: var(--scm-text); background:white;">
                     <span class="absolute" style="left:11px; top:50%; transform:translateY(-50%); color: var(--scm-subtext); font-size:13px;">🔍</span>
                 </div>
 
@@ -2240,7 +2240,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="md:col-span-2">
                             <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">자료명 <span style="color:#DC2626;">*</span></label>
-                            <input id="mat-title" type="text" placeholder="예: 밀폐공간 질식 예방 교육" class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); color: var(--scm-text);">
+                            <input id="mat-title" type="text" placeholder="예: 밀폐공간 질식 예방 교육" class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); color: var(--scm-text); background:white;">
                         </div>
                         <div class="md:col-span-2">
                             <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">카테고리 <span style="color:#DC2626;">*</span></label>
@@ -2261,7 +2261,7 @@
                         </div>
                         <div class="md:col-span-2" id="mat-url-row">
                             <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">자료 URL <span style="color:#DC2626;">*</span></label>
-                            <input id="mat-url" type="url" placeholder="https://..." class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); color: var(--scm-text);">
+                            <input id="mat-url" type="url" placeholder="https://..." class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); color: var(--scm-text); background:white;">
                         </div>
                         <div class="md:col-span-2 hidden" id="mat-file-row">
                             <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">첨부 파일 <span style="color:#DC2626;">*</span></label>
@@ -2270,7 +2270,7 @@
                         </div>
                         <div class="md:col-span-2">
                             <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">설명</label>
-                            <textarea id="mat-desc" rows="3" placeholder="자료에 대한 간단한 설명을 입력하세요." class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2 resize-none" style="border-color: var(--scm-border); color: var(--scm-text);"></textarea>
+                            <textarea id="mat-desc" rows="3" placeholder="자료에 대한 간단한 설명을 입력하세요." class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2 resize-none" style="border-color: var(--scm-border); color: var(--scm-text); background:white;"></textarea>
                         </div>
                     </div>
                     <div class="flex gap-2 justify-end pt-1">
@@ -2304,9 +2304,9 @@
 
                         <!-- PDF 페이지 이동 툴바 (여러 장일 때만 표시) -->
                         <div id="mat-pdf-nav" class="hidden items-center justify-center gap-3 py-2.5 shrink-0" style="border-bottom:1px solid var(--scm-border); background:#F8FAFC;">
-                            <button id="mat-pdf-prev-btn" onclick="matPdfPrev()" class="text-[12.5px] font-bold px-3 py-1.5 rounded-lg border hover:bg-white transition-colors" style="border-color: var(--scm-border); color: var(--scm-text);">◀ 이전장</button>
+                            <button id="mat-pdf-prev-btn" onclick="matPdfPrev()" class="text-[12.5px] font-bold px-3 py-1.5 rounded-lg border hover:bg-white transition-colors" style="border-color: var(--scm-border); color: var(--scm-text); background:white;">◀ 이전장</button>
                             <span id="mat-pdf-pageinfo" class="text-[12.5px] font-bold" style="color: var(--scm-text); min-width:64px; text-align:center;">1 / 1</span>
-                            <button id="mat-pdf-next-btn" onclick="matPdfNext()" class="text-[12.5px] font-bold px-3 py-1.5 rounded-lg border hover:bg-white transition-colors" style="border-color: var(--scm-border); color: var(--scm-text);">다음장 ▶</button>
+                            <button id="mat-pdf-next-btn" onclick="matPdfNext()" class="text-[12.5px] font-bold px-3 py-1.5 rounded-lg border hover:bg-white transition-colors" style="border-color: var(--scm-border); color: var(--scm-text); background:white;">다음장 ▶</button>
                         </div>
 
                         <div id="mat-preview-body" class="p-5" style="overflow-y:auto; flex:1; min-height:0; background:#F8FAFC;">
@@ -2379,24 +2379,24 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="md:col-span-2">
                                 <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">교육명 <span style="color:#DC2626;">*</span></label>
-                                <input id="eval-title" type="text" placeholder="예: 밀폐공간 질식 예방 교육" class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); color: var(--scm-text);">
+                                <input id="eval-title" type="text" placeholder="예: 밀폐공간 질식 예방 교육" class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); color: var(--scm-text); background:white;">
                             </div>
                             <div>
                                 <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">교육 시작일 <span style="color:#DC2626;">*</span></label>
-                                <input id="eval-date-start" type="date" class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); color: var(--scm-text);">
+                                <input id="eval-date-start" type="date" class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); color: var(--scm-text); background:white;">
                             </div>
                             <div>
                                 <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">교육 종료일</label>
-                                <input id="eval-date-end" type="date" class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); color: var(--scm-text);">
+                                <input id="eval-date-end" type="date" class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); color: var(--scm-text); background:white;">
                                 <p class="text-[11px] mt-1" style="color: var(--scm-subtext);">비워두면 시작일과 동일한 단일 일자로 처리됩니다.</p>
                             </div>
                             <div>
                                 <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">강사명</label>
-                                <input id="eval-instructor" type="text" placeholder="예: 황준하 안전팀장" class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); color: var(--scm-text);">
+                                <input id="eval-instructor" type="text" placeholder="예: 황준하 안전팀장" class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); color: var(--scm-text); background:white;">
                             </div>
                             <div>
                                 <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">전체 합격 기준점 (%)</label>
-                                <input id="eval-pass-score" type="number" value="60" min="1" max="100" class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); color: var(--scm-text);">
+                                <input id="eval-pass-score" type="number" value="60" min="1" max="100" class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); color: var(--scm-text); background:white;">
                                 <p class="text-[11px] mt-1" style="color: var(--scm-subtext);">문제별 배점 합산 점수가 이 기준 이상이면 합격입니다.</p>
                             </div>
                         </div>
@@ -2414,7 +2414,7 @@
                         </div>
                         <div id="eval-material-url-row">
                             <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">자료 URL (유튜브, PDF, 문서 링크 등)</label>
-                            <input id="eval-material-url" type="url" placeholder="https://..." class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); color: var(--scm-text);">
+                            <input id="eval-material-url" type="url" placeholder="https://..." class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); color: var(--scm-text); background:white;">
                         </div>
                         <div class="hidden" id="eval-material-file-row">
                             <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">첨부 파일 (PDF, 이미지, 문서 등)</label>
@@ -2423,7 +2423,7 @@
                         </div>
                         <div>
                             <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">자료 직접 입력 (다른 방식과 함께 또는 단독 사용)</label>
-                            <textarea id="eval-material-text" rows="5" placeholder="교육 내용을 여기에 직접 입력하세요. (핵심 수칙, 주의사항 등)" class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2 resize-none" style="border-color: var(--scm-border); color: var(--scm-text);"></textarea>
+                            <textarea id="eval-material-text" rows="5" placeholder="교육 내용을 여기에 직접 입력하세요. (핵심 수칙, 주의사항 등)" class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2 resize-none" style="border-color: var(--scm-border); color: var(--scm-text); background:white;"></textarea>
                         </div>
                     </div>
 
@@ -2474,7 +2474,7 @@
                         </div>
                         <div class="flex gap-3 pt-2">
                             <button onclick="evalOpenParticipate(currentSessionId, true)" class="flex-1 text-white text-[13px] font-bold py-2.5 rounded-lg hover:opacity-90 transition-opacity" style="background: var(--scm-blue);">참여 화면 미리보기</button>
-                            <button onclick="evalOpenManage()" class="flex-1 text-[13px] font-bold py-2.5 rounded-lg border hover:bg-slate-50 transition-colors" style="border-color: var(--scm-border); color: var(--scm-text);">이수 현황 관리</button>
+                            <button onclick="evalOpenManage()" class="flex-1 text-[13px] font-bold py-2.5 rounded-lg border hover:bg-slate-50 transition-colors" style="border-color: var(--scm-border); color: var(--scm-text); background:white;">이수 현황 관리</button>
                         </div>
                     </div>
                 </div>
@@ -2653,7 +2653,7 @@
                             </div>
                         </div>
                         <div class="flex gap-3">
-                            <button onclick="evalPrintResult()" class="flex-1 border font-bold py-3 rounded-xl text-[13px] hover:bg-slate-50 transition-colors flex items-center justify-center gap-1.5" style="border-color: var(--scm-border); color: var(--scm-text);">
+                            <button onclick="evalPrintResult()" class="flex-1 border font-bold py-3 rounded-xl text-[13px] hover:bg-slate-50 transition-colors flex items-center justify-center gap-1.5" style="border-color: var(--scm-border); color: var(--scm-text); background:white;">
                                 🖨️ 수료증 출력
                             </button>
                         </div>
@@ -2935,12 +2935,12 @@
                         <input type="date" id="notice-search-from" class="border rounded-lg px-2.5 py-1.5 text-[12.5px] focus:outline-none" style="border-color: var(--scm-border);">
                         <span class="text-[12px]" style="color: var(--scm-subtext);">~</span>
                         <input type="date" id="notice-search-to" class="border rounded-lg px-2.5 py-1.5 text-[12.5px] focus:outline-none" style="border-color: var(--scm-border);">
-                        <select id="notice-search-type" class="border rounded-lg px-2.5 py-1.5 text-[12.5px] focus:outline-none" style="border-color: var(--scm-border); color: var(--scm-text);">
+                        <select id="notice-search-type" class="border rounded-lg px-2.5 py-1.5 text-[12.5px] focus:outline-none" style="border-color: var(--scm-border); color: var(--scm-text); background:white;">
                             <option value="all">전체</option>
                             <option value="notice">공지</option>
                             <option value="general">일반</option>
                         </select>
-                        <select id="notice-search-field" class="border rounded-lg px-2.5 py-1.5 text-[12.5px] focus:outline-none" style="border-color: var(--scm-border); color: var(--scm-text);">
+                        <select id="notice-search-field" class="border rounded-lg px-2.5 py-1.5 text-[12.5px] focus:outline-none" style="border-color: var(--scm-border); color: var(--scm-text); background:white;">
                             <option value="title">제목</option>
                             <option value="author">작성자</option>
                         </select>
@@ -2990,7 +2990,7 @@
                         <span class="font-bold" id="notice-form-title-breadcrumb" style="color: var(--scm-text);">글작성</span>
                     </div>
                     <div class="flex gap-2">
-                        <button onclick="noticeSave('draft')" class="border text-[13px] font-bold px-4 py-2 rounded-lg hover:bg-slate-50 transition-colors" style="border-color: var(--scm-border); color: var(--scm-text);">임시저장</button>
+                        <button onclick="noticeSave('draft')" class="border text-[13px] font-bold px-4 py-2 rounded-lg hover:bg-slate-50 transition-colors" style="border-color: var(--scm-border); color: var(--scm-text); background:white;">임시저장</button>
                         <button onclick="noticeSave('publish')" class="text-white text-[13px] font-bold px-4 py-2 rounded-lg hover:opacity-90 transition-opacity" style="background:#E53E3E;">등록</button>
                         <button onclick="noticeShowList()" class="border text-[13px] font-bold px-4 py-2 rounded-lg hover:bg-slate-50 transition-colors" style="border-color: var(--scm-border); color: var(--scm-subtext);">취소</button>
                     </div>
@@ -3002,7 +3002,7 @@
                         <label class="shrink-0 w-32 px-4 py-3.5 text-[13px] font-bold flex items-center gap-1" style="color: var(--scm-text); background:#FAFBFD;">
                             <span class="text-red-500">•</span> 제목
                         </label>
-                        <input id="notice-form-subject" type="text" placeholder="제목을 입력하세요" class="flex-1 px-4 py-3.5 text-[13px] focus:outline-none focus:bg-blue-50" style="border: none; color: var(--scm-text);">
+                        <input id="notice-form-subject" type="text" placeholder="제목을 입력하세요" class="flex-1 px-4 py-3.5 text-[13px] focus:outline-none focus:bg-blue-50" style="border: none; color: var(--scm-text); background:white;">
                     </div>
 
                     <!-- 게시여부 + 게시기간 -->
@@ -3073,7 +3073,7 @@
                                 <span class="text-red-500">•</span> 분류
                             </label>
                             <div class="px-4">
-                                <select id="notice-form-category" class="border rounded px-3 py-1.5 text-[12.5px] focus:outline-none" style="border-color: var(--scm-border); color: var(--scm-text); min-width:160px;">
+                                <select id="notice-form-category" class="border rounded px-3 py-1.5 text-[12.5px] focus:outline-none" style="border-color: var(--scm-border); color: var(--scm-text); min-width:160px; background:white;">
                                     <option value="">분류 선택</option>
                                     <option value="안전보건">안전보건</option>
                                     <option value="환경">환경</option>
@@ -3178,7 +3178,7 @@
 
                 <!-- 하단 버튼 -->
                 <div class="flex justify-end gap-2">
-                    <button onclick="noticeSave('draft')" class="border text-[13px] font-bold px-5 py-2.5 rounded-lg hover:bg-slate-50 transition-colors" style="border-color: var(--scm-border); color: var(--scm-text);">임시저장</button>
+                    <button onclick="noticeSave('draft')" class="border text-[13px] font-bold px-5 py-2.5 rounded-lg hover:bg-slate-50 transition-colors" style="border-color: var(--scm-border); color: var(--scm-text); background:white;">임시저장</button>
                     <button onclick="noticeSave('publish')" class="text-white text-[13px] font-bold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity" style="background:#E53E3E;">등록</button>
                     <button onclick="noticeShowList()" class="border text-[13px] font-bold px-5 py-2.5 rounded-lg hover:bg-slate-50 transition-colors" style="border-color: var(--scm-border); color: var(--scm-subtext);">취소</button>
                 </div>
@@ -3214,9 +3214,9 @@
                     </div>
                 </div>
                 <div class="flex justify-between items-center">
-                    <button onclick="noticeShowList()" class="border text-[13px] font-bold px-5 py-2.5 rounded-lg hover:bg-slate-50 transition-colors" style="border-color: var(--scm-border); color: var(--scm-text);">목록</button>
+                    <button onclick="noticeShowList()" class="border text-[13px] font-bold px-5 py-2.5 rounded-lg hover:bg-slate-50 transition-colors" style="border-color: var(--scm-border); color: var(--scm-text); background:white;">목록</button>
                     <div class="flex gap-2" id="notice-detail-admin-btns" style="display:none!important;">
-                        <button onclick="noticeEditCurrent()" class="border text-[13px] font-bold px-4 py-2 rounded-lg hover:bg-slate-50" style="border-color: var(--scm-border); color: var(--scm-text);">수정</button>
+                        <button onclick="noticeEditCurrent()" class="border text-[13px] font-bold px-4 py-2 rounded-lg hover:bg-slate-50" style="border-color: var(--scm-border); color: var(--scm-text); background:white;">수정</button>
                         <button onclick="noticeDeleteCurrent()" class="text-[13px] font-bold px-4 py-2 rounded-lg hover:opacity-90" style="background:#E53E3E; color:white;">삭제</button>
                     </div>
                 </div>
@@ -3427,7 +3427,7 @@
                     <h2 class="text-lg font-black" style="color: var(--scm-text);">법령 비교 검색</h2>
                     <p class="text-[12.5px] mt-1.5 mb-4" id="lawsearch-box-desc" style="color: var(--scm-subtext);"></p>
                     <div class="flex gap-2">
-                        <input id="lawsearch-input" type="text" placeholder="예: 추락, 안전대, 위험물" onkeydown="if(event.key==='Enter')lawSearchSubmit()" class="flex-1 border rounded-xl px-4 py-3 text-[13.5px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); color: var(--scm-text);">
+                        <input id="lawsearch-input" type="text" placeholder="예: 추락, 안전대, 위험물" onkeydown="if(event.key==='Enter')lawSearchSubmit()" class="flex-1 border rounded-xl px-4 py-3 text-[13.5px] focus:outline-none focus:ring-2" style="border-color: var(--scm-border); color: var(--scm-text); background:white;">
                         <button onclick="lawSearchSubmit()" class="text-white text-[13px] font-bold px-5 py-3 rounded-xl hover:opacity-90 transition-opacity whitespace-nowrap" style="background: #0F766E;">통합 검색</button>
                         <button onclick="lawSearchReset()" class="text-[13px] font-bold px-4 py-3 rounded-xl hover:bg-slate-50 transition-colors whitespace-nowrap" style="border:1px solid var(--scm-border); color: var(--scm-subtext);">초기화</button>
                     </div>
@@ -3468,7 +3468,7 @@
                     </div>
 
                     <label class="block text-[12px] font-bold mb-1.5" style="color: var(--scm-text);">제목 검색</label>
-                    <input id="news-title-search" type="text" placeholder="뉴스 제목을 입력하세요" oninput="newsRenderList()" class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2 mb-4" style="border-color: var(--scm-border); color: var(--scm-text);">
+                    <input id="news-title-search" type="text" placeholder="뉴스 제목을 입력하세요" oninput="newsRenderList()" class="w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2 mb-4" style="border-color: var(--scm-border); color: var(--scm-text); background:white;">
 
                     <div id="news-category-chips" class="flex gap-2 flex-wrap mb-4"></div>
 
@@ -15318,7 +15318,7 @@ ${extraText}
                     }
                     // 조문제목 + 조문내용 + 하위 항·호·목 전체 텍스트(fullText)까지 모두 검색 대상
                     const matchedFull = joList.filter(a => a.fullText.includes(kw) || a.title.includes(kw));
-                    results[lawInfo.key] = { title: lawInfo.title, count: matchedFull.length, articles: matchedFull.slice(0, 15), matchedNumbers: matchedFull.map(a => lawArticleNum(a.number)).filter(n => n !== null) };
+                    results[lawInfo.key] = { title: lawInfo.title, count: matchedFull.length, articles: matchedFull, matchedNumbers: matchedFull.map(a => lawArticleNum(a.number)).filter(n => n !== null) };
                 } catch (innerErr) {
                     results[lawInfo.key] = { title: lawInfo.title, count: 0, articles: [], error: String(innerErr.message || innerErr) };
                 }
