@@ -9131,7 +9131,7 @@ ${extraText}
                     status:r.status||'미완료', doneDate:'', createdAt:new Date().toISOString()
                 }));
                 data[monthVal].unshift(...newItems);
-                patrolSave(data);
+                if (!patrolSave(data)) return;
                 showToast(`✅ ${_xlsxRows.length}건이 ${monthVal.replace(/^0/,'')}월에 등록되었습니다!`, 'success');
                 xlsxModalClose();
                 patrolRenderFolders();
@@ -10662,7 +10662,17 @@ ${extraText}
         let   patrolLineFilter = '전체';
 
         function patrolLoad() { try { return JSON.parse(localStorage.getItem(PATROL_KEY)||'{}'); } catch(e){ return {}; } }
-        function patrolSave(d){ localStorage.setItem(PATROL_KEY, JSON.stringify(d)); }
+        // 저장 실패(용량 초과 등)를 조용히 삼키지 않고 true/false로 알려준다.
+        function patrolSave(d){
+            try {
+                localStorage.setItem(PATROL_KEY, JSON.stringify(d));
+                return true;
+            } catch (e) {
+                console.error('[patrolSave]', e);
+                showToast('⚠️ 저장 공간이 부족합니다. 사진 용량이 많아 브라우저 저장 한도를 초과했습니다. 오래된 사진을 정리하거나 브라우저 저장공간을 확보한 뒤 다시 시도해 주세요.', 'warn');
+                return false;
+            }
+        }
         function patrolItems(m){ return (patrolLoad()[m]||[]); }
 
         function patrolStats(m) {
@@ -10807,20 +10817,51 @@ ${extraText}
         let _patrolAfterPhotos  = [];
         let _patrolXlsxFile     = null;
 
-        function patrolPreviewPhoto(type, input) {
-            const arr = type === 'before' ? _patrolBeforePhotos : _patrolAfterPhotos;
-            if (type !== 'before') return; // 개선 전만 입력폼에 있음
-            arr.length = 0;
-            const files = Array.from(input.files);
-            let loaded = 0;
-            files.forEach((file, i) => {
+        // 사진을 localStorage에 저장하기 전 리사이즈+압축 (원본 그대로 저장하면 용량 초과로 저장이
+        // 조용히 실패하는 문제가 있어, 최대 1600px / JPEG 72% 품질로 줄여서 저장 공간을 절약한다)
+        function patrolCompressImage(file, maxDim, quality) {
+            maxDim = maxDim || 1600;
+            quality = quality || 0.72;
+            return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.onload = e => {
-                    arr[i] = { name: file.name, dataUrl: e.target.result };
-                    loaded++;
-                    patrolRenderBeforePreview();
+                    const img = new Image();
+                    img.onload = () => {
+                        let { width, height } = img;
+                        if (width > maxDim || height > maxDim) {
+                            if (width > height) { height = Math.round(height * maxDim / width); width = maxDim; }
+                            else { width = Math.round(width * maxDim / height); height = maxDim; }
+                        }
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width; canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        try {
+                            resolve(canvas.toDataURL('image/jpeg', quality));
+                        } catch (err) {
+                            reject(err);
+                        }
+                    };
+                    img.onerror = () => reject(new Error('이미지를 불러올 수 없습니다.'));
+                    img.src = e.target.result;
                 };
+                reader.onerror = () => reject(new Error('파일을 읽을 수 없습니다.'));
                 reader.readAsDataURL(file);
+            });
+        }
+
+        function patrolPreviewPhoto(type, input) {
+            if (type !== 'before') return; // 개선 전만 입력폼에 있음
+            _patrolBeforePhotos.length = 0;
+            const files = Array.from(input.files);
+            files.forEach((file, i) => {
+                patrolCompressImage(file).then(dataUrl => {
+                    _patrolBeforePhotos[i] = { name: file.name, dataUrl };
+                    patrolRenderBeforePreview();
+                }).catch(err => {
+                    console.error('[patrolPreviewPhoto]', err);
+                    showToast(`⚠️ "${file.name}" 사진을 처리하지 못했습니다.`, 'warn');
+                });
             });
         }
 
@@ -10896,20 +10937,18 @@ ${extraText}
             if (idx < 0) return;
             if (!arr[idx].beforePhotos) arr[idx].beforePhotos = [];
             const files = Array.from(input.files);
-            let loaded = 0;
-            files.forEach((file) => {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    arr[idx].beforePhotos.push({ name: file.name, dataUrl: e.target.result });
-                    loaded++;
-                    if (loaded === files.length) {
-                        data[month] = arr;
-                        patrolSave(data);
-                        showToast(`📷 개선 전 사진 ${files.length}장 등록 완료.`, 'success');
-                        patrolRenderDetail();
-                    }
-                };
-                reader.readAsDataURL(file);
+            Promise.all(files.map(file =>
+                patrolCompressImage(file)
+                    .then(dataUrl => ({ name: file.name, dataUrl }))
+                    .catch(err => { console.error('[patrolAddBeforePhoto]', err); return null; })
+            )).then(results => {
+                const ok = results.filter(Boolean);
+                if (!ok.length) { showToast('⚠️ 사진을 처리하지 못했습니다.', 'warn'); return; }
+                arr[idx].beforePhotos.push(...ok);
+                data[month] = arr;
+                if (!patrolSave(data)) return;
+                showToast(`📷 개선 전 사진 ${ok.length}장 등록 완료.`, 'success');
+                patrolRenderDetail();
             });
         }
 
@@ -10922,22 +10961,20 @@ ${extraText}
             if (idx < 0) return;
             if (!arr[idx].afterPhotos) arr[idx].afterPhotos = [];
             const files = Array.from(input.files);
-            let loaded = 0;
-            files.forEach((file, fi) => {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    arr[idx].afterPhotos.push({ name: file.name, dataUrl: e.target.result });
-                    loaded++;
-                    if (loaded === files.length) {
-                        arr[idx].status   = '완료';
-                        arr[idx].doneDate = new Date().toISOString().slice(0,10);
-                        data[month] = arr;
-                        patrolSave(data);
-                        showToast(`📷 개선 후 사진 ${files.length}장 등록 완료. 상태가 '완료'로 자동 변경되었습니다.`, 'success');
-                        patrolRenderDetail();
-                    }
-                };
-                reader.readAsDataURL(file);
+            Promise.all(files.map(file =>
+                patrolCompressImage(file)
+                    .then(dataUrl => ({ name: file.name, dataUrl }))
+                    .catch(err => { console.error('[patrolAddAfterPhoto]', err); return null; })
+            )).then(results => {
+                const ok = results.filter(Boolean);
+                if (!ok.length) { showToast('⚠️ 사진을 처리하지 못했습니다.', 'warn'); return; }
+                arr[idx].afterPhotos.push(...ok);
+                arr[idx].status   = '완료';
+                arr[idx].doneDate = new Date().toISOString().slice(0,10);
+                data[month] = arr;
+                if (!patrolSave(data)) return;
+                showToast(`📷 개선 후 사진 ${ok.length}장 등록 완료. 상태가 '완료'로 자동 변경되었습니다.`, 'success');
+                patrolRenderDetail();
             });
         }
 
@@ -11282,7 +11319,8 @@ ${extraText}
                 doneDate    : '',
                 createdAt   : new Date().toISOString()
             });
-            patrolSave(data);
+            // 저장 실패(용량 초과 등) 시에는 입력한 내용을 지우지 않고 그대로 유지해 재시도할 수 있게 한다.
+            if (!patrolSave(data)) return;
             logActivity('매월 패트롤', '등록', `[${patrolCurMonth}]${line ? ' [' + line + ']' : ''} "${loc}" ${content} 등록`);
             ['patrol-loc','patrol-content','patrol-owner','patrol-action'].forEach(id=>{
                 const el=document.getElementById(id); if(el) el.value='';
@@ -11292,10 +11330,8 @@ ${extraText}
                 const el=document.getElementById(id); if(el) el.value='';
             });
             _patrolDueManuallyEdited = false;
-            ['patrol-before-preview','patrol-after-preview'].forEach(id=>{
-                const el=document.getElementById(id); if(el) el.innerHTML='';
-            });
             _patrolBeforePhotos=[]; _patrolAfterPhotos=[];
+            patrolRenderBeforePreview();
             _patrolXlsxFile = null;
             const fn = document.getElementById('patrol-xlsx-file-name');
             if(fn) fn.textContent='';
@@ -11341,7 +11377,7 @@ ${extraText}
                 status,
             };
             data[month] = arr;
-            patrolSave(data);
+            if (!patrolSave(data)) return;
             logActivity('매월 패트롤', '수정', `[${month}] "${arr[idx].loc || ''}" ${content} 수정`);
             showToast('✅ 수정 내용이 저장되었습니다.', 'success');
             patrolRenderDetail();
@@ -11365,7 +11401,7 @@ ${extraText}
                 extraMsg = ' 개선 후 사진이 없어 상태가 다시 \'미완료\'로 변경되었습니다.';
             }
             data[patrolCurMonth] = arr;
-            patrolSave(data);
+            if (!patrolSave(data)) return;
             showToast(`🗑 ${typeLabel} 사진이 삭제되었습니다.${extraMsg}`, 'success');
             patrolRenderDetail();
         }
@@ -11378,7 +11414,8 @@ ${extraText}
                 return;
             }
             arr[idx].status='완료'; arr[idx].doneDate=new Date().toISOString().slice(0,10);
-            data[patrolCurMonth]=arr; patrolSave(data);
+            data[patrolCurMonth]=arr;
+            if (!patrolSave(data)) return;
             showToast('✅ 완료 처리되었습니다.','success'); patrolRenderDetail();
         }
 
@@ -11387,7 +11424,8 @@ ${extraText}
             const data=patrolLoad();
             const target = (data[patrolCurMonth]||[]).find(i=>i.id===id);
             data[patrolCurMonth]=(data[patrolCurMonth]||[]).filter(i=>i.id!==id);
-            patrolSave(data); patrolRenderDetail();
+            if (!patrolSave(data)) return;
+            patrolRenderDetail();
             logActivity('매월 패트롤', '삭제', target ? `[${patrolCurMonth}] "${target.loc}" ${target.content} 삭제` : `삭제 (id:${id})`);
         }
 
