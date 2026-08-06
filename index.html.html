@@ -7,6 +7,7 @@
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <!-- Google Fonts (Noto Sans KR) -->
@@ -1881,7 +1882,7 @@
                         </div>
                         <div style="padding:14px 16px;">
                             <div style="margin-bottom:10px;">
-                                <button onclick="xlsxDownloadTemplate('patrol')" style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;background:#166534;color:white;border:none;border-radius:8px;padding:9px 14px;font-size:12.5px;font-weight:700;cursor:pointer;">⬇️ 표준 양식 다운로드 (입력폼과 동일한 순서)</button>
+                                <button onclick="patrolDownloadFormTemplate()" style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;background:#166534;color:white;border:none;border-radius:8px;padding:9px 14px;font-size:12.5px;font-weight:700;cursor:pointer;">⬇️ 표준 양식 다운로드 (입력폼 그대로)</button>
                             </div>
                             <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
                                 <label style="display:flex;align-items:center;gap:6px;background:#F0FDF4;border:1.5px dashed #86EFAC;border-radius:8px;padding:8px 14px;cursor:pointer;font-size:12.5px;font-weight:600;color:#166534;">
@@ -9167,6 +9168,122 @@ ${extraText}
             showToast('📥 표준 양식이 다운로드되었습니다.', 'success');
         }
 
+        // 매월 패트롤 "액셀 파일로 자동 기입" 전용 — "직접 입력 등록" 카드형 폼과 동일한
+        // 라벨-값 구조(테두리·헤더 색상)의 단건 점검서 양식을 다운로드한다.
+        async function patrolDownloadFormTemplate() {
+            if (typeof ExcelJS === 'undefined') { showToast('⚠️ 잠시 후 다시 시도해 주세요.','warn'); return; }
+            try {
+                const wb = new ExcelJS.Workbook();
+                const ws = wb.addWorksheet('위험요인 발굴 점검서');
+                ws.columns = [{width:14},{width:24},{width:14},{width:24},{width:14},{width:24}];
+
+                const NAVY  = 'FF1B3A6B', NAVY2 = 'FF2D4A7A', NAVY3 = 'FF253D6B';
+                const WHITE = 'FFFFFFFF', VALBG = 'FFF7FAFF', BORDER = 'FFCBD5E1';
+
+                function styleLabel(cell, bg) {
+                    cell.font = { bold:true, color:{argb:WHITE}, size:11 };
+                    cell.fill = { type:'pattern', pattern:'solid', fgColor:{argb:bg||NAVY} };
+                    cell.alignment = { vertical:'middle', horizontal:'center', wrapText:true };
+                    cell.border = { top:{style:'thin',color:{argb:BORDER}}, left:{style:'thin',color:{argb:BORDER}}, bottom:{style:'thin',color:{argb:BORDER}}, right:{style:'thin',color:{argb:BORDER}} };
+                }
+                function styleValue(cell) {
+                    cell.font = { size:11, color:{argb:'FF1B3A6B'} };
+                    cell.fill = { type:'pattern', pattern:'solid', fgColor:{argb:VALBG} };
+                    cell.alignment = { vertical:'middle', horizontal:'left', wrapText:true };
+                    cell.border = { top:{style:'thin',color:{argb:BORDER}}, left:{style:'thin',color:{argb:BORDER}}, bottom:{style:'thin',color:{argb:BORDER}}, right:{style:'thin',color:{argb:BORDER}} };
+                }
+
+                // 제목
+                ws.mergeCells('A1:F1');
+                const title = ws.getCell('A1');
+                title.value = '⚠️ 현장 패트롤 위험요인 발굴 · 개선실행계획서';
+                title.font = { bold:true, size:14, color:{argb:WHITE} };
+                title.fill = { type:'pattern', pattern:'solid', fgColor:{argb:NAVY} };
+                title.alignment = { vertical:'middle', horizontal:'center' };
+                ws.getRow(1).height = 28;
+
+                // Row2: 위험등급 / 상태
+                ws.getCell('A2').value = '위험등급'; styleLabel(ws.getCell('A2'));
+                styleValue(ws.getCell('B2'));
+                ws.getCell('C2').value = '상태';     styleLabel(ws.getCell('C2'), NAVY3);
+                styleValue(ws.getCell('D2'));
+                ws.getRow(2).height = 22;
+
+                // Row3: 지적사항 / 점검날짜
+                ws.getCell('A3').value = '지적사항'; styleLabel(ws.getCell('A3'));
+                ws.mergeCells('B3:D3'); styleValue(ws.getCell('B3'));
+                ws.getCell('E3').value = '점검날짜'; styleLabel(ws.getCell('E3'), NAVY3);
+                styleValue(ws.getCell('F3'));
+                ws.getRow(3).height = 22;
+
+                // Row4: 발견 장소 / 담당라인
+                ws.getCell('A4').value = '발견 장소'; styleLabel(ws.getCell('A4'), NAVY2);
+                styleValue(ws.getCell('B4'));
+                ws.getCell('C4').value = '담당라인'; styleLabel(ws.getCell('C4'), NAVY2);
+                styleValue(ws.getCell('D4'));
+                ws.getRow(4).height = 22;
+
+                // Row5: 조치사항 / 조치부서 / 개선기한
+                ws.getCell('A5').value = '조치사항'; styleLabel(ws.getCell('A5'));
+                styleValue(ws.getCell('B5'));
+                ws.getCell('C5').value = '조치부서'; styleLabel(ws.getCell('C5'), NAVY3);
+                styleValue(ws.getCell('D5'));
+                ws.getCell('E5').value = '개선기한'; styleLabel(ws.getCell('E5'), NAVY3);
+                styleValue(ws.getCell('F5'));
+                ws.getRow(5).height = 22;
+
+                // 작성 안내
+                ws.mergeCells('A6:F6');
+                const note = ws.getCell('A6');
+                note.value = '※ 위험등급: 상/중/하 중 하나 입력 · 상태: 완료/미완료 중 하나 입력 · 날짜는 YYYY-MM-DD 형식 (예: 2026-07-15) · 담당라인: CPL/CRM/CGL/1CCL/2CCL/3CCL/기계정비반/전기정비반/시험검사반/공정물류반/기타 중 입력 · 조치부서: 생산팀/설비팀/안전환경팀/변화관리팀/품질경영팀 중 입력';
+                note.font = { italic:true, size:9, color:{argb:'FF64748B'} };
+                note.alignment = { wrapText:true, vertical:'top', horizontal:'left' };
+                ws.getRow(6).height = 42;
+
+                // 참고용 작성 예시 (별도 시트 — AI 자동기입 파싱 시 첫 번째 시트만 읽으므로 영향 없음)
+                const ws2 = wb.addWorksheet('작성 예시');
+                ws2.columns = [{width:14},{width:24},{width:14},{width:24},{width:14},{width:24}];
+                ws2.mergeCells('A1:F1');
+                const t2 = ws2.getCell('A1');
+                t2.value = '📋 작성 예시 (참고용 — 실제 등록에는 반영되지 않습니다)';
+                t2.font = { bold:true, size:13, color:{argb:WHITE} };
+                t2.fill = { type:'pattern', pattern:'solid', fgColor:{argb:NAVY} };
+                t2.alignment = { vertical:'middle', horizontal:'center' };
+                ws2.getRow(1).height = 26;
+
+                const exRows = [
+                    ['위험등급','상',     '상태',    '미완료'],
+                    ['지적사항','방호장치 미설치', '점검날짜','2026-07-15'],
+                    ['발견 장소','3공장 프레스 구역','담당라인','CPL'],
+                    ['조치사항','방호장치 즉시 설치','조치부서','설비팀'],
+                ];
+                exRows.forEach((r, i) => {
+                    const rn = i + 2;
+                    ws2.getCell(`A${rn}`).value = r[0]; styleLabel(ws2.getCell(`A${rn}`), NAVY2);
+                    ws2.getCell(`B${rn}`).value = r[1]; styleValue(ws2.getCell(`B${rn}`));
+                    ws2.getCell(`C${rn}`).value = r[2]; styleLabel(ws2.getCell(`C${rn}`), NAVY2);
+                    ws2.getCell(`D${rn}`).value = r[3]; styleValue(ws2.getCell(`D${rn}`));
+                });
+                ws2.getCell('E5').value = '개선기한'; styleLabel(ws2.getCell('E5'), NAVY2);
+                ws2.getCell('F5').value = '2026-07-20'; styleValue(ws2.getCell('F5'));
+
+                const buf  = await wb.xlsx.writeBuffer();
+                const blob = new Blob([buf], { type:'application/octet-stream' });
+                const url  = URL.createObjectURL(blob);
+                const a    = document.createElement('a');
+                a.href = url;
+                a.download = `매월패트롤_위험요인_발굴_양식_${new Date().toISOString().slice(0,10)}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showToast('📥 점검서 양식(폼 형태)이 다운로드되었습니다.', 'success');
+            } catch (err) {
+                console.error('[patrolDownloadFormTemplate]', err);
+                showToast('⚠️ 양식 생성 중 오류가 발생했습니다.', 'warn');
+            }
+        }
+
         // ── homeRenderRiskProgress 이전 ──
         // 모든 사용자에게 보이는 홈 대시보드 안전사고 발생 요약 (산재 + 아차사고, 실데이터 연동)
         // 홈 대시보드의 "위험성평가 진행률" — 상단 KPI 카드 + 경영목표 달성현황 원형게이지 동시 갱신
@@ -10846,18 +10963,17 @@ ${extraText}
                     }
 
                     const levelRaw = findNext(['위험등급']);
-                    const locAndContent = findNext(['지적사항']);
-                    const action = findNext(['조치사항']);
-                    const owner  = findNext(['조치부서']);
-                    const status = findNext(['상태']);
-                    const found  = findNext(['점검날짜','점검일']);
-                    const due    = findNext(['개선기한']);
+                    const content  = findNext(['지적사항']);
+                    const loc      = findNext(['발견 장소']);
+                    const line     = findNext(['담당라인']);
+                    const action   = findNext(['조치사항']);
+                    const owner    = findNext(['조치부서']);
+                    const status   = findNext(['상태']);
+                    const found    = findNext(['점검날짜','점검일']);
+                    const due      = findNext(['개선기한']);
 
-                    // 지적사항에서 장소와 내용 분리 (공백2개로 구분되어 있는 경우)
-                    const parts = locAndContent.split(/\s{2,}/);
                     extracted = {
-                        loc      : parts.length >= 2 ? parts[0] : '',
-                        content  : parts.length >= 2 ? parts.slice(1).join(' ') : locAndContent,
+                        loc, line, content,
                         level    : levelRaw.replace(/[()（）]/g,'').split(/[^가-힣A-Za-z]/)[0],
                         foundDate: found.replace(/(\d+)월(\d+)일/, (_, m, d) => `${new Date().getFullYear()}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`),
                         dueDate  : due.replace(/(\d+)월(\d+)일/, (_, m, d) => `${new Date().getFullYear()}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`),
