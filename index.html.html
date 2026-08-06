@@ -1888,6 +1888,7 @@
                         <div id="patrol-progress-badge" style="margin-left:auto;font-size:12.5px;font-weight:800;padding:5px 14px;border-radius:99px;background:#EFF6FF;color:#1D4ED8;"></div>
                     </div>
                     <div id="patrol-stats" style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px;"></div>
+                    <div id="patrol-line-progress" class="scm-card mb-4" style="padding:16px 18px;display:none;"></div>
 
                     <!-- ① 마스터 전용 섹션 (등록폼 + 엑셀AI) -->
                     <div id="patrol-master-section" style="display:none;">
@@ -1945,7 +1946,7 @@
                                 <div style="background:#1B3A6B;color:white;padding:10px;font-size:12px;font-weight:700;text-align:center;border-right:1px solid #CBD5E1;display:flex;align-items:center;justify-content:center;">조치사항</div>
                                 <div style="padding:6px 8px;border-right:1px solid #CBD5E1;"><input id="patrol-action" placeholder="개선 조치 내용" style="width:100%;border:none;outline:none;font-size:12.5px;color:#F1F5F9;background:transparent;padding:4px 0;"></div>
                                 <div style="background:#253D6B;color:white;padding:8px 6px;font-size:11.5px;font-weight:700;text-align:center;border-right:1px solid #CBD5E1;display:flex;align-items:center;justify-content:center;">조치부서</div>
-                                <div style="padding:4px 6px;border-right:1px solid #CBD5E1;display:flex;align-items:center;"><select id="patrol-owner" style="width:100%;border:none;outline:none;font-size:12.5px;color:#F1F5F9;font-weight:700;background:transparent;padding:4px 2px;cursor:pointer;"><option value="">-- 선택 --</option><option value="생산팀">생산팀</option><option value="설비팀">설비팀</option><option value="안전환경팀">안전환경팀</option><option value="변화관리팀">변화관리팀</option><option value="품질경영팀">품질경영팀</option></select></div>
+                                <div style="padding:4px 6px;border-right:1px solid #CBD5E1;display:flex;align-items:center;"><select id="patrol-owner" style="width:100%;border:none;outline:none;font-size:12.5px;color:#F1F5F9;font-weight:700;background:transparent;padding:4px 2px;cursor:pointer;"><option value="">-- 선택 --</option><option value="생산팀">생산팀</option><option value="설비팀">설비팀</option><option value="안전환경팀">안전환경팀</option><option value="변화관리팀">변화관리팀</option><option value="품질경영팀">품질경영팀</option><option value="업무지원파트">업무지원파트</option></select></div>
                                 <div style="background:#253D6B;color:white;padding:8px 6px;font-size:11.5px;font-weight:700;text-align:center;border-right:1px solid #CBD5E1;display:flex;align-items:center;justify-content:center;">개선기한</div>
                                 <div style="padding:4px 8px;display:flex;align-items:center;"><input type="date" id="patrol-due" onchange="_patrolDueManuallyEdited=true;" style="width:100%;border:none;outline:none;font-size:12px;color:#F1F5F9;font-weight:700;background:transparent;padding:4px 0;color-scheme:dark;"></div>
                             </div>
@@ -11356,6 +11357,61 @@ ${extraText}
             win.document.write(`<html><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="${photos[idx].dataUrl}" style="max-width:100%;max-height:100vh;object-fit:contain;"></body></html>`);
         }
 
+        // 담당라인별 등록 현황 — 월별로 등록된 항목을 담당라인 기준 그룹핑해 막대그래프로 표시
+        // (완료=초록, 미완료=빨강, 등록된 담당라인만 자동 인식)
+        function patrolRenderLineProgress(items) {
+            const el = document.getElementById('patrol-line-progress');
+            if (!el) return;
+            if (!items || !items.length) { el.style.display = 'none'; return; }
+
+            const groups = {};
+            items.forEach(it => {
+                const line = (it.line || '').trim() || '미지정';
+                if (!groups[line]) groups[line] = { total: 0, done: 0 };
+                groups[line].total++;
+                if (it.status === '완료') groups[line].done++;
+            });
+
+            const grandTotal = items.length;
+            const rows = Object.entries(groups)
+                .map(([line, g]) => ({ line, total: g.total, done: g.done, open: g.total - g.done }))
+                .sort((a, b) => b.total - a.total);
+            const maxTotal = Math.max(...rows.map(r => r.total), 1);
+
+            el.style.display = '';
+            el.innerHTML = `
+                <div style="font-size:13.5px;font-weight:800;color:var(--scm-navy);margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                    <span>📊 담당라인별 등록 현황</span>
+                    <span style="font-size:11px;font-weight:600;color:var(--scm-subtext);display:flex;align-items:center;gap:10px;">
+                        <span><span style="display:inline-block;width:9px;height:9px;background:#16A34A;border-radius:2px;margin-right:3px;"></span>완료</span>
+                        <span><span style="display:inline-block;width:9px;height:9px;background:#DC2626;border-radius:2px;margin-right:3px;"></span>미완료</span>
+                    </span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                ${rows.map(r => {
+                    const donePct = r.total ? (r.done / r.total * 100) : 0;
+                    const openPct = 100 - donePct;
+                    const barWidthPct = Math.max(8, Math.round(r.total / maxTotal * 100));
+                    const sharePct = grandTotal ? Math.round(r.total / grandTotal * 100) : 0;
+                    return `
+                    <div>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <div style="width:76px;font-size:12.5px;font-weight:800;color:var(--scm-text);flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.line}</div>
+                            <div style="flex:1;background:rgba(255,255,255,0.08);border-radius:99px;height:20px;overflow:hidden;">
+                                <div style="width:${barWidthPct}%;height:100%;display:flex;border-radius:99px;overflow:hidden;">
+                                    ${r.done > 0 ? `<div style="width:${donePct}%;background:#16A34A;height:100%;"></div>` : ''}
+                                    ${r.open > 0 ? `<div style="width:${openPct}%;background:#DC2626;height:100%;"></div>` : ''}
+                                </div>
+                            </div>
+                            <div style="width:92px;text-align:right;font-size:12.5px;font-weight:800;color:var(--scm-navy);flex-shrink:0;">${r.total}건 (${sharePct}%)</div>
+                        </div>
+                        <div style="margin-left:86px;font-size:11px;color:var(--scm-subtext);margin-top:3px;">완료 ${r.done} · 미완료 ${r.open}</div>
+                    </div>`;
+                }).join('')}
+                </div>
+            `;
+        }
+
         function patrolRenderDetail() {
             const today=new Date().toISOString().slice(0,10);
             const allItems=patrolItems(patrolCurMonth);
@@ -11375,6 +11431,8 @@ ${extraText}
             // 진행률 배지
             const pb=document.getElementById('patrol-progress-badge');
             if(pb){const c=s.pct===100?'#166534':s.pct>=50?'#1B3A6B':'#92400E';pb.style.color=c;pb.style.background=s.pct===100?'#DCFCE7':'#EFF6FF';pb.textContent=`진행률 ${s.pct}% (${s.done}/${s.total})`;}
+            // 담당라인별 등록 현황 (막대그래프)
+            patrolRenderLineProgress(allItems);
             // 목록
             let items=allItems;
             if(patrolFilter==='open')    items=items.filter(i=>i.status!=='완료');
@@ -11387,7 +11445,7 @@ ${extraText}
             const lc={'상':'#991B1B','중':'#92400E','하':'#166534'};
             const lb={'상':'#FEF2F2','중':'#FFFBEB','하':'#F0FDF4'};
             const lt={'상':'즉시조치','중':'7일이내','하':'30일이내'};
-            const DEPT_LIST = ['생산팀','설비팀','안전환경팀','변화관리팀','품질경영팀'];
+            const DEPT_LIST = ['생산팀','설비팀','안전환경팀','변화관리팀','품질경영팀','업무지원파트'];
             listEl.innerHTML=items.map(item=>{
                 const ov=item.status!=='완료'&&item.dueDate<today;
                 const dl=Math.ceil((new Date(item.dueDate)-new Date(today))/86400000);
@@ -11446,7 +11504,7 @@ ${extraText}
                     </div>` : '';
 
                 // 인라인 수정 필드 (마스터: input/select / 일반: 텍스트)
-                const deptOpts = ['생산팀','설비팀','안전환경팀','변화관리팀','품질경영팀']
+                const deptOpts = ['생산팀','설비팀','안전환경팀','변화관리팀','품질경영팀','업무지원파트']
                     .map(d=>`<option value="${d}" ${(item.owner||'')=== d?'selected':''}>${d}</option>`).join('');
 
                 const cellStyle = 'width:100%;height:100%;border:none;outline:none;background:transparent;font-family:inherit;';
