@@ -46,6 +46,17 @@
             --scm-navy: #93C5FD;
             --scm-border: rgba(255,255,255,0.15);
         }
+        /* 반기보고서 서식 영역 — 원래 종이 서식(흰 배경) 스타일로 설계된 표라서
+           다크테마와 무관하게 항상 흰 배경 + 어두운 글씨로 고정한다.
+           (color는 자동 상속되므로, 별도 색상 지정이 없는 td/span 등도 이 규칙만으로 다 같이 해결된다) */
+        #hbr-forms-area .scm-card {
+            background: #FFFFFF;
+            color: #1E293B;
+            --scm-text: #1E293B;
+            --scm-subtext: #64748B;
+            --scm-navy: #1B3A6B;
+            --scm-border: #CBD5E1;
+        }
         /* 밝은 배경의 개별 박스(표 헤더/공지/경고문구 등)는 카드 안에 있어도 항상 어두운 텍스트 유지
            (아래 규칙이 위 .scm-card 규칙보다 나중에 오므로, 동일 요소에 둘 다 해당되면 이 규칙이 우선 적용됨) */
         [style*="background:white"], [style*="background: white"],
