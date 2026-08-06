@@ -114,6 +114,9 @@
             color: #1B3A6B;
             background: #FFFFFF;
         }
+        /* 개선 전 사진 미리보기 — 썸네일에 마우스를 올렸을 때만 삭제(✕) 버튼 표시 */
+        .patrol-before-thumb-del { display: none; }
+        .patrol-before-thumb:hover .patrol-before-thumb-del { display: flex; }
 
         /* 좌측 컬러 액센트 보더 카드 */
         .dash-card {
@@ -10672,7 +10675,37 @@ ${extraText}
             return { total, done, overdue, open, pct };
         }
 
+        // 직접 입력 등록 폼 초기화 (다른 메뉴로 이동했다가 매월 패트롤로 돌아왔을 때
+        // 작성 중이던 내용이 남아있지 않도록 완전히 리셋한다)
+        function patrolResetDirectEntryForm() {
+            ['patrol-loc','patrol-content','patrol-owner','patrol-action','patrol-found','patrol-due'].forEach(id=>{
+                const el = document.getElementById(id); if (el) el.value = '';
+            });
+            const lineEl = document.getElementById('patrol-line');
+            if (lineEl) lineEl.value = '';
+            const levelEl = document.getElementById('patrol-level');
+            if (levelEl) levelEl.value = '중';
+            const statusEl = document.getElementById('patrol-status-input');
+            if (statusEl) statusEl.value = '미완료';
+            _patrolDueManuallyEdited = false;
+
+            _patrolBeforePhotos = [];
+            _patrolAfterPhotos  = [];
+            patrolRenderBeforePreview();
+
+            _patrolXlsxFile = null;
+            const xlsxNameEl = document.getElementById('patrol-xlsx-file-name');
+            if (xlsxNameEl) xlsxNameEl.textContent = '';
+            const aiFillBtn = document.getElementById('patrol-ai-fill-btn');
+            if (aiFillBtn) aiFillBtn.style.display = 'none';
+            const aiStatusEl = document.getElementById('patrol-ai-status');
+            if (aiStatusEl) aiStatusEl.style.display = 'none';
+            const xlsxInput = document.getElementById('patrol-xlsx-input');
+            if (xlsxInput) xlsxInput.value = '';
+        }
+
         function patrolRenderFolders() {
+            patrolResetDirectEntryForm();
             // ── 전체 진행률 계산 ──────────────────────────────────────
             let totalAll=0, doneAll=0, overdueAll=0;
             for(let i=1;i<=12;i++){
@@ -10774,24 +10807,50 @@ ${extraText}
         let _patrolXlsxFile     = null;
 
         function patrolPreviewPhoto(type, input) {
-            const arr    = type === 'before' ? _patrolBeforePhotos : _patrolAfterPhotos;
-            const prevEl = document.getElementById(`patrol-before-preview`); // 개선 전만 입력폼에 있음
-            if (!prevEl) return;
+            const arr = type === 'before' ? _patrolBeforePhotos : _patrolAfterPhotos;
+            if (type !== 'before') return; // 개선 전만 입력폼에 있음
             arr.length = 0;
             const files = Array.from(input.files);
+            let loaded = 0;
             files.forEach((file, i) => {
                 const reader = new FileReader();
                 reader.onload = e => {
                     arr[i] = { name: file.name, dataUrl: e.target.result };
-                    prevEl.innerHTML = arr.filter(Boolean).map(p =>
-                        `<div style="position:relative;line-height:0;">
-                            <img src="${p.dataUrl}" style="width:100%;display:block;object-fit:cover;max-height:240px;">
-                            <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(153,27,27,0.6);color:white;font-size:10px;padding:4px 8px;text-align:center;">${p.name}</div>
-                        </div>`
-                    ).join('');
+                    loaded++;
+                    patrolRenderBeforePreview();
                 };
                 reader.readAsDataURL(file);
             });
+        }
+
+        // 개선 전 사진 미리보기 렌더 (썸네일에 마우스를 올리면 개별 삭제 버튼이 나타남)
+        function patrolRenderBeforePreview() {
+            const prevEl = document.getElementById('patrol-before-preview');
+            if (!prevEl) return;
+            const photos = _patrolBeforePhotos.filter(Boolean);
+            if (!photos.length) {
+                prevEl.style.display = 'flex';
+                prevEl.style.alignItems = 'center';
+                prevEl.style.justifyContent = 'center';
+                prevEl.style.color = '#CBD5E1';
+                prevEl.style.fontSize = '11.5px';
+                prevEl.innerHTML = '📷 사진을 여기로 드래그하거나 위 버튼으로 첨부하세요';
+                return;
+            }
+            prevEl.style.display = '';
+            prevEl.innerHTML = photos.map((p, i) =>
+                `<div class="patrol-before-thumb" style="position:relative;line-height:0;">
+                    <img src="${p.dataUrl}" style="width:100%;display:block;object-fit:cover;max-height:240px;">
+                    <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(153,27,27,0.6);color:white;font-size:10px;padding:4px 8px;text-align:center;">${p.name}</div>
+                    <button type="button" onclick="patrolRemoveBeforePhoto(${i})" class="patrol-before-thumb-del" title="사진 삭제" style="position:absolute;top:8px;right:8px;background:rgba(220,38,38,0.92);color:white;border:none;border-radius:7px;width:28px;height:28px;font-size:15px;font-weight:700;cursor:pointer;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.35);">✕</button>
+                </div>`
+            ).join('');
+        }
+
+        // 개선 전 사진 미리보기에서 특정 사진만 삭제 (등록 전 실수로 첨부한 사진 제거)
+        function patrolRemoveBeforePhoto(index) {
+            _patrolBeforePhotos.splice(index, 1);
+            patrolRenderBeforePreview();
         }
 
         // ── 드래그 앤 드롭으로 사진 첨부 (개선 전 사진 / 개선 후 사진 공통) ──
