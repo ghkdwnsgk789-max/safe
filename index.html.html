@@ -10879,6 +10879,40 @@ ${extraText}
             patrolAddAfterPhoto(id, { files });
         }
 
+        function patrolDropBeforeCard(ev, id) {
+            ev.preventDefault();
+            ev.currentTarget.style.outline = '';
+            const files = Array.from(ev.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+            if (!files.length) { showToast('⚠️ 이미지 파일만 드래그해서 첨부할 수 있습니다.', 'warn'); return; }
+            patrolAddBeforePhoto(id, { files });
+        }
+
+        // 카드에서 개선 전 사진 추가 (마스터 전용 — 등록 시 빠뜨린 개선 전 사진을 나중에 첨부)
+        function patrolAddBeforePhoto(id, input) {
+            const data  = patrolLoad();
+            const month = patrolCurMonth;
+            const arr   = data[month] || [];
+            const idx   = arr.findIndex(i => i.id === id);
+            if (idx < 0) return;
+            if (!arr[idx].beforePhotos) arr[idx].beforePhotos = [];
+            const files = Array.from(input.files);
+            let loaded = 0;
+            files.forEach((file) => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    arr[idx].beforePhotos.push({ name: file.name, dataUrl: e.target.result });
+                    loaded++;
+                    if (loaded === files.length) {
+                        data[month] = arr;
+                        patrolSave(data);
+                        showToast(`📷 개선 전 사진 ${files.length}장 등록 완료.`, 'success');
+                        patrolRenderDetail();
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
         // 카드에서 개선 후 사진 추가 (일반관리자+마스터)
         function patrolAddAfterPhoto(id, input) {
             const data  = patrolLoad();
@@ -11289,6 +11323,12 @@ ${extraText}
             if (!content || !dueDate) {
                 showToast('⚠️ 위험요인 내용과 개선기한은 필수입니다.', 'warn'); return;
             }
+            let status = document.getElementById(`pe-status-${id}`)?.value || arr[idx].status;
+            const hasAfterPhoto = (arr[idx].afterPhotos && arr[idx].afterPhotos.length > 0);
+            if (status === '완료' && !hasAfterPhoto) {
+                showToast('⚠️ 개선 후 사진을 먼저 등록해야 완료로 저장할 수 있습니다. 상태는 미완료로 유지됩니다.', 'warn');
+                status = '미완료';
+            }
             arr[idx] = { ...arr[idx],
                 loc      : g('loc'),
                 line     : g('line'),
@@ -11298,7 +11338,7 @@ ${extraText}
                 dueDate,
                 owner,
                 action   : g('action'),
-                status   : document.getElementById(`pe-status-${id}`)?.value || arr[idx].status,
+                status,
             };
             data[month] = arr;
             patrolSave(data);
@@ -11333,6 +11373,10 @@ ${extraText}
         function patrolComplete(id) {
             const data=patrolLoad(); const arr=data[patrolCurMonth]||[];
             const idx=arr.findIndex(i=>i.id===id); if(idx<0)return;
+            if (!(arr[idx].afterPhotos && arr[idx].afterPhotos.length > 0)) {
+                showToast('⚠️ 개선 후 사진을 먼저 등록해야 완료 처리할 수 있습니다.', 'warn');
+                return;
+            }
             arr[idx].status='완료'; arr[idx].doneDate=new Date().toISOString().slice(0,10);
             data[patrolCurMonth]=arr; patrolSave(data);
             showToast('✅ 완료 처리되었습니다.','success'); patrolRenderDetail();
@@ -11462,7 +11506,8 @@ ${extraText}
                 const bphotos=(item.beforePhotos||[]);
                 const aphotos=(item.afterPhotos||[]);
 
-                const beforeHtml = bphotos.length
+                const hasBeforePhoto = bphotos.length > 0;
+                const beforeHtml = hasBeforePhoto
                     ? bphotos.map((p,i) =>
                         `<div style="position:relative;line-height:0;">
                             <img src="${p.dataUrl}" style="width:100%;display:block;object-fit:cover;height:340px;cursor:pointer;" onclick="patrolOpenPhoto(${item.id},${i},'before')">
@@ -11473,7 +11518,21 @@ ${extraText}
                             <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.4);color:white;font-size:10px;padding:4px 8px;text-align:center;">🔍 클릭하면 크게 보기</div>
                         </div>`
                     ).join('<div style="height:3px;background:#FECACA;"></div>')
-                    : `<div style="display:flex;align-items:center;justify-content:center;height:200px;color:#CBD5E1;font-size:12px;">사진 없음</div>`;
+                    : `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:200px;gap:10px;">
+                        <span style="color:#CBD5E1;font-size:12px;">사진 없음</span>
+                        ${IS_MASTER ? `<label style="display:inline-flex;align-items:center;gap:5px;background:#FEF2F2;border:1.5px solid #FECACA;border-radius:8px;padding:8px 16px;cursor:pointer;font-size:13px;font-weight:700;color:#991B1B;">
+                            📷 개선 전 사진 등록
+                            <input type="file" accept="image/*" multiple style="display:none;" onchange="patrolAddBeforePhoto(${item.id},this)">
+                        </label>` : ''}
+                    </div>`;
+
+                const beforeAddBtn = (IS_MASTER && hasBeforePhoto)
+                    ? `<div style="padding:8px;border-top:1px solid #FECACA;text-align:center;">
+                        <label style="display:inline-flex;align-items:center;gap:5px;background:#FEF2F2;border:1.5px solid #FECACA;border-radius:7px;padding:6px 14px;cursor:pointer;font-size:12.5px;font-weight:700;color:#991B1B;">
+                            📷 사진 추가
+                            <input type="file" accept="image/*" multiple style="display:none;" onchange="patrolAddBeforePhoto(${item.id},this)">
+                        </label>
+                    </div>` : '';
 
                 const hasAfterPhoto = aphotos.length > 0;
                 const afterHtml = hasAfterPhoto
@@ -11596,8 +11655,9 @@ ${extraText}
                     </div>
                     <div style="display:grid;grid-template-columns:1fr 1fr;">
                         <div style="border-right:1px solid ${borderCol};overflow:hidden;">
-                            <div style="background:#FEF2F2;color:#991B1B;padding:6px 10px;font-size:11.5px;font-weight:700;border-bottom:1px solid #FECACA;">▶ 개선 전 사진</div>
-                            <div>${beforeHtml}</div>
+                            <div style="background:#FEF2F2;color:#991B1B;padding:6px 10px;font-size:11.5px;font-weight:700;border-bottom:1px solid #FECACA;">▶ 개선 전 사진${IS_MASTER?' <span style="font-weight:500;font-size:10px;opacity:0.75;">(드래그로도 첨부 가능)</span>':''}</div>
+                            <div ${IS_MASTER?`ondragover="patrolDragOver(event)" ondragleave="patrolDragLeave(event)" ondrop="patrolDropBeforeCard(event,${item.id})"`:''}>${beforeHtml}</div>
+                            ${beforeAddBtn}
                         </div>
                         <div style="overflow:hidden;">
                             <div style="background:#F0FDF4;color:#166534;padding:6px 10px;font-size:11.5px;font-weight:700;border-bottom:1px solid #86EFAC;">▶ 개선 후 사진${IS_ADMIN?' <span style="font-weight:500;font-size:10px;opacity:0.75;">(드래그로도 첨부 가능)</span>':''}</div>
