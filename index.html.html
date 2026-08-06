@@ -9261,7 +9261,16 @@ ${extraText}
 
             const hasIncident = totalCount > 0;
             numEl.textContent = `${totalCount}건`;
-            subEl.textContent = hasIncident ? '목표 0건 — 주의 필요' : '목표 0건 달성 중';
+            if (hasIncident) {
+                const parts = [];
+                if (incidentCount)  parts.push(`산재 ${incidentCount}건`);
+                if (gongsangCount)  parts.push(`공상 ${gongsangCount}건`);
+                if (nearMissCount)  parts.push(`아차사고 ${nearMissCount}건`);
+                if (processCount)   parts.push(`공정사고 ${processCount}건`);
+                subEl.textContent = parts.join(' · ') + ' — 주의 필요';
+            } else {
+                subEl.textContent = '목표 0건 달성 중';
+            }
             if (barEl) barEl.style.width = hasIncident ? '100%' : '0%';
         }
 
