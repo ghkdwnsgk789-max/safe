@@ -101,6 +101,13 @@
         }
         .scm-card:hover { box-shadow: var(--scm-shadow-lg); }
 
+        /* 매월 패트롤 "직접 입력 등록" 폼 — 입력 전 안내 문구(placeholder)를 다크 카드 배경에서도 잘 보이도록 밝게 처리 */
+        #patrol-content::placeholder,
+        #patrol-loc::placeholder,
+        #patrol-action::placeholder {
+            color: rgba(241,245,249,0.45);
+        }
+
         /* 좌측 컬러 액센트 보더 카드 */
         .dash-card {
             background: var(--scm-card);
@@ -1907,15 +1914,15 @@
                             </div>
                             <div style="display:grid;grid-template-columns:90px 1fr 90px 120px;gap:0;border:1.5px solid #CBD5E1;border-top:0;overflow:hidden;">
                                 <div style="background:#1B3A6B;color:white;padding:10px;font-size:12px;font-weight:700;text-align:center;border-right:1px solid #CBD5E1;display:flex;align-items:center;justify-content:center;">지적사항</div>
-                                <div style="padding:6px 8px;border-right:1px solid #CBD5E1;"><input id="patrol-content" placeholder="발견 장소 및 위험요인 내용" style="width:100%;border:none;outline:none;font-size:12.5px;background:transparent;padding:4px 0;"></div>
+                                <div style="padding:6px 8px;border-right:1px solid #CBD5E1;"><input id="patrol-content" placeholder="발견 장소 및 위험요인 내용" style="width:100%;border:none;outline:none;font-size:12.5px;color:#F1F5F9;background:transparent;padding:4px 0;"></div>
                                 <div style="background:#253D6B;color:white;padding:8px 6px;font-size:11.5px;font-weight:700;text-align:center;border-right:1px solid #CBD5E1;display:flex;align-items:center;justify-content:center;">점검날짜</div>
-                                <div style="padding:4px 8px;display:flex;align-items:center;"><input type="date" id="patrol-found" style="width:100%;border:none;outline:none;font-size:12px;color:#1B3A6B;font-weight:700;background:transparent;padding:4px 0;"></div>
+                                <div style="padding:4px 8px;display:flex;align-items:center;"><input type="date" id="patrol-found" style="width:100%;border:none;outline:none;font-size:12px;color:#F1F5F9;font-weight:700;background:transparent;padding:4px 0;color-scheme:dark;"></div>
                             </div>
                             <div style="display:grid;grid-template-columns:90px 1fr 90px 1fr;gap:0;border:1.5px solid #CBD5E1;border-top:0;overflow:hidden;">
                                 <div style="background:#2D4A7A;color:white;padding:8px 10px;font-size:11.5px;font-weight:700;text-align:center;border-right:1px solid #CBD5E1;display:flex;align-items:center;justify-content:center;">발견 장소</div>
-                                <div style="padding:5px 8px;border-right:1px solid #CBD5E1;"><input id="patrol-loc" placeholder="예: 3공장 프레스 구역" style="width:100%;border:none;outline:none;font-size:12.5px;background:transparent;padding:3px 0;"></div>
+                                <div style="padding:5px 8px;border-right:1px solid #CBD5E1;"><input id="patrol-loc" placeholder="예: 3공장 프레스 구역" style="width:100%;border:none;outline:none;font-size:12.5px;color:#F1F5F9;background:transparent;padding:3px 0;"></div>
                                 <div style="background:#2D4A7A;color:white;padding:8px 6px;font-size:11.5px;font-weight:700;text-align:center;display:flex;align-items:center;justify-content:center;">담당라인</div>
-                                <div style="padding:4px 8px;display:flex;align-items:center;"><select id="patrol-line" style="width:100%;border:none;outline:none;font-size:12.5px;font-weight:700;color:#1B3A6B;background:transparent;padding:4px 0;cursor:pointer;">
+                                <div style="padding:4px 8px;display:flex;align-items:center;"><select id="patrol-line" style="width:100%;border:none;outline:none;font-size:12.5px;font-weight:700;color:#F1F5F9;background:transparent;padding:4px 0;cursor:pointer;">
                                     <option value="">-- 선택 --</option>
                                     <option value="CPL">CPL</option><option value="CRM">CRM</option><option value="CGL">CGL</option>
                                     <option value="1CCL">1CCL</option><option value="2CCL">2CCL</option><option value="3CCL">3CCL</option>
@@ -1926,11 +1933,11 @@
                             </div>
                             <div style="display:grid;grid-template-columns:90px 1fr 80px 120px 80px 120px;gap:0;border:1.5px solid #CBD5E1;border-top:0;border-radius:0 0 8px 8px;overflow:hidden;">
                                 <div style="background:#1B3A6B;color:white;padding:10px;font-size:12px;font-weight:700;text-align:center;border-right:1px solid #CBD5E1;display:flex;align-items:center;justify-content:center;">조치사항</div>
-                                <div style="padding:6px 8px;border-right:1px solid #CBD5E1;"><input id="patrol-action" placeholder="개선 조치 내용" style="width:100%;border:none;outline:none;font-size:12.5px;background:transparent;padding:4px 0;"></div>
+                                <div style="padding:6px 8px;border-right:1px solid #CBD5E1;"><input id="patrol-action" placeholder="개선 조치 내용" style="width:100%;border:none;outline:none;font-size:12.5px;color:#F1F5F9;background:transparent;padding:4px 0;"></div>
                                 <div style="background:#253D6B;color:white;padding:8px 6px;font-size:11.5px;font-weight:700;text-align:center;border-right:1px solid #CBD5E1;display:flex;align-items:center;justify-content:center;">조치부서</div>
-                                <div style="padding:4px 6px;border-right:1px solid #CBD5E1;display:flex;align-items:center;"><select id="patrol-owner" style="width:100%;border:none;outline:none;font-size:12.5px;color:#1B3A6B;font-weight:700;background:transparent;padding:4px 2px;cursor:pointer;"><option value="">-- 선택 --</option><option value="생산팀">생산팀</option><option value="설비팀">설비팀</option><option value="안전환경팀">안전환경팀</option><option value="변화관리팀">변화관리팀</option><option value="품질경영팀">품질경영팀</option></select></div>
+                                <div style="padding:4px 6px;border-right:1px solid #CBD5E1;display:flex;align-items:center;"><select id="patrol-owner" style="width:100%;border:none;outline:none;font-size:12.5px;color:#F1F5F9;font-weight:700;background:transparent;padding:4px 2px;cursor:pointer;"><option value="">-- 선택 --</option><option value="생산팀">생산팀</option><option value="설비팀">설비팀</option><option value="안전환경팀">안전환경팀</option><option value="변화관리팀">변화관리팀</option><option value="품질경영팀">품질경영팀</option></select></div>
                                 <div style="background:#253D6B;color:white;padding:8px 6px;font-size:11.5px;font-weight:700;text-align:center;border-right:1px solid #CBD5E1;display:flex;align-items:center;justify-content:center;">개선기한</div>
-                                <div style="padding:4px 8px;display:flex;align-items:center;"><input type="date" id="patrol-due" style="width:100%;border:none;outline:none;font-size:12px;color:#1B3A6B;font-weight:700;background:transparent;padding:4px 0;"></div>
+                                <div style="padding:4px 8px;display:flex;align-items:center;"><input type="date" id="patrol-due" style="width:100%;border:none;outline:none;font-size:12px;color:#F1F5F9;font-weight:700;background:transparent;padding:4px 0;color-scheme:dark;"></div>
                             </div>
                             <!-- 개선 전 사진 (마스터) -->
                             <div style="margin-top:10px;border:1.5px solid #FECACA;border-radius:8px;overflow:hidden;">
@@ -11077,7 +11084,8 @@ ${extraText}
                     } else {
                         el.value = val;
                         el.style.background = '#FEFCE8';
-                        setTimeout(() => { el.style.background = ''; }, 3000);
+                        el.style.color = '#1B3A6B';
+                        setTimeout(() => { el.style.background = ''; el.style.color = ''; }, 3000);
                         filled.push(id);
                     }
                 }
@@ -11405,19 +11413,22 @@ ${extraText}
                     : `<div style="padding:8px 10px;font-size:12px;font-weight:700;color:${stFg};">${st}${ov?`<span style="font-size:11px;background:#FEE2E2;color:#991B1B;padding:1px 6px;border-radius:99px;margin-left:6px;">⚠️${Math.abs(dl)}일 초과</span>`:''}</div>`;
 
                 const LINE_OPTS = ['','CPL','CRM','CGL','1CCL','2CCL','3CCL','기계정비반','전기정비반','시험검사반','공정물류반','기타'];
+
+                const locCell = IS_MASTER
+                    ? `<input id="pe-loc-${item.id}" value="${(item.loc||'').replace(/"/g,'&quot;')}"
+                        placeholder="발견 장소" style="${cellStyle}font-size:12.5px;font-weight:600;padding:8px 10px;color:#1E293B;">`
+                    : `<div style="padding:8px 10px;font-size:12.5px;font-weight:600;color:#1E293B;">${item.loc||'—'}</div>`;
+
+                const lineCell = IS_MASTER
+                    ? `<select id="pe-line-${item.id}" style="${cellStyle}font-size:12px;font-weight:700;padding:8px 8px;color:#1D4ED8;cursor:pointer;">
+                        ${LINE_OPTS.map(o=>`<option value="${o}" ${(item.line||'')===o?'selected':''}>${o||'-- 선택 --'}</option>`).join('')}
+                       </select>`
+                    : `<div style="padding:8px 10px;font-size:12px;font-weight:700;color:#1D4ED8;">${item.line||'—'}</div>`;
+
                 const contentCell = IS_MASTER
-                    ? `<div style="display:flex;flex-direction:column;">
-                        <div style="display:flex;align-items:center;border-bottom:1px solid #E2E8F0;">
-                            <input id="pe-loc-${item.id}" value="${(item.loc||'').replace(/"/g,'&quot;')}"
-                                placeholder="발견 장소" style="${cellStyle}flex:1;font-size:11px;padding:5px 6px 5px 10px;color:#64748B;">
-                            <select id="pe-line-${item.id}" style="${cellStyle}width:auto;font-size:10.5px;font-weight:700;padding:5px 8px 5px 4px;color:#1D4ED8;cursor:pointer;">
-                                ${LINE_OPTS.map(o=>`<option value="${o}" ${(item.line||'')===o?'selected':''}>${o||'라인 선택'}</option>`).join('')}
-                            </select>
-                        </div>
-                        <input id="pe-content-${item.id}" value="${(item.content||'').replace(/"/g,'&quot;')}"
-                            placeholder="위험요인 내용" style="${cellStyle}font-size:12.5px;font-weight:600;padding:7px 10px;color:#1E293B;">
-                       </div>`
-                    : `<div style="padding:9px 10px;font-size:12.5px;font-weight:600;color:#1E293B;">${item.loc?`<span style="font-size:11px;color:#64748B;">${item.loc}</span><br>`:''}${item.content}</div>`;
+                    ? `<input id="pe-content-${item.id}" value="${(item.content||'').replace(/"/g,'&quot;')}"
+                        placeholder="위험요인 내용" style="${cellStyle}font-size:12.5px;font-weight:600;padding:8px 10px;color:#1E293B;">`
+                    : `<div style="padding:8px 10px;font-size:12.5px;font-weight:600;color:#1E293B;">${item.content}</div>`;
 
                 const foundCell = IS_MASTER
                     ? `<input type="date" id="pe-found-${item.id}" value="${fd}" style="${cellStyle}font-size:12px;font-weight:700;padding:8px 8px;color:#1B3A6B;">`
@@ -11458,6 +11469,12 @@ ${extraText}
                         <div style="border-right:1px solid ${borderCol};">${contentCell}</div>
                         <div style="background:#253D6B;color:white;padding:8px;font-size:11px;font-weight:700;text-align:center;display:flex;align-items:center;justify-content:center;border-right:1px solid ${borderCol};">점검날짜</div>
                         <div>${foundCell}</div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:80px 1fr 80px 140px;border-bottom:1px solid ${borderCol};">
+                        <div style="background:#2D4A7A;color:white;padding:8px;font-size:11px;font-weight:700;text-align:center;display:flex;align-items:center;justify-content:center;border-right:1px solid ${borderCol};">발견 장소</div>
+                        <div style="border-right:1px solid ${borderCol};">${locCell}</div>
+                        <div style="background:#2D4A7A;color:white;padding:8px;font-size:11px;font-weight:700;text-align:center;display:flex;align-items:center;justify-content:center;border-right:1px solid ${borderCol};">담당라인</div>
+                        <div>${lineCell}</div>
                     </div>
                     <div style="display:grid;grid-template-columns:80px 1fr 80px 160px 80px 140px;border-bottom:1px solid ${borderCol};">
                         <div style="background:#1B3A6B;color:white;padding:8px;font-size:11px;font-weight:700;text-align:center;display:flex;align-items:center;justify-content:center;border-right:1px solid ${borderCol};">조치사항</div>
