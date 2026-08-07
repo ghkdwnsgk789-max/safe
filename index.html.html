@@ -2396,14 +2396,38 @@
                                         <label>공사명</label><input id="uf-workname" type="text" class="permit-input">
                                         <label>소재지</label><input id="uf-address" type="text" class="permit-input">
                                         <label>대표자</label><input id="uf-ceo" type="text" class="permit-input">
-                                        <label>공사금액(원)</label><input id="uf-amount" type="number" class="permit-input">
                                         <label>공사기간</label>
                                         <div class="flex items-center gap-1.5">
                                             <input id="uf-start" type="date" class="permit-input" style="width:130px;">~<input id="uf-end" type="date" class="permit-input" style="width:130px;">
                                         </div>
                                         <label>발주자</label><input id="uf-orderer" type="text" class="permit-input">
                                         <label>누계공정률(%)</label><input id="uf-progress" type="number" class="permit-input">
-                                        <label>계상된 안전관리비(원)</label><input id="uf-budgeted" type="number" class="permit-input" oninput="permitUsageFormRecalc()">
+                                    </div>
+                                    <!-- 산업안전보건관리비 자동계산 (별표1 계상기준표 기준) -->
+                                    <div class="mt-3 p-3 rounded" style="background:#EEF3FB;border:1px solid #C7D0E0;">
+                                        <p style="font-size:11.5px;font-weight:800;color:#1B3A6B;margin-bottom:8px;">🧮 산업안전보건관리비 자동계산 (「건설업 산업안전보건관리비 계상 및 사용기준」 별표1)</p>
+                                        <div class="flex items-end gap-2 flex-wrap">
+                                            <div>
+                                                <label style="font-size:11px;font-weight:700;color:#475569;display:block;margin-bottom:3px;">공사종류</label>
+                                                <select id="uf-worktype" class="permit-input" style="width:150px;">
+                                                    <option value="건축공사">건축공사</option>
+                                                    <option value="토목공사">토목공사</option>
+                                                    <option value="중건설공사">중건설공사</option>
+                                                    <option value="특수건설공사">특수건설공사</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label style="font-size:11px;font-weight:700;color:#475569;display:block;margin-bottom:3px;">대상액(공사금액, 원)</label>
+                                                <input id="uf-amount" type="number" class="permit-input" style="width:180px;" placeholder="예: 80000000">
+                                            </div>
+                                            <button onclick="permitCalcSafetyBudget()" class="text-white text-[12px] font-bold px-4 py-2 rounded" style="background:#059669;">자동계산 →</button>
+                                            <div>
+                                                <label style="font-size:11px;font-weight:700;color:#475569;display:block;margin-bottom:3px;">계상된 안전관리비(원)</label>
+                                                <input id="uf-budgeted" type="number" class="permit-input" style="width:180px;" oninput="permitUsageFormRecalc()">
+                                            </div>
+                                        </div>
+                                        <p id="uf-calc-note" class="text-[11px] mt-2" style="color:#059669;font-weight:700;"></p>
+                                        <p style="font-size:10px;color:#94A3B8;margin-top:4px;">※ 대상액은 재료비+직접노무비 기준이 원칙이나, 간이 계산을 위해 입력하신 공사금액을 대상액으로 그대로 사용합니다. 정확한 대상액 산정은 계약서를 기준으로 확인해 주세요.</p>
                                     </div>
                                     <div class="mt-3" style="overflow-x:auto;">
                                         <table class="permit-grid-table" style="min-width:560px;">
@@ -4804,15 +4828,24 @@
                 <div class="space-y-1.5">
                     <div class="flex items-center justify-between gap-2">
                         <span>${check(info.usageFormDone)} ① 산업안전보건관리비 사용내역서</span>
-                        <button class="permit-nav-btn" onclick="permitUsageFormShow()">${info.usageFormDone ? '수정' : '작성'}</button>
+                        <div class="flex items-center gap-1">
+                            <button class="permit-nav-btn" onclick="permitUsageFormShow()">${info.usageFormDone ? '수정' : '작성'}</button>
+                            ${info.usageFormDone ? `<button class="permit-nav-btn" style="color:#DC2626;" onclick="permitDeleteBudgetDoc('usageForm')">삭제</button>` : ''}
+                        </div>
                     </div>
                     <div class="flex items-center justify-between gap-2">
                         <span>${check(info.transactionDone)} ② 거래명세서(인건비·보호구구입 등)${p.attachments?.transactionStatement ? ' — 📄 '+p.attachments.transactionStatement : ''}</span>
-                        <label class="permit-attach-btn">📎 첨부<input type="file" class="hidden" onchange="permitAttachBudgetDoc(this,'transactionStatement')"></label>
+                        <div class="flex items-center gap-1">
+                            <label class="permit-attach-btn">📎 ${info.transactionDone ? '재첨부' : '첨부'}<input type="file" class="hidden" onchange="permitAttachBudgetDoc(this,'transactionStatement')"></label>
+                            ${info.transactionDone ? `<button class="permit-nav-btn" style="color:#DC2626;" onclick="permitDeleteBudgetDoc('transactionStatement')">삭제</button>` : ''}
+                        </div>
                     </div>
                     <div class="flex items-center justify-between gap-2">
                         <span>${check(info.photoDone)} ③ 사진대지(보호구 구입 등)${p.attachments?.photoLedger ? ' — 📄 '+p.attachments.photoLedger : ''}</span>
-                        <label class="permit-attach-btn">📎 첨부<input type="file" class="hidden" onchange="permitAttachBudgetDoc(this,'photoLedger')"></label>
+                        <div class="flex items-center gap-1">
+                            <label class="permit-attach-btn">📎 ${info.photoDone ? '재첨부' : '첨부'}<input type="file" class="hidden" onchange="permitAttachBudgetDoc(this,'photoLedger')"></label>
+                            ${info.photoDone ? `<button class="permit-nav-btn" style="color:#DC2626;" onclick="permitDeleteBudgetDoc('photoLedger')">삭제</button>` : ''}
+                        </div>
                     </div>
                 </div>
                 ${info.status === '계상완료' && IS_ADMIN ? `<button class="permit-nav-btn mt-2" onclick="permitCancelBudget()">계상 취소</button>` : ''}`;
@@ -4826,17 +4859,43 @@
             const p = list.find(x => x.id === idVal);
             if (!p) return;
             p.attachments = p.attachments || {};
+            const wasAlreadyDone = !!p.attachments[key];
             p.attachments[key] = file.name;
             p.history = p.history || [];
             const label = key === 'transactionStatement' ? '거래명세서' : '사진대지';
-            p.history.push({ action: `${label} 첨부 (${file.name})`, actorName: CURRENT_SESSION.name, at: Date.now() });
+            p.history.push({ action: `${label} ${wasAlreadyDone ? '재첨부' : '첨부'} (${file.name})`, actorName: CURRENT_SESSION.name, at: Date.now() });
             permitSaveAll(list);
-            logActivity('작업허가서', '수정', `"${p.no}" ${label} 첨부`);
+            logActivity('작업허가서', '수정', `"${p.no}" ${label} ${wasAlreadyDone ? '재첨부' : '첨부'}`);
             permitRenderBudgetInfo();
             permitRenderGrid();
             const info = permitBudgetInfo(p);
             showToast(info.allDone ? '✅ 3종 서류가 모두 갖춰져 산업안전관리비 계상완료 처리되었습니다.' : `📎 ${label}이 첨부되었습니다.`, 'success');
         }
+
+        // 첨부파일 개별 삭제(수정을 위한 재첨부 전 단계) — 삭제하면 계상완료 상태도 자동으로 계상대기로 되돌아간다
+        function permitDeleteBudgetDoc(key) {
+            const idVal = Number(document.getElementById('permit-f-id').value) || null;
+            if (!idVal) return;
+            const list = permitLoad();
+            const p = list.find(x => x.id === idVal);
+            if (!p) return;
+            const label = key === 'usageForm' ? '사용내역서' : key === 'transactionStatement' ? '거래명세서' : '사진대지';
+            if (!confirm(`${label}을(를) 삭제하시겠습니까? 다시 작성/첨부해야 계상완료로 인정됩니다.`)) return;
+            if (key === 'usageForm') {
+                p.budgetUsageForm = null;
+            } else {
+                if (p.attachments) delete p.attachments[key];
+            }
+            p.updatedAt = Date.now();
+            p.history = p.history || [];
+            p.history.push({ action: `${label} 삭제`, actorName: CURRENT_SESSION.name, at: Date.now() });
+            permitSaveAll(list);
+            logActivity('작업허가서', '수정', `"${p.no}" ${label} 삭제`);
+            permitRenderBudgetInfo();
+            permitRenderGrid();
+            showToast(`🗑 ${label}이 삭제되었습니다.`, 'success');
+        }
+
         function permitCancelBudget() {
             if (!IS_ADMIN) return;
             const idVal = Number(document.getElementById('permit-f-id').value) || null;
@@ -4862,7 +4921,9 @@
             document.getElementById('uf-workname').value = uf.workName || p?.workName || '';
             document.getElementById('uf-address').value = uf.address || p?.area || '';
             document.getElementById('uf-ceo').value = uf.ceo || '';
+            document.getElementById('uf-worktype').value = uf.worktype || '건축공사';
             document.getElementById('uf-amount').value = uf.amount || '';
+            document.getElementById('uf-calc-note').textContent = '';
             document.getElementById('uf-start').value = uf.start || p?.workStart || '';
             document.getElementById('uf-end').value = uf.end || p?.workEnd || '';
             document.getElementById('uf-orderer').value = uf.orderer || '세아씨엠';
@@ -4887,6 +4948,40 @@
             document.getElementById('uf-total-month').textContent = tMonth.toLocaleString();
             document.getElementById('uf-total-cum').textContent = tCum.toLocaleString();
         }
+
+        // 「건설업 산업안전보건관리비 계상 및 사용기준」 별표1 — 공사종류 및 규모별 계상기준표
+        // 대상액 5억원 미만: 대상액 × 비율1
+        // 대상액 5억원 이상 50억원 미만: 대상액 × 비율2 + 기초액
+        // 대상액 50억원 이상: 대상액 × 비율3
+        const SAFETY_BUDGET_TABLE = {
+            '건축공사':     { r1: 3.11, r2: 2.28, base: 4325000, r3: 2.37 },
+            '토목공사':     { r1: 3.15, r2: 2.53, base: 3300000, r3: 2.60 },
+            '중건설공사':   { r1: 3.64, r2: 3.05, base: 2975000, r3: 3.11 },
+            '특수건설공사': { r1: 2.07, r2: 1.59, base: 2450000, r3: 1.64 },
+        };
+        function permitCalcSafetyBudget() {
+            const type = document.getElementById('uf-worktype').value;
+            const amount = Number(document.getElementById('uf-amount').value);
+            const noteEl = document.getElementById('uf-calc-note');
+            if (!amount || amount <= 0) { showToast('⚠️ 대상액(공사금액)을 입력해 주세요.', 'warn'); return; }
+            const t = SAFETY_BUDGET_TABLE[type];
+            let result, bracket, rateUsed;
+            if (amount < 500000000) {
+                result = amount * t.r1 / 100;
+                bracket = '5억원 미만'; rateUsed = `${t.r1}%`;
+            } else if (amount < 5000000000) {
+                result = amount * t.r2 / 100 + t.base;
+                bracket = '5억원 이상 50억원 미만'; rateUsed = `${t.r2}% + 기초액 ${t.base.toLocaleString()}원`;
+            } else {
+                result = amount * t.r3 / 100;
+                bracket = '50억원 이상'; rateUsed = `${t.r3}%`;
+            }
+            result = Math.round(result);
+            document.getElementById('uf-budgeted').value = result;
+            noteEl.textContent = `✅ 적용: ${type} · 대상액 ${bracket} · 요율 ${rateUsed} → 계상액 ${result.toLocaleString()}원`;
+            showToast('🧮 산업안전보건관리비가 자동계산되었습니다. 필요 시 직접 수정도 가능합니다.', 'success');
+        }
+
         function permitUsageFormSave() {
             const idVal = Number(document.getElementById('permit-f-id').value) || null;
             if (!idVal) return;
@@ -4906,6 +5001,7 @@
                 workName: document.getElementById('uf-workname').value.trim(),
                 address: document.getElementById('uf-address').value.trim(),
                 ceo: document.getElementById('uf-ceo').value.trim(),
+                worktype: document.getElementById('uf-worktype').value,
                 amount: document.getElementById('uf-amount').value.trim(),
                 start: document.getElementById('uf-start').value,
                 end: document.getElementById('uf-end').value,
