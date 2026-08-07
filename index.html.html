@@ -2489,7 +2489,7 @@
             <!-- ============================================
                  산업안전보건관리비 사용내역서 작성 모달 (별지 제1호 서식)
                  ============================================ -->
-            <div id="uf-modal-overlay" class="hidden" style="position:fixed;inset:0;background:rgba(15,23,42,0.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;">
+            <div id="uf-modal-overlay" class="hidden" style="position:fixed;inset:0;background:rgba(15,23,42,0.55);z-index:9999;align-items:center;justify-content:center;padding:16px;">
                 <div style="background:#F4F6FB;border-radius:10px;width:100%;max-width:820px;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.35);">
                     <div class="flex items-center justify-between px-5 py-3" style="background:#1B3A6B;border-radius:10px 10px 0 0;">
                         <h3 class="text-[14px] font-black text-white">📋 산업안전보건관리비 사용내역서 (별지 제1호 서식)</h3>
@@ -5040,11 +5040,15 @@
                 </tr>`).join('');
             document.getElementById('permit-usageform-fieldset').dataset.itemNames = JSON.stringify(items.map(it => it.name));
             permitUsageFormRecalc();
-            document.getElementById('uf-modal-overlay').classList.remove('hidden');
+            const ufOverlay = document.getElementById('uf-modal-overlay');
+            ufOverlay.classList.remove('hidden');
+            ufOverlay.style.display = 'flex'; // .hidden 클래스만으로는 display:none이 안 먹는 경우가 있어 명시적으로 지정
         }
         // 저장 없이 그냥 닫기 (임시저장/저장을 안 눌렀으면 입력 내용은 버려짐 — 되돌아오면 마지막 저장 시점 기준으로 다시 열림)
         function permitUsageFormClose() {
-            document.getElementById('uf-modal-overlay').classList.add('hidden');
+            const ufOverlay = document.getElementById('uf-modal-overlay');
+            ufOverlay.classList.add('hidden');
+            ufOverlay.style.display = 'none';
             permitRenderBudgetInfo();
         }
         function permitUsageFormHide() { permitUsageFormClose(); } // 구버전 호환용 별칭
@@ -5168,7 +5172,9 @@
             permitRenderGrid();
             const info = permitBudgetInfo(p);
             if (closeAfter) {
-                document.getElementById('uf-modal-overlay').classList.add('hidden');
+                const ufOverlay = document.getElementById('uf-modal-overlay');
+                ufOverlay.classList.add('hidden');
+                ufOverlay.style.display = 'none';
                 permitRenderBudgetInfo();
                 showToast(info.allDone ? '✅ 3종 서류가 모두 갖춰져 산업안전관리비 계상완료 처리되었습니다.' : '💾 사용내역서가 저장되었습니다. (거래명세서·사진대지 첨부도 필요합니다)', 'success');
             } else {
