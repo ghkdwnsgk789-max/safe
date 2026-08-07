@@ -11,6 +11,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <!-- Google Fonts (Noto Sans KR) -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <style>
@@ -354,6 +355,11 @@
                     <input id="login-reg-position" type="text" placeholder="예: 안전환경팀" style="width:100%; border:1.5px solid #E2E8F0; border-radius:8px; padding:9px 10px; font-size:13px; outline:none;">
                 </div>
                 <div>
+                    <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">이메일 (선택)</label>
+                    <input id="login-reg-email" type="email" placeholder="example@seah.co.kr" style="width:100%; border:1.5px solid #E2E8F0; border-radius:8px; padding:9px 10px; font-size:13px; outline:none;">
+                    <p style="font-size:10px; color:#94A3B8; margin-top:3px;">※ 작업허가서 승인 요청 메일을 받으려면 이메일을 입력해 주세요.</p>
+                </div>
+                <div>
                     <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">PIN(4자리) 설정 <span style="color:#DC2626;">*</span></label>
                     <input id="login-reg-pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••" style="width:100%; border:1.5px solid #E2E8F0; border-radius:8px; padding:9px 10px; font-size:16px; letter-spacing:.3em; outline:none; text-align:center;">
                 </div>
@@ -429,7 +435,7 @@
                         <div class="mega-panel-wide">
                             <p class="mega-group-title">작업 안전 관리</p>
                             <div class="mega-items-row">
-                                <button class="mega-item-btn" onclick="showComingSoon('작업허가서')">작업허가서</button>
+                                <button class="mega-item-btn" onclick="switchTab('work'); setTimeout(()=>permitShowList(),80)">작업허가서</button>
                                 <button class="mega-item-btn" onclick="showComingSoon('잠금장치 LOTO')">잠금장치 (LOTO)</button>
                                 <button class="mega-item-btn" onclick="showComingSoon('화기작업')">화기작업</button>
                                 <button class="mega-item-btn" onclick="showComingSoon('밀폐공간 작업')">밀폐공간 작업</button>
@@ -1229,7 +1235,7 @@
                     </div>
                     <div class="scm-card p-5">
                         <h3 style="font-size:13.5px;font-weight:800;color:var(--scm-navy); margin-bottom:12px;">+ 팀원 직접 추가</h3>
-                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr auto; gap:10px; align-items:end;">
+                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr 1fr auto; gap:10px; align-items:end;">
                             <div>
                                 <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">이름 *</label>
                                 <input id="team-add-name" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
@@ -1237,6 +1243,10 @@
                             <div>
                                 <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">직책/부서</label>
                                 <input id="team-add-position" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
+                            </div>
+                            <div>
+                                <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">이메일</label>
+                                <input id="team-add-email" type="email" placeholder="approval@seah.co.kr" style="width:100%;border:1.5px solid var(--scm-border);border-radius:8px;padding:7px 10px;font-size:12.5px;outline:none;">
                             </div>
                             <div>
                                 <label style="font-size:11.5px;font-weight:700;color:var(--scm-navy);display:block;margin-bottom:4px;">PIN(4자리) *</label>
@@ -1253,6 +1263,7 @@
                             </div>
                             <button onclick="teamAddMember()" style="background:var(--scm-navy);color:white;font-weight:700;font-size:12.5px;padding:8px 16px;border-radius:8px;border:none;cursor:pointer;white-space:nowrap;">추가</button>
                         </div>
+                        <p style="font-size:10.5px;color:var(--scm-subtext);margin-top:8px;">※ 작업허가서의 발주자·발주부서팀장으로 지정되려면 이메일이 등록되어 있어야 승인요청 메일을 받을 수 있습니다.</p>
                     </div>
                     <div id="team-list"></div>
                 </div>
@@ -2205,7 +2216,138 @@
                 <h2 class="text-xl font-black" style="color: var(--scm-text);">🛠️ 작업 관리</h2>
                 <p class="text-[13px] mt-1.5" style="color: var(--scm-subtext);">작업허가서, 체감온도 기록, 직무 스트레스 등 작업 단위 안전을 관리합니다.</p>
             </div>
-            <div id="work-menu-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"></div>
+
+            <!-- 작업 메뉴 카드 (기본 화면) -->
+            <div id="work-view-menu" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                <button onclick="permitShowList()" class="scm-card p-5 text-left hover:shadow-lg transition-shadow" style="cursor:pointer;">
+                    <div class="text-2xl mb-2">📋</div>
+                    <p class="font-extrabold text-[14px]" style="color:var(--scm-navy);">작업허가서</p>
+                    <p class="text-[11.5px] mt-1" style="color:var(--scm-subtext);">협력업체 작성 → 발주자 → 발주부서팀장 → 안전환경팀 순 전자결재</p>
+                </button>
+                <button onclick="showComingSoon('잠금장치 LOTO')" class="scm-card p-5 text-left hover:shadow-lg transition-shadow" style="cursor:pointer;">
+                    <div class="text-2xl mb-2">🔒</div>
+                    <p class="font-extrabold text-[14px]" style="color:var(--scm-navy);">잠금장치 (LOTO)</p>
+                    <p class="text-[11.5px] mt-1" style="color:var(--scm-subtext);">준비 중</p>
+                </button>
+                <button onclick="showComingSoon('화기작업')" class="scm-card p-5 text-left hover:shadow-lg transition-shadow" style="cursor:pointer;">
+                    <div class="text-2xl mb-2">🔥</div>
+                    <p class="font-extrabold text-[14px]" style="color:var(--scm-navy);">화기작업</p>
+                    <p class="text-[11.5px] mt-1" style="color:var(--scm-subtext);">준비 중</p>
+                </button>
+                <button onclick="showComingSoon('밀폐공간 작업')" class="scm-card p-5 text-left hover:shadow-lg transition-shadow" style="cursor:pointer;">
+                    <div class="text-2xl mb-2">🕳️</div>
+                    <p class="font-extrabold text-[14px]" style="color:var(--scm-navy);">밀폐공간 작업</p>
+                    <p class="text-[11.5px] mt-1" style="color:var(--scm-subtext);">준비 중</p>
+                </button>
+            </div>
+
+            <!-- ============================================
+                 작업허가서 모듈
+                 ============================================ -->
+            <div id="work-view-permit" class="hidden space-y-5">
+                <button onclick="permitBackToMenu()" class="text-[12.5px] font-bold" style="color:var(--scm-navy);">← 작업 관리 메뉴로</button>
+
+                <!-- [1] 목록 화면 -->
+                <div id="permit-view-list" class="space-y-4">
+                    <div class="flex items-center justify-between flex-wrap gap-3">
+                        <div>
+                            <h3 class="text-[16px] font-black" style="color:var(--scm-text);">📋 작업허가서</h3>
+                            <p class="text-[12px] mt-0.5" style="color:var(--scm-subtext);">작성 → 발주자 승인 → 발주부서팀장 승인 → 안전환경팀 최종승인 순으로 진행됩니다.</p>
+                        </div>
+                        <button id="permit-btn-new" onclick="permitShowForm()" class="hidden text-white text-[13px] font-bold px-4 py-2.5 rounded-lg hover:opacity-90" style="background:var(--scm-navy);">+ 새 작업허가서 작성</button>
+                    </div>
+                    <div id="permit-list-area"></div>
+                </div>
+
+                <!-- [2] 작성/수정 화면 -->
+                <div id="permit-view-form" class="hidden space-y-4">
+                    <h3 class="text-[16px] font-black" style="color:var(--scm-text);">📝 작업허가서 작성</h3>
+                    <input type="hidden" id="permit-form-id">
+                    <div class="scm-card p-5 space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[12px] font-bold mb-1" style="color:var(--scm-navy);">작업명 <span style="color:#DC2626;">*</span></label>
+                                <input id="permit-f-title" type="text" placeholder="예: 3공장 컨베이어 정비 작업" class="w-full border rounded-lg px-3 py-2 text-[13px]" style="border-color:var(--scm-border);">
+                            </div>
+                            <div>
+                                <label class="block text-[12px] font-bold mb-1" style="color:var(--scm-navy);">작업 장소 <span style="color:#DC2626;">*</span></label>
+                                <input id="permit-f-location" type="text" placeholder="예: 1공장 3라인" class="w-full border rounded-lg px-3 py-2 text-[13px]" style="border-color:var(--scm-border);">
+                            </div>
+                            <div>
+                                <label class="block text-[12px] font-bold mb-1" style="color:var(--scm-navy);">작업 시작일시 <span style="color:#DC2626;">*</span></label>
+                                <input id="permit-f-start" type="datetime-local" class="w-full border rounded-lg px-3 py-2 text-[13px]" style="border-color:var(--scm-border);">
+                            </div>
+                            <div>
+                                <label class="block text-[12px] font-bold mb-1" style="color:var(--scm-navy);">작업 종료일시 <span style="color:#DC2626;">*</span></label>
+                                <input id="permit-f-end" type="datetime-local" class="w-full border rounded-lg px-3 py-2 text-[13px]" style="border-color:var(--scm-border);">
+                            </div>
+                            <div>
+                                <label class="block text-[12px] font-bold mb-1" style="color:var(--scm-navy);">작업 인원(명)</label>
+                                <input id="permit-f-workers" type="number" min="1" placeholder="예: 4" class="w-full border rounded-lg px-3 py-2 text-[13px]" style="border-color:var(--scm-border);">
+                            </div>
+                            <div>
+                                <label class="block text-[12px] font-bold mb-1" style="color:var(--scm-navy);">현장 책임자 / 연락처</label>
+                                <input id="permit-f-contact" type="text" placeholder="예: 홍길동 / 010-0000-0000" class="w-full border rounded-lg px-3 py-2 text-[13px]" style="border-color:var(--scm-border);">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[12px] font-bold mb-1" style="color:var(--scm-navy);">위험작업 유형 (해당 항목 모두 선택)</label>
+                            <div id="permit-f-hazardtypes" class="flex flex-wrap gap-3 text-[12.5px]" style="color:var(--scm-text);">
+                                <label class="flex items-center gap-1.5"><input type="checkbox" value="화기작업" class="permit-hazard-cb"> 화기작업</label>
+                                <label class="flex items-center gap-1.5"><input type="checkbox" value="밀폐공간작업" class="permit-hazard-cb"> 밀폐공간작업</label>
+                                <label class="flex items-center gap-1.5"><input type="checkbox" value="고소작업" class="permit-hazard-cb"> 고소작업</label>
+                                <label class="flex items-center gap-1.5"><input type="checkbox" value="전기작업" class="permit-hazard-cb"> 전기작업</label>
+                                <label class="flex items-center gap-1.5"><input type="checkbox" value="중장비작업" class="permit-hazard-cb"> 중장비작업</label>
+                                <label class="flex items-center gap-1.5"><input type="checkbox" value="굴착작업" class="permit-hazard-cb"> 굴착작업</label>
+                                <label class="flex items-center gap-1.5"><input type="checkbox" value="기타" class="permit-hazard-cb"> 기타</label>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[12px] font-bold mb-1" style="color:var(--scm-navy);">작업 내용 <span style="color:#DC2626;">*</span></label>
+                            <textarea id="permit-f-content" rows="3" placeholder="구체적인 작업 내용을 입력하세요." class="w-full border rounded-lg px-3 py-2 text-[13px] resize-none" style="border-color:var(--scm-border);"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-[12px] font-bold mb-1" style="color:var(--scm-navy);">위험요인</label>
+                            <textarea id="permit-f-hazards" rows="2" placeholder="예상되는 위험요인을 입력하세요." class="w-full border rounded-lg px-3 py-2 text-[13px] resize-none" style="border-color:var(--scm-border);"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-[12px] font-bold mb-1" style="color:var(--scm-navy);">안전조치사항</label>
+                            <textarea id="permit-f-measures" rows="2" placeholder="위험요인에 대한 안전조치 사항을 입력하세요." class="w-full border rounded-lg px-3 py-2 text-[13px] resize-none" style="border-color:var(--scm-border);"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-[12px] font-bold mb-1" style="color:var(--scm-navy);">특이사항</label>
+                            <textarea id="permit-f-notes" rows="2" class="w-full border rounded-lg px-3 py-2 text-[13px] resize-none" style="border-color:var(--scm-border);"></textarea>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2" style="border-top:1px dashed var(--scm-border);">
+                            <div>
+                                <label class="block text-[12px] font-bold mb-1" style="color:var(--scm-navy);">발주자(1차 승인) 지정 <span style="color:#DC2626;">*</span></label>
+                                <select id="permit-f-orderer" class="w-full border rounded-lg px-3 py-2 text-[13px]" style="border-color:var(--scm-border);">
+                                    <option value="">-- 선택 --</option>
+                                </select>
+                                <p class="text-[10.5px] mt-1" style="color:var(--scm-subtext);">제출 시 해당 담당자에게 이메일로 승인요청이 발송됩니다.</p>
+                            </div>
+                            <div>
+                                <label class="block text-[12px] font-bold mb-1" style="color:var(--scm-navy);">발주부서팀장(2차 승인) 지정 <span style="color:#DC2626;">*</span></label>
+                                <select id="permit-f-depthead" class="w-full border rounded-lg px-3 py-2 text-[13px]" style="border-color:var(--scm-border);">
+                                    <option value="">-- 선택 --</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center pb-2">
+                        <button onclick="permitShowList()" class="border text-[13px] font-bold px-5 py-2.5 rounded-lg hover:bg-slate-50" style="border-color:var(--scm-border);color:var(--scm-text);background:white;">← 취소</button>
+                        <div class="flex gap-2">
+                            <button onclick="permitSave('draft')" class="border text-[13px] font-bold px-5 py-2.5 rounded-lg hover:bg-slate-50" style="border-color:var(--scm-border);color:var(--scm-text);background:white;">💾 임시저장</button>
+                            <button onclick="permitSave('submit')" class="text-white text-[13px] font-bold px-5 py-2.5 rounded-lg hover:opacity-90" style="background:var(--scm-navy);">📨 작성완료 · 승인요청</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- [3] 상세/승인 화면 -->
+                <div id="permit-view-detail" class="hidden space-y-4">
+                    <div id="permit-detail-area"></div>
+                </div>
+            </div>
         </section>
 
         <!-- ==============================================
@@ -3762,6 +3904,445 @@
 
     <script>
         // ============================================
+        // 작업허가서(Work Permit) 전자결재 — EmailJS 설정
+        // ── EmailJS(emailjs.com) 무료 계정 가입 후 아래 3개 값을 채우면
+        //    실제 이메일이 자동발송됩니다. (비워두면 이메일 없이 플랫폼 알림만 동작)
+        //    1) Public Key: EmailJS 대시보드 → Account → API Keys
+        //    2) Service ID: Email Services에서 Gmail/Outlook 등 연결 후 생성되는 ID
+        //    3) Template ID: Email Templates에서 생성. 템플릿 변수: to_email, to_name,
+        //       permit_no, permit_title, vendor_name, stage_label, message, action_url
+        // ============================================
+        const EMAILJS_CONFIG = {
+            publicKey: '',   // 예: 'AbCdEfGhIjKlMnOp'
+            serviceId: '',   // 예: 'service_xxxxxxx'
+            templateId: '',  // 예: 'template_xxxxxxx'
+        };
+        let EMAILJS_READY = false;
+        try {
+            if (EMAILJS_CONFIG.publicKey && window.emailjs) {
+                emailjs.init({ publicKey: EMAILJS_CONFIG.publicKey });
+                EMAILJS_READY = true;
+            }
+        } catch (e) { EMAILJS_READY = false; }
+
+        function permitIsEmailConfigured() {
+            return !!(EMAILJS_CONFIG.publicKey && EMAILJS_CONFIG.serviceId && EMAILJS_CONFIG.templateId);
+        }
+
+        // toEmail이 비어있거나 EmailJS 미설정이면 조용히 건너뛰고, 실패해도 결재 흐름은 막지 않는다.
+        function permitSendEmail(toEmail, toName, permit, stageLabel, message) {
+            if (!toEmail) return;
+            if (!permitIsEmailConfigured()) {
+                console.warn('[작업허가서] EmailJS가 설정되지 않아 이메일을 발송하지 못했습니다. (플랫폼 내 알림으로 대체)');
+                return;
+            }
+            const params = {
+                to_email: toEmail,
+                to_name: toName || '',
+                permit_no: permit.no,
+                permit_title: permit.title,
+                vendor_name: permit.company || permit.vendorName || '',
+                stage_label: stageLabel,
+                message: message,
+                action_url: location.origin + location.pathname + '?permit=' + permit.id,
+            };
+            emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.templateId, params)
+                .then(() => console.log('[작업허가서] 승인요청 이메일 발송 완료:', toEmail))
+                .catch(err => console.warn('[작업허가서] 이메일 발송 실패:', err));
+        }
+
+        // ============================================
+        // 작업허가서 데이터 저장소
+        // ⚠️ 현재는 localStorage(브라우저별 저장)를 사용합니다. 협력업체·발주자·팀장·
+        //    안전환경팀이 서로 다른 기기에서 접속하므로, 실제 운영 시에는 Firebase Firestore
+        //    등 클라우드 DB로 전환이 필요합니다. 전환 시 아래 permitLoad/permitSaveAll
+        //    두 함수만 Firestore read/write로 교체하면 나머지 로직은 그대로 재사용됩니다.
+        // ============================================
+        const PERMIT_STORAGE = 'seahcm_permits_v1';
+        function permitLoad() { try { return JSON.parse(localStorage.getItem(PERMIT_STORAGE) || '[]'); } catch (e) { return []; } }
+        function permitSaveAll(list) { localStorage.setItem(PERMIT_STORAGE, JSON.stringify(list)); }
+
+        const PERMIT_STAGE_LABEL = {
+            draft: '작성중(임시저장)',
+            pending_orderer: '발주자 승인대기',
+            pending_depthead: '발주부서팀장 승인대기',
+            pending_safety: '안전환경팀 최종승인대기',
+            approved: '✅ 최종승인 완료',
+            rejected: '❌ 반려',
+        };
+        const PERMIT_STAGE_COLOR = {
+            draft: '#64748B',
+            pending_orderer: '#CA8A04',
+            pending_depthead: '#CA8A04',
+            pending_safety: '#CA8A04',
+            approved: '#059669',
+            rejected: '#DC2626',
+        };
+
+        function permitGenerateNo() {
+            const ymd = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+            const todayCount = permitLoad().filter(p => p.no && p.no.startsWith('WP-' + ymd)).length;
+            return `WP-${ymd}-${String(todayCount + 1).padStart(2, '0')}`;
+        }
+
+        function permitBackToMenu() {
+            document.getElementById('work-view-permit').classList.add('hidden');
+            document.getElementById('work-view-menu').classList.remove('hidden');
+        }
+
+        function permitShowList() {
+            document.getElementById('work-view-menu').classList.add('hidden');
+            document.getElementById('work-view-permit').classList.remove('hidden');
+            document.getElementById('permit-view-list').classList.remove('hidden');
+            document.getElementById('permit-view-form').classList.add('hidden');
+            document.getElementById('permit-view-detail').classList.add('hidden');
+            document.getElementById('permit-btn-new').classList.toggle('hidden', !IS_VENDOR);
+            permitRenderList();
+        }
+
+        function permitVisibleList() {
+            const all = permitLoad().slice().sort((a, b) => b.updatedAt - a.updatedAt);
+            if (IS_VENDOR) return all.filter(p => p.vendorId === CURRENT_SESSION.id);
+            return all; // 사내 직원(발주자/팀장/안전환경팀/마스터)는 전체 열람 — 자신이 처리할 건은 배지로 표시
+        }
+
+        function permitIsMyAction(p) {
+            if (!CURRENT_SESSION) return false;
+            if (p.status === 'pending_orderer') return p.ordererId === CURRENT_SESSION.id || IS_MASTER;
+            if (p.status === 'pending_depthead') return p.deptHeadId === CURRENT_SESSION.id || IS_MASTER;
+            if (p.status === 'pending_safety') return IS_ADMIN;
+            return false;
+        }
+
+        function permitRenderList() {
+            const area = document.getElementById('permit-list-area');
+            const list = permitVisibleList();
+            if (!list.length) {
+                area.innerHTML = `<div class="scm-card p-8 text-center text-[13px]" style="color:var(--scm-subtext);">등록된 작업허가서가 없습니다.</div>`;
+                return;
+            }
+            area.innerHTML = `<div class="scm-card p-0" style="overflow-x:auto;">
+                <table style="border-collapse:collapse;width:100%;min-width:760px;font-size:12.5px;">
+                    <thead><tr>
+                        <th style="border:1px solid var(--scm-border);padding:8px;background:#F8FAFC;color:var(--scm-subtext);">허가서번호</th>
+                        <th style="border:1px solid var(--scm-border);padding:8px;background:#F8FAFC;color:var(--scm-subtext);">작업명</th>
+                        <th style="border:1px solid var(--scm-border);padding:8px;background:#F8FAFC;color:var(--scm-subtext);">공사업체</th>
+                        <th style="border:1px solid var(--scm-border);padding:8px;background:#F8FAFC;color:var(--scm-subtext);">작업기간</th>
+                        <th style="border:1px solid var(--scm-border);padding:8px;background:#F8FAFC;color:var(--scm-subtext);">상태</th>
+                        <th style="border:1px solid var(--scm-border);padding:8px;background:#F8FAFC;color:var(--scm-subtext);">-</th>
+                    </tr></thead>
+                    <tbody>
+                        ${list.map(p => `<tr style="cursor:pointer;" onclick="permitOpenDetail(${p.id})">
+                            <td style="border:1px solid var(--scm-border);padding:7px;font-weight:700;color:var(--scm-text);">${p.no}</td>
+                            <td style="border:1px solid var(--scm-border);padding:7px;color:var(--scm-text);">${p.title || '-'}</td>
+                            <td style="border:1px solid var(--scm-border);padding:7px;color:var(--scm-text);">${p.company || '-'}</td>
+                            <td style="border:1px solid var(--scm-border);padding:7px;color:var(--scm-text);font-size:11.5px;">${p.workStart ? new Date(p.workStart).toLocaleDateString('ko-KR') : '-'} ~ ${p.workEnd ? new Date(p.workEnd).toLocaleDateString('ko-KR') : '-'}</td>
+                            <td style="border:1px solid var(--scm-border);padding:7px;text-align:center;">
+                                <span style="font-weight:800;color:${PERMIT_STAGE_COLOR[p.status] || '#64748B'};">${PERMIT_STAGE_LABEL[p.status] || p.status}</span>
+                                ${permitIsMyAction(p) ? '<div style="font-size:10px;color:#DC2626;font-weight:800;margin-top:2px;">🔔 내 승인 필요</div>' : ''}
+                            </td>
+                            <td style="border:1px solid var(--scm-border);padding:7px;text-align:center;color:var(--scm-navy);font-weight:700;">보기 ›</td>
+                        </tr>`).join('')}
+                    </tbody>
+                </table>
+            </div>`;
+        }
+
+        function permitPopulateApproverSelects() {
+            const members = teamLoad().filter(m => m.role !== 'vendor' && m.status === 'active').sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+            const opts = '<option value="">-- 선택 --</option>' + members.map(m =>
+                `<option value="${m.id}">${m.name}${m.position ? ' · ' + m.position : ''}${!m.email ? ' (이메일 미등록)' : ''}</option>`
+            ).join('');
+            document.getElementById('permit-f-orderer').innerHTML = opts;
+            document.getElementById('permit-f-depthead').innerHTML = opts;
+        }
+
+        let PERMIT_EDIT_ID = null;
+
+        function permitShowForm(id) {
+            PERMIT_EDIT_ID = id || null;
+            document.getElementById('permit-view-list').classList.add('hidden');
+            document.getElementById('permit-view-detail').classList.add('hidden');
+            document.getElementById('permit-view-form').classList.remove('hidden');
+            permitPopulateApproverSelects();
+            document.querySelectorAll('.permit-hazard-cb').forEach(cb => cb.checked = false);
+            ['title','location','start','end','workers','contact','content','hazards','measures','notes'].forEach(k => {
+                const el = document.getElementById('permit-f-' + k);
+                if (el) el.value = '';
+            });
+            document.getElementById('permit-f-orderer').value = '';
+            document.getElementById('permit-f-depthead').value = '';
+            document.getElementById('permit-form-id').value = '';
+
+            if (id) {
+                const p = permitLoad().find(x => x.id === id);
+                if (!p) return;
+                document.getElementById('permit-form-id').value = p.id;
+                document.getElementById('permit-f-title').value = p.title || '';
+                document.getElementById('permit-f-location').value = p.location || '';
+                document.getElementById('permit-f-start').value = p.workStart || '';
+                document.getElementById('permit-f-end').value = p.workEnd || '';
+                document.getElementById('permit-f-workers').value = p.workers || '';
+                document.getElementById('permit-f-contact').value = p.contact || '';
+                document.getElementById('permit-f-content').value = p.content || '';
+                document.getElementById('permit-f-hazards').value = p.hazards || '';
+                document.getElementById('permit-f-measures').value = p.measures || '';
+                document.getElementById('permit-f-notes').value = p.notes || '';
+                document.getElementById('permit-f-orderer').value = p.ordererId || '';
+                document.getElementById('permit-f-depthead').value = p.deptHeadId || '';
+                (p.hazardTypes || []).forEach(v => {
+                    const cb = document.querySelector(`.permit-hazard-cb[value="${v}"]`);
+                    if (cb) cb.checked = true;
+                });
+            }
+        }
+
+        function permitSave(mode) {
+            if (!IS_VENDOR && !IS_MASTER) { showToast('⚠️ 작업허가서 작성은 협력업체 계정만 가능합니다.', 'warn'); return; }
+            const title = document.getElementById('permit-f-title').value.trim();
+            const location_ = document.getElementById('permit-f-location').value.trim();
+            const start = document.getElementById('permit-f-start').value;
+            const end = document.getElementById('permit-f-end').value;
+            const ordererId = Number(document.getElementById('permit-f-orderer').value) || null;
+            const deptHeadId = Number(document.getElementById('permit-f-depthead').value) || null;
+            const content = document.getElementById('permit-f-content').value.trim();
+
+            if (!title) { showToast('⚠️ 작업명을 입력해 주세요.', 'warn'); return; }
+            if (!location_) { showToast('⚠️ 작업 장소를 입력해 주세요.', 'warn'); return; }
+            if (!start || !end) { showToast('⚠️ 작업 시작/종료 일시를 입력해 주세요.', 'warn'); return; }
+            if (!content) { showToast('⚠️ 작업 내용을 입력해 주세요.', 'warn'); return; }
+            if (mode === 'submit' && !ordererId) { showToast('⚠️ 발주자를 지정해 주세요.', 'warn'); return; }
+            if (mode === 'submit' && !deptHeadId) { showToast('⚠️ 발주부서팀장을 지정해 주세요.', 'warn'); return; }
+
+            const members = teamLoad();
+            const orderer = members.find(m => m.id === ordererId);
+            const deptHead = members.find(m => m.id === deptHeadId);
+            const hazardTypes = Array.from(document.querySelectorAll('.permit-hazard-cb:checked')).map(cb => cb.value);
+
+            const idVal = Number(document.getElementById('permit-form-id').value) || null;
+            let list = permitLoad();
+            let permit;
+            const isNew = !idVal;
+            if (isNew) {
+                permit = {
+                    id: Date.now(),
+                    no: permitGenerateNo(),
+                    createdAt: Date.now(),
+                    vendorId: CURRENT_SESSION.id,
+                    vendorName: CURRENT_SESSION.name,
+                    company: CURRENT_SESSION.company || '',
+                    history: [],
+                    status: 'draft',
+                };
+            } else {
+                permit = list.find(x => x.id === idVal);
+                if (!permit) return;
+            }
+            permit.title = title;
+            permit.location = location_;
+            permit.workStart = start;
+            permit.workEnd = end;
+            permit.workers = document.getElementById('permit-f-workers').value.trim();
+            permit.contact = document.getElementById('permit-f-contact').value.trim();
+            permit.content = content;
+            permit.hazards = document.getElementById('permit-f-hazards').value.trim();
+            permit.measures = document.getElementById('permit-f-measures').value.trim();
+            permit.notes = document.getElementById('permit-f-notes').value.trim();
+            permit.hazardTypes = hazardTypes;
+            permit.ordererId = ordererId;
+            permit.ordererName = orderer ? orderer.name : '';
+            permit.ordererEmail = orderer ? (orderer.email || '') : '';
+            permit.deptHeadId = deptHeadId;
+            permit.deptHeadName = deptHead ? deptHead.name : '';
+            permit.deptHeadEmail = deptHead ? (deptHead.email || '') : '';
+            permit.updatedAt = Date.now();
+
+            if (mode === 'submit') {
+                permit.status = 'pending_orderer';
+                permit.history.push({ stage: 'submit', action: '제출', actorName: CURRENT_SESSION.name, at: Date.now(), comment: '' });
+            } else {
+                permit.status = permit.status === 'rejected' ? 'draft' : permit.status; // 반려 후 재저장 시 임시저장 상태로
+                permit.history.push({ stage: 'save', action: '임시저장', actorName: CURRENT_SESSION.name, at: Date.now(), comment: '' });
+            }
+
+            if (isNew) list.push(permit);
+            permitSaveAll(list);
+            logActivity('작업허가서', isNew ? '등록' : '수정', `"${permit.no}" ${title} ${mode === 'submit' ? '제출(승인요청)' : '임시저장'}`);
+
+            if (mode === 'submit' && permit.ordererEmail) {
+                permitSendEmail(permit.ordererEmail, permit.ordererName, permit,
+                    '발주자 승인요청',
+                    `${permit.company || permit.vendorName}(이)가 작성한 작업허가서(${permit.no})의 발주자 승인을 요청합니다. 플랫폼에 접속하여 [작업 → 작업허가서]에서 확인해 주세요.`);
+            }
+
+            showToast(mode === 'submit' ? '✅ 작업허가서가 제출되었습니다. 발주자에게 승인요청 이메일이 발송됩니다.' : '💾 임시저장되었습니다.', 'success');
+            permitOpenDetail(permit.id);
+        }
+
+        function permitOpenDetail(id) {
+            const p = permitLoad().find(x => x.id === id);
+            if (!p) return;
+            document.getElementById('permit-view-list').classList.add('hidden');
+            document.getElementById('permit-view-form').classList.add('hidden');
+            document.getElementById('permit-view-detail').classList.remove('hidden');
+            permitRenderDetail(p);
+        }
+
+        function permitRenderDetail(p) {
+            const area = document.getElementById('permit-detail-area');
+            const fmtDt = v => v ? new Date(v).toLocaleString('ko-KR') : '-';
+            const canActOrderer = p.status === 'pending_orderer' && (p.ordererId === CURRENT_SESSION.id || IS_MASTER);
+            const canActDeptHead = p.status === 'pending_depthead' && (p.deptHeadId === CURRENT_SESSION.id || IS_MASTER);
+            const canActSafety = p.status === 'pending_safety' && IS_ADMIN;
+            const canEdit = (p.status === 'draft' || p.status === 'rejected') && (p.vendorId === CURRENT_SESSION.id || IS_MASTER);
+            const canPrint = p.status === 'approved';
+
+            const historyHtml = (p.history || []).slice().reverse().map(h => `
+                <div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px dashed var(--scm-border);font-size:12px;">
+                    <span style="color:var(--scm-subtext);white-space:nowrap;">${fmtDt(h.at)}</span>
+                    <span style="font-weight:700;color:var(--scm-text);">${h.actorName}</span>
+                    <span style="color:var(--scm-navy);font-weight:700;">${h.action}</span>
+                    ${h.comment ? `<span style="color:var(--scm-subtext);">— ${h.comment}</span>` : ''}
+                </div>`).join('') || `<p style="font-size:12px;color:var(--scm-subtext);">이력이 없습니다.</p>`;
+
+            area.innerHTML = `
+                <button onclick="permitShowList()" class="text-[12.5px] font-bold mb-1" style="color:var(--scm-navy);background:none;border:none;cursor:pointer;">← 목록으로</button>
+                <div class="scm-card p-5 space-y-1">
+                    <div class="flex items-center justify-between flex-wrap gap-2">
+                        <h3 class="text-[16px] font-black" style="color:var(--scm-text);">${p.no} — ${p.title}</h3>
+                        <span style="font-weight:800;font-size:12.5px;color:${PERMIT_STAGE_COLOR[p.status]};">${PERMIT_STAGE_LABEL[p.status]}</span>
+                    </div>
+                    <p class="text-[12px]" style="color:var(--scm-subtext);">작성: ${p.company || p.vendorName} (${p.vendorName}) | 작성일: ${fmtDt(p.createdAt)}</p>
+                </div>
+                <div class="scm-card p-5 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-[13px]">
+                    <div><p class="font-bold" style="color:var(--scm-subtext);">작업 장소</p><p style="color:var(--scm-text);">${p.location || '-'}</p></div>
+                    <div><p class="font-bold" style="color:var(--scm-subtext);">작업 기간</p><p style="color:var(--scm-text);">${fmtDt(p.workStart)} ~ ${fmtDt(p.workEnd)}</p></div>
+                    <div><p class="font-bold" style="color:var(--scm-subtext);">작업 인원</p><p style="color:var(--scm-text);">${p.workers || '-'}명</p></div>
+                    <div><p class="font-bold" style="color:var(--scm-subtext);">현장 책임자/연락처</p><p style="color:var(--scm-text);">${p.contact || '-'}</p></div>
+                    <div class="sm:col-span-2"><p class="font-bold" style="color:var(--scm-subtext);">위험작업 유형</p><p style="color:var(--scm-text);">${(p.hazardTypes || []).join(', ') || '-'}</p></div>
+                    <div class="sm:col-span-2"><p class="font-bold" style="color:var(--scm-subtext);">작업 내용</p><p style="color:var(--scm-text);white-space:pre-wrap;">${p.content || '-'}</p></div>
+                    <div class="sm:col-span-2"><p class="font-bold" style="color:var(--scm-subtext);">위험요인</p><p style="color:var(--scm-text);white-space:pre-wrap;">${p.hazards || '-'}</p></div>
+                    <div class="sm:col-span-2"><p class="font-bold" style="color:var(--scm-subtext);">안전조치사항</p><p style="color:var(--scm-text);white-space:pre-wrap;">${p.measures || '-'}</p></div>
+                    <div class="sm:col-span-2"><p class="font-bold" style="color:var(--scm-subtext);">특이사항</p><p style="color:var(--scm-text);white-space:pre-wrap;">${p.notes || '-'}</p></div>
+                    <div><p class="font-bold" style="color:var(--scm-subtext);">발주자</p><p style="color:var(--scm-text);">${p.ordererName || '-'}</p></div>
+                    <div><p class="font-bold" style="color:var(--scm-subtext);">발주부서팀장</p><p style="color:var(--scm-text);">${p.deptHeadName || '-'}</p></div>
+                </div>
+                <div class="scm-card p-5">
+                    <h4 class="text-[13px] font-extrabold mb-2" style="color:var(--scm-navy);">📜 결재 이력</h4>
+                    ${historyHtml}
+                </div>
+                <div class="flex justify-end gap-2 pb-2 flex-wrap">
+                    ${canEdit ? `<button onclick="permitShowForm(${p.id})" class="border text-[13px] font-bold px-5 py-2.5 rounded-lg hover:bg-slate-50" style="border-color:var(--scm-border);color:var(--scm-text);background:white;">✏️ 수정</button>` : ''}
+                    ${canActOrderer ? `
+                        <button onclick="permitReject(${p.id},'pending_orderer')" class="border text-[13px] font-bold px-5 py-2.5 rounded-lg" style="border-color:#FECACA;color:#DC2626;background:white;">반려</button>
+                        <button onclick="permitApprove(${p.id},'pending_orderer')" class="text-white text-[13px] font-bold px-5 py-2.5 rounded-lg" style="background:#059669;">✅ 발주자 승인</button>` : ''}
+                    ${canActDeptHead ? `
+                        <button onclick="permitReject(${p.id},'pending_depthead')" class="border text-[13px] font-bold px-5 py-2.5 rounded-lg" style="border-color:#FECACA;color:#DC2626;background:white;">반려</button>
+                        <button onclick="permitApprove(${p.id},'pending_depthead')" class="text-white text-[13px] font-bold px-5 py-2.5 rounded-lg" style="background:#059669;">✅ 발주부서팀장 승인</button>` : ''}
+                    ${canActSafety ? `
+                        <button onclick="permitReject(${p.id},'pending_safety')" class="border text-[13px] font-bold px-5 py-2.5 rounded-lg" style="border-color:#FECACA;color:#DC2626;background:white;">반려</button>
+                        <button onclick="permitApprove(${p.id},'pending_safety')" class="text-white text-[13px] font-bold px-5 py-2.5 rounded-lg" style="background:#059669;">✅ 안전환경팀 최종승인</button>` : ''}
+                    ${canPrint ? `<button onclick="permitPrint(${p.id})" class="text-white text-[13px] font-bold px-5 py-2.5 rounded-lg" style="background:var(--scm-navy);">🖨 출력</button>` : ''}
+                </div>`;
+        }
+
+        function permitApprove(id, stage) {
+            const list = permitLoad();
+            const p = list.find(x => x.id === id);
+            if (!p || p.status !== stage) return;
+            const nextMap = { pending_orderer: 'pending_depthead', pending_depthead: 'pending_safety', pending_safety: 'approved' };
+            const actionLabelMap = { pending_orderer: '발주자 승인', pending_depthead: '발주부서팀장 승인', pending_safety: '안전환경팀 최종승인' };
+            p.status = nextMap[stage];
+            p.updatedAt = Date.now();
+            p.history.push({ stage, action: actionLabelMap[stage], actorName: CURRENT_SESSION.name, at: Date.now(), comment: '' });
+            permitSaveAll(list);
+            logActivity('작업허가서', '수정', `"${p.no}" ${actionLabelMap[stage]}`);
+
+            // 다음 단계 담당자에게 이메일 발송
+            if (p.status === 'pending_depthead' && p.deptHeadEmail) {
+                permitSendEmail(p.deptHeadEmail, p.deptHeadName, p, '발주부서팀장 승인요청',
+                    `작업허가서(${p.no})가 발주자 승인을 완료했습니다. 발주부서팀장 승인을 요청합니다.`);
+            } else if (p.status === 'pending_safety') {
+                // 안전환경팀 = 관리자(admin)/마스터 권한 보유자 전원에게 이메일 발송
+                const safetyStaff = teamLoad().filter(m => (m.role === 'admin' || m.role === 'master') && m.email);
+                safetyStaff.forEach(m => permitSendEmail(m.email, m.name, p, '안전환경팀 최종승인요청',
+                    `작업허가서(${p.no})가 발주부서팀장 승인까지 완료했습니다. 안전환경팀 최종승인을 요청합니다.`));
+            } else if (p.status === 'approved') {
+                showToast(`🎉 "${p.no}" 최종승인이 완료되었습니다. 협력업체가 출력할 수 있습니다.`, 'success');
+            }
+            if (p.status !== 'approved') showToast(`✅ ${actionLabelMap[stage]} 처리되었습니다.`, 'success');
+            permitOpenDetail(id);
+        }
+
+        function permitReject(id, stage) {
+            const reason = prompt('반려 사유를 입력해 주세요:');
+            if (reason === null) return;
+            const list = permitLoad();
+            const p = list.find(x => x.id === id);
+            if (!p || p.status !== stage) return;
+            const actionLabelMap = { pending_orderer: '발주자', pending_depthead: '발주부서팀장', pending_safety: '안전환경팀' };
+            p.status = 'rejected';
+            p.updatedAt = Date.now();
+            p.history.push({ stage, action: `${actionLabelMap[stage]} 반려`, actorName: CURRENT_SESSION.name, at: Date.now(), comment: reason || '' });
+            permitSaveAll(list);
+            logActivity('작업허가서', '수정', `"${p.no}" ${actionLabelMap[stage]} 반려: ${reason || '-'}`);
+            showToast('🚫 반려 처리되었습니다. 작성 업체에게 안내해 주세요.', 'warn');
+            permitOpenDetail(id);
+        }
+
+        function permitPrint(id) {
+            const p = permitLoad().find(x => x.id === id);
+            if (!p) return;
+            const fmtDt = v => v ? new Date(v).toLocaleString('ko-KR') : '-';
+            const approvals = (p.history || []).filter(h => ['pending_orderer','pending_depthead','pending_safety'].includes(h.stage) && !h.action.includes('반려'));
+            const findApproval = stage => approvals.find(h => h.stage === stage);
+            const sigBox = (label, h) => `
+                <td style="border:1px solid #CBD5E1;padding:10px;text-align:center;width:25%;">
+                    <div style="font-size:11px;color:#64748B;margin-bottom:20px;">${label}</div>
+                    <div style="font-weight:800;font-size:13px;">${h ? h.actorName + ' (인)' : '-'}</div>
+                    <div style="font-size:10px;color:#94A3B8;margin-top:4px;">${h ? fmtDt(h.at) : ''}</div>
+                </td>`;
+            const html = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>${p.no} 작업허가서</title>
+            <style>
+            * { box-sizing: border-box; }
+            body { font-family:'Malgun Gothic','Apple Gothic',sans-serif; margin:0; padding:24px; color:#1E293B; font-size:12.5px; }
+            h1 { font-size:19px; font-weight:900; text-align:center; margin:0 0 4px; }
+            .sub { text-align:center; font-size:11.5px; color:#64748B; margin:0 0 18px; }
+            table { width:100%; border-collapse:collapse; margin-bottom:16px; }
+            td, th { border:1px solid #CBD5E1; padding:7px 10px; font-size:12px; vertical-align:top; word-break:keep-all; }
+            th { background:#F1F5F9; font-weight:700; width:16%; text-align:left; }
+            @media print { @page { margin:14mm; size:A4; } }
+            </style></head><body>
+            <h1>안전작업허가서</h1>
+            <p class="sub">허가서번호: ${p.no} | 출력일: ${new Date().toLocaleDateString('ko-KR')}</p>
+            <table>
+                <tr><th>작업명</th><td colspan="3">${p.title}</td></tr>
+                <tr><th>공사업체</th><td>${p.company || p.vendorName}</td><th>현장 책임자/연락처</th><td>${p.contact || '-'}</td></tr>
+                <tr><th>작업 장소</th><td>${p.location}</td><th>작업 인원</th><td>${p.workers || '-'}명</td></tr>
+                <tr><th>작업 기간</th><td colspan="3">${fmtDt(p.workStart)} ~ ${fmtDt(p.workEnd)}</td></tr>
+                <tr><th>위험작업 유형</th><td colspan="3">${(p.hazardTypes || []).join(', ') || '-'}</td></tr>
+                <tr><th>작업 내용</th><td colspan="3" style="white-space:pre-wrap;">${p.content || '-'}</td></tr>
+                <tr><th>위험요인</th><td colspan="3" style="white-space:pre-wrap;">${p.hazards || '-'}</td></tr>
+                <tr><th>안전조치사항</th><td colspan="3" style="white-space:pre-wrap;">${p.measures || '-'}</td></tr>
+                <tr><th>특이사항</th><td colspan="3" style="white-space:pre-wrap;">${p.notes || '-'}</td></tr>
+            </table>
+            <table><tr>
+                ${sigBox('발주자', findApproval('pending_orderer'))}
+                ${sigBox('발주부서팀장', findApproval('pending_depthead'))}
+                ${sigBox('안전환경팀(최종승인)', findApproval('pending_safety'))}
+                <td style="border:1px solid #CBD5E1;padding:10px;text-align:center;width:25%;">
+                    <div style="font-size:11px;color:#64748B;margin-bottom:20px;">작성(협력업체)</div>
+                    <div style="font-weight:800;font-size:13px;">${p.vendorName} (인)</div>
+                    <div style="font-size:10px;color:#94A3B8;margin-top:4px;">${fmtDt(p.createdAt)}</div>
+                </td>
+            </tr></table>
+            <script>window.onload=()=>setTimeout(()=>window.print(),300);<\/script>
+            </body></html>`;
+            const w = window.open('', '_blank');
+            if (w) { w.document.write(html); w.document.close(); }
+        }
+
+        // ============================================
         // 팀원(작업자) 관리 + 로그인 세션
         // — 실제 서버 인증이 아닌, "지금 누가 조작 중인지"를
         //   식별하기 위한 간이 로그인(브라우저 내 저장)
@@ -3848,7 +4429,7 @@
                 loginShowError('⚠️ 가입 신청이 반려된 계정입니다. 관리자에게 문의해 주세요.');
                 return;
             }
-            sessionStorage.setItem(SESSION_KEY, JSON.stringify({ id: member.id, name: member.name, position: member.position || '', role: member.role || 'user', company: member.company || '' }));
+            sessionStorage.setItem(SESSION_KEY, JSON.stringify({ id: member.id, name: member.name, position: member.position || '', role: member.role || 'user', company: member.company || '', email: member.email || '' }));
             logActivity('로그인', '로그인', `${member.name}님 로그인`, member.name);
             location.reload();
         }
@@ -3884,16 +4465,18 @@
             const name = document.getElementById('login-reg-name').value.trim();
             const company = document.getElementById('login-reg-company').value.trim();
             const position = document.getElementById('login-reg-position').value.trim();
+            const email = document.getElementById('login-reg-email').value.trim();
             const pin = document.getElementById('login-reg-pin').value.trim();
             const errEl = document.getElementById('login-reg-error-msg');
             errEl.classList.add('hidden');
             if (!name) { errEl.textContent = '⚠️ 이름을 입력해 주세요.'; errEl.classList.remove('hidden'); return; }
             if (type === 'vendor' && !company) { errEl.textContent = '⚠️ 업체명을 입력해 주세요.'; errEl.classList.remove('hidden'); return; }
+            if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { errEl.textContent = '⚠️ 이메일 형식이 올바르지 않습니다.'; errEl.classList.remove('hidden'); return; }
             if (!/^\d{4}$/.test(pin)) { errEl.textContent = '⚠️ PIN은 숫자 4자리로 입력해 주세요.'; errEl.classList.remove('hidden'); return; }
             const members = teamLoad();
             if (members.some(m => m.name === name)) { errEl.textContent = '⚠️ 이미 등록된 이름입니다. 로그인 화면에서 선택해 주세요.'; errEl.classList.remove('hidden'); return; }
             const newMember = {
-                id: Date.now(), name, position, pin,
+                id: Date.now(), name, position, pin, email,
                 role: type === 'vendor' ? 'vendor' : 'user',
                 status: 'pending', // 마스터 승인 전까지 로그인 불가
                 company: type === 'vendor' ? company : '',
@@ -3905,6 +4488,7 @@
             document.getElementById('login-reg-name').value = '';
             document.getElementById('login-reg-company').value = '';
             document.getElementById('login-reg-position').value = '';
+            document.getElementById('login-reg-email').value = '';
             document.getElementById('login-reg-pin').value = '';
             loginHideRegister();
             loginPopulateNames();
@@ -4117,10 +4701,11 @@
                 </div>` : '';
 
             listEl.innerHTML = pendingHtml + `<div class="scm-card p-0" style="overflow-x:auto;">
-                <table style="border-collapse:collapse;width:100%;min-width:620px;font-size:12.5px;">
+                <table style="border-collapse:collapse;width:100%;min-width:760px;font-size:12.5px;">
                     <thead><tr>
                         <th style="border:1px solid var(--scm-border);padding:8px;background:#F8FAFC;color:var(--scm-subtext);">이름</th>
                         <th style="border:1px solid var(--scm-border);padding:8px;background:#F8FAFC;color:var(--scm-subtext);">직책/부서 (업체명)</th>
+                        <th style="border:1px solid var(--scm-border);padding:8px;background:#F8FAFC;color:var(--scm-subtext);">이메일</th>
                         <th style="border:1px solid var(--scm-border);padding:8px;background:#F8FAFC;color:var(--scm-subtext);">권한</th>
                         <th style="border:1px solid var(--scm-border);padding:8px;background:#F8FAFC;color:var(--scm-subtext);">관리</th>
                     </tr></thead>
@@ -4132,6 +4717,11 @@
                                     ? `<input type="text" value="${(m.position || '').replace(/"/g, '&quot;')}" placeholder="직책/부서" onchange="teamUpdatePosition(${m.id}, this.value)" style="border:1px solid var(--scm-border);border-radius:6px;padding:3px 6px;font-size:12px;width:100%;min-width:100px;">`
                                     : (m.position || '-')}
                                 ${m.role === 'vendor' && m.company ? `<div style="font-size:10.5px;color:#1D4ED8;font-weight:700;margin-top:2px;">🏢 ${m.company}</div>` : ''}
+                            </td>
+                            <td style="border:1px solid var(--scm-border);padding:7px;color:var(--scm-text);">
+                                ${IS_MASTER
+                                    ? `<input type="email" value="${(m.email || '').replace(/"/g, '&quot;')}" placeholder="이메일" onchange="teamUpdateEmail(${m.id}, this.value)" style="border:1px solid var(--scm-border);border-radius:6px;padding:3px 6px;font-size:12px;width:100%;min-width:140px;">`
+                                    : (m.email || '-')}
                             </td>
                             <td style="border:1px solid var(--scm-border);padding:7px;text-align:center;">
                                 ${IS_MASTER ? `<select onchange="teamChangeRole(${m.id}, this.value)" style="border:1px solid var(--scm-border);border-radius:6px;padding:3px 6px;font-size:11.5px;background:white;">
@@ -4148,6 +4738,23 @@
                     </tbody>
                 </table>
             </div>`;
+        }
+
+        function teamUpdateEmail(id, email) {
+            if (!IS_MASTER) return;
+            email = email.trim();
+            if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('⚠️ 이메일 형식이 올바르지 않습니다.', 'warn'); teamRender(); return; }
+            const members = teamLoad();
+            const idx = members.findIndex(m => m.id === id);
+            if (idx === -1) return;
+            members[idx].email = email;
+            teamSave(members);
+            logActivity('계정관리', '수정', `팀원 "${members[idx].name}" 이메일 변경: "${email || '-'}"`);
+            if (CURRENT_SESSION && CURRENT_SESSION.id === id) {
+                CURRENT_SESSION.email = email;
+                sessionStorage.setItem(SESSION_KEY, JSON.stringify(CURRENT_SESSION));
+            }
+            showToast('✅ 이메일이 변경되었습니다.', 'success');
         }
 
         function teamApproveMember(id) {
@@ -4203,17 +4810,20 @@
             if (!IS_MASTER) { showToast('⚠️ 팀원 추가는 마스터만 가능합니다.', 'warn'); return; }
             const name = document.getElementById('team-add-name').value.trim();
             const position = document.getElementById('team-add-position').value.trim();
+            const email = document.getElementById('team-add-email').value.trim();
             const pin = document.getElementById('team-add-pin').value.trim();
             const role = document.getElementById('team-add-role').value;
             if (!name) { showToast('⚠️ 이름을 입력해 주세요.', 'warn'); return; }
+            if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('⚠️ 이메일 형식이 올바르지 않습니다.', 'warn'); return; }
             if (!/^\d{4}$/.test(pin)) { showToast('⚠️ PIN은 숫자 4자리로 입력해 주세요.', 'warn'); return; }
             const members = teamLoad();
             if (members.some(m => m.name === name)) { showToast('⚠️ 이미 등록된 이름입니다.', 'warn'); return; }
-            members.push({ id: Date.now(), name, position, pin, role, status: 'active', company: '' });
+            members.push({ id: Date.now(), name, position, pin, role, email, status: 'active', company: '' });
             teamSave(members);
             logActivity('계정관리', '등록', `팀원 "${name}"(${ROLE_LABEL[role]}) 추가`);
             document.getElementById('team-add-name').value = '';
             document.getElementById('team-add-position').value = '';
+            document.getElementById('team-add-email').value = '';
             document.getElementById('team-add-pin').value = '';
             document.getElementById('team-add-role').value = 'user';
             teamRender();
@@ -16863,6 +17473,16 @@ ${extraText}
             if (el2 && IS_ADMIN) el2.classList.remove('hidden');
             const safeDaysBtn = document.getElementById('safe-days-edit-btn');
             if (safeDaysBtn && IS_MASTER) { safeDaysBtn.style.display = 'block'; safeDaysBtn.dataset.master = '1'; }
+        })();
+
+        // 이메일 속 승인요청 링크(?permit=ID)로 접속한 경우, 로그인 후 해당 작업허가서 상세화면으로 바로 이동
+        (function () {
+            if (!CURRENT_SESSION) return;
+            const permitId = Number(new URLSearchParams(location.search).get('permit'));
+            if (!permitId) return;
+            const p = permitLoad().find(x => x.id === permitId);
+            if (!p) return;
+            setTimeout(() => { switchTab('work'); permitOpenDetail(permitId); }, 150);
         })();
 
         // 협력업체(IS_VENDOR) 계정 — 안전제안·작업허가서 등 제한된 메뉴만 노출
