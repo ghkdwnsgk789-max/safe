@@ -2676,6 +2676,7 @@
 
                     <!-- 작성 폼 -->
                     <div id="sp-view-form" class="hidden p-3 space-y-3">
+                        <button onclick="spBackToList()" class="text-[12.5px] font-bold" style="color:var(--scm-navy);background:none;border:none;cursor:pointer;padding:0;">← 목록으로</button>
                         <input type="hidden" id="sp-f-id">
                         <fieldset class="permit-fieldset">
                             <legend>표지</legend>
@@ -6071,11 +6072,22 @@
             return obj;
         }
 
+        // 필수항목이 비어있으면 토스트만으로는 눈에 잘 안 띌 수 있어서, 해당 칸으로 스크롤하고 빨갛게 표시해 확실히 알려준다.
+        function spFlagMissingField(fieldId, message) {
+            showToast(`⚠️ ${message}`, 'warn');
+            const el = document.getElementById(fieldId);
+            if (!el) return;
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.style.borderColor = '#DC2626';
+            el.style.boxShadow = '0 0 0 3px rgba(220,38,38,0.25)';
+            el.focus();
+            setTimeout(() => { el.style.borderColor = ''; el.style.boxShadow = ''; }, 2500);
+        }
         function spDoSave(status) {
             const data = spCollectForm();
-            if (!data.workName) { showToast('⚠️ 작업명을 입력해 주세요.', 'warn'); return null; }
-            if (!data.company) { showToast('⚠️ 공사업체명을 입력해 주세요.', 'warn'); return null; }
-            if (!data.linkedPermitId) { showToast('⚠️ 연동 작업허가서를 선택해 주세요.', 'warn'); return null; }
+            if (!data.workName) { spFlagMissingField('sp-f-workname', '작업명을 입력해 주세요.'); return null; }
+            if (!data.company) { spFlagMissingField('sp-f-company', '공사업체명을 입력해 주세요.'); return null; }
+            if (!data.linkedPermitId) { spFlagMissingField('sp-f-linkedpermit', '연동 작업허가서를 선택해 주세요.'); return null; }
             const idVal = Number(document.getElementById('sp-f-id').value) || null;
             const list = spLoad();
             let p = idVal ? list.find(x => x.id === idVal) : null;
