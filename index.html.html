@@ -2431,26 +2431,34 @@
                                     </div>
                                 </fieldset>
 
-                                <!-- 회람부서 -->
+                                <!-- 회람부서 (드롭다운) -->
                                 <fieldset class="permit-fieldset">
                                     <legend>회람부서</legend>
-                                    <div id="permit-f-circulation" class="grid grid-cols-2 sm:grid-cols-3 gap-x-3 gap-y-1.5 text-[12px]">
-                                        <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="안전환경파트"> 안전환경파트</label>
-                                        <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="업무지원파트"> 업무지원파트</label>
-                                        <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="품질경영팀"> 품질경영팀</label>
-                                        <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="시험검사반"> 시험검사반</label>
-                                        <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="설비팀"> 설비팀</label>
-                                        <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="설비팀 전기정비반"> 설비팀 전기정비반</label>
-                                        <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="설비팀 기계정비반"> 설비팀 기계정비반</label>
-                                        <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="변화관리팀"> 변화관리팀</label>
-                                        <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="공정물류반"> 공정물류반</label>
-                                        <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="생산팀"> 생산팀</label>
-                                        <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="CPL조업반"> CPL조업반</label>
-                                        <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="CRM조업반"> CRM조업반</label>
-                                        <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="CGL조업반"> CGL조업반</label>
-                                        <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="1CCL조업반"> 1CCL조업반</label>
-                                        <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="2CCL조업반"> 2CCL조업반</label>
-                                        <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="3CCL조업반"> 3CCL조업반</label>
+                                    <div class="relative">
+                                        <button type="button" id="permit-circ-summary" onclick="permitToggleCircDropdown()" class="permit-input flex items-center justify-between" style="cursor:pointer;text-align:left;">
+                                            <span id="permit-circ-summary-text" style="color:#94A3B8;">선택 안함</span>
+                                            <span style="color:#94A3B8;">▾</span>
+                                        </button>
+                                        <div id="permit-circ-dropdown" class="hidden" style="position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:60;background:white;border:1px solid #C7D0E0;border-radius:8px;box-shadow:0 10px 28px rgba(0,0,0,0.15);padding:10px;max-height:230px;overflow-y:auto;">
+                                            <div id="permit-f-circulation" class="grid grid-cols-2 sm:grid-cols-3 gap-x-3 gap-y-1.5 text-[12px]">
+                                                <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="안전환경파트" onchange="permitUpdateCircSummary()"> 안전환경파트</label>
+                                                <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="업무지원파트" onchange="permitUpdateCircSummary()"> 업무지원파트</label>
+                                                <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="품질경영팀" onchange="permitUpdateCircSummary()"> 품질경영팀</label>
+                                                <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="시험검사반" onchange="permitUpdateCircSummary()"> 시험검사반</label>
+                                                <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="설비팀" onchange="permitUpdateCircSummary()"> 설비팀</label>
+                                                <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="설비팀 전기정비반" onchange="permitUpdateCircSummary()"> 설비팀 전기정비반</label>
+                                                <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="설비팀 기계정비반" onchange="permitUpdateCircSummary()"> 설비팀 기계정비반</label>
+                                                <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="변화관리팀" onchange="permitUpdateCircSummary()"> 변화관리팀</label>
+                                                <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="공정물류반" onchange="permitUpdateCircSummary()"> 공정물류반</label>
+                                                <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="생산팀" onchange="permitUpdateCircSummary()"> 생산팀</label>
+                                                <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="CPL조업반" onchange="permitUpdateCircSummary()"> CPL조업반</label>
+                                                <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="CRM조업반" onchange="permitUpdateCircSummary()"> CRM조업반</label>
+                                                <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="CGL조업반" onchange="permitUpdateCircSummary()"> CGL조업반</label>
+                                                <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="1CCL조업반" onchange="permitUpdateCircSummary()"> 1CCL조업반</label>
+                                                <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="2CCL조업반" onchange="permitUpdateCircSummary()"> 2CCL조업반</label>
+                                                <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="3CCL조업반" onchange="permitUpdateCircSummary()"> 3CCL조업반</label>
+                                            </div>
+                                        </div>
                                     </div>
                                 </fieldset>
 
@@ -4530,6 +4538,7 @@
             document.getElementById('permit-f-safetymgr').disabled = true; // 신규 작성 단계에서는 안전환경팀도 체크 불가(작성완료 후 가능)
             document.querySelectorAll('.permit-type-cb').forEach(cb => cb.checked = false);
             document.querySelectorAll('.permit-circ-cb').forEach(cb => cb.checked = false);
+            permitUpdateCircSummary();
             document.getElementById('permit-attach-safetyPlan').textContent = '';
             document.getElementById('permit-attach-constructionDocs').textContent = '';
             document.getElementById('permit-status-badge').textContent = '작성중 / 미승인';
@@ -4571,6 +4580,7 @@
             document.getElementById('permit-f-safetymgr').disabled = !(IS_ADMIN && p.writeStatus === '작성완료');
             document.querySelectorAll('.permit-type-cb').forEach(cb => cb.checked = (p.permitTypes||[]).includes(cb.value));
             document.querySelectorAll('.permit-circ-cb').forEach(cb => cb.checked = (p.circulationDepts||[]).includes(cb.value));
+            permitUpdateCircSummary();
             document.getElementById('permit-attach-safetyPlan').textContent = p.attachments?.safetyPlan || '';
             document.getElementById('permit-attach-constructionDocs').textContent = p.attachments?.constructionDocs || '';
             document.getElementById('permit-status-badge').textContent = `${p.writeStatus || '작성중'} / ${p.approveStatus || '미승인'}`;
@@ -5125,6 +5135,24 @@
                 el.value = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
             }
         }
+
+        // 회람부서 드롭다운 — 체크박스 16개를 한 줄짜리 드롭다운 버튼 안에 접어 넣어 세로 길이를 줄인다.
+        function permitToggleCircDropdown() {
+            document.getElementById('permit-circ-dropdown').classList.toggle('hidden');
+        }
+        function permitUpdateCircSummary() {
+            const checked = Array.from(document.querySelectorAll('.permit-circ-cb:checked')).map(cb => cb.value);
+            const textEl = document.getElementById('permit-circ-summary-text');
+            if (!checked.length) { textEl.textContent = '선택 안함'; textEl.style.color = '#94A3B8'; }
+            else { textEl.textContent = checked.length <= 2 ? checked.join(', ') : `${checked[0]} 외 ${checked.length - 1}건`; textEl.style.color = '#1E293B'; }
+        }
+        document.addEventListener('click', function (e) {
+            const dd = document.getElementById('permit-circ-dropdown');
+            const btn = document.getElementById('permit-circ-summary');
+            if (!dd || dd.classList.contains('hidden')) return;
+            if (dd.contains(e.target) || (btn && btn.contains(e.target))) return;
+            dd.classList.add('hidden');
+        });
 
         function permitToggleCalcMethod() {
             const isBreakdown = document.querySelector('input[name="uf-calc-method"]:checked').value === 'breakdown';
