@@ -2413,21 +2413,44 @@
                                         <label>승인자(1)</label>
                                         <div class="flex items-center gap-2">
                                             <select id="permit-f-approver1" class="permit-input"><option value="">-- 선택 --</option></select>
-                                            <label class="flex items-center gap-1 text-[11.5px] whitespace-nowrap"><input id="permit-f-deptapprove" type="checkbox" onchange="permitToggleDeptApproval(this)"> 개별승인</label>
+                                            <label class="flex items-center gap-1 text-[11.5px] whitespace-nowrap"><input id="permit-f-deptapprove" type="checkbox" onchange="permitToggleDeptApproval(this)"> 승인</label>
                                         </div>
                                         <label>승인자(2)</label>
                                         <div class="flex items-center gap-2">
                                             <select id="permit-f-approver2" class="permit-input"><option value="">-- 선택 --</option></select>
-                                            <label class="flex items-center gap-1 text-[11.5px] whitespace-nowrap"><input id="permit-f-deptapprove2" type="checkbox" onchange="permitToggleDeptApproval2(this)"> 최종승인(일괄가능)</label>
+                                            <label class="flex items-center gap-1 text-[11.5px] whitespace-nowrap"><input id="permit-f-deptapprove2" type="checkbox" onchange="permitToggleDeptApproval2(this)"> 승인(일괄가능)</label>
                                         </div>
-                                        <label id="permit-safetymgr-label">승인자(3)</label>
+                                        <label id="permit-safetymgr-label">안전관리담당</label>
                                         <div id="permit-safetymgr-row" class="flex items-center gap-2">
                                             <select id="permit-f-approver3" class="permit-input"><option value="">-- 선택 --</option></select>
-                                            <label class="flex items-center gap-1 text-[11.5px] whitespace-nowrap"><input id="permit-f-safetymgr" type="checkbox" onchange="permitToggleSafetyApproval(this)"> 안전관리자담당(최종승인)</label>
+                                            <label class="flex items-center gap-1 text-[11.5px] whitespace-nowrap"><input id="permit-f-safetymgr" type="checkbox" onchange="permitToggleSafetyApproval(this)"> 승인</label>
                                         </div>
                                         <div id="permit-selfwork-note" class="hidden" style="grid-column:1/-1;font-size:11.5px;color:#B45309;background:#FFFBEB;border:1px solid #FDE68A;border-radius:6px;padding:6px 10px;">
-                                            ℹ️ 자체작업허가서는 안전환경팀 최종승인 없이, 승인자(1) 개별승인 → 승인자(2) 최종승인만으로 결재가 종료됩니다.
+                                            ℹ️ 자체작업허가서는 안전환경팀 최종승인 없이, 승인자(1) 승인 → 승인자(2) 승인만으로 결재가 종료됩니다.
                                         </div>
+                                    </div>
+                                </fieldset>
+
+                                <!-- 회람부서 -->
+                                <fieldset class="permit-fieldset">
+                                    <legend>회람부서</legend>
+                                    <div id="permit-f-circulation" class="grid grid-cols-2 sm:grid-cols-3 gap-x-3 gap-y-1.5 text-[12px]">
+                                        <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="안전환경파트"> 안전환경파트</label>
+                                        <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="업무지원파트"> 업무지원파트</label>
+                                        <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="품질경영팀"> 품질경영팀</label>
+                                        <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="시험검사반"> 시험검사반</label>
+                                        <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="설비팀"> 설비팀</label>
+                                        <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="설비팀 전기정비반"> 설비팀 전기정비반</label>
+                                        <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="설비팀 기계정비반"> 설비팀 기계정비반</label>
+                                        <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="변화관리팀"> 변화관리팀</label>
+                                        <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="공정물류반"> 공정물류반</label>
+                                        <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="생산팀"> 생산팀</label>
+                                        <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="CPL조업반"> CPL조업반</label>
+                                        <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="CRM조업반"> CRM조업반</label>
+                                        <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="CGL조업반"> CGL조업반</label>
+                                        <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="1CCL조업반"> 1CCL조업반</label>
+                                        <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="2CCL조업반"> 2CCL조업반</label>
+                                        <label class="flex items-center gap-1.5"><input type="checkbox" class="permit-circ-cb" value="3CCL조업반"> 3CCL조업반</label>
                                     </div>
                                 </fieldset>
 
@@ -4506,6 +4529,7 @@
             document.getElementById('permit-f-safetymgr').checked = false;
             document.getElementById('permit-f-safetymgr').disabled = true; // 신규 작성 단계에서는 안전환경팀도 체크 불가(작성완료 후 가능)
             document.querySelectorAll('.permit-type-cb').forEach(cb => cb.checked = false);
+            document.querySelectorAll('.permit-circ-cb').forEach(cb => cb.checked = false);
             document.getElementById('permit-attach-safetyPlan').textContent = '';
             document.getElementById('permit-attach-constructionDocs').textContent = '';
             document.getElementById('permit-status-badge').textContent = '작성중 / 미승인';
@@ -4546,6 +4570,7 @@
             // 안전관리자담당(최종승인)은 안전환경팀(관리자/마스터) 계정만 — 마스터 권한이므로 승인자(1)(2) 순서와 무관하게 작성완료 건이면 체크 가능
             document.getElementById('permit-f-safetymgr').disabled = !(IS_ADMIN && p.writeStatus === '작성완료');
             document.querySelectorAll('.permit-type-cb').forEach(cb => cb.checked = (p.permitTypes||[]).includes(cb.value));
+            document.querySelectorAll('.permit-circ-cb').forEach(cb => cb.checked = (p.circulationDepts||[]).includes(cb.value));
             document.getElementById('permit-attach-safetyPlan').textContent = p.attachments?.safetyPlan || '';
             document.getElementById('permit-attach-constructionDocs').textContent = p.attachments?.constructionDocs || '';
             document.getElementById('permit-status-badge').textContent = `${p.writeStatus || '작성중'} / ${p.approveStatus || '미승인'}`;
@@ -4671,6 +4696,7 @@
                 approver3Id: a3 ? a3.id : null, approver3Name: a3 ? a3.name : '', approver3Email: a3 ? (a3.email || '') : '',
                 safetyMgrFlag: document.getElementById('permit-f-safetymgr').checked,
                 permitTypes: Array.from(document.querySelectorAll('.permit-type-cb:checked')).map(cb => cb.value),
+                circulationDepts: Array.from(document.querySelectorAll('.permit-circ-cb:checked')).map(cb => cb.value),
                 subSchedules: permitCollectSubGrid(),
             };
         }
@@ -4781,6 +4807,7 @@
                 <tr><th>작업일자</th><td colspan="3">${p.workStart || '-'} ~ ${p.workEnd || '-'}</td></tr>
                 <tr><th>허가서 구분</th><td colspan="3">${(p.permitTypes||[]).join(', ') || '-'}</td></tr>
                 <tr><th>장치/장비</th><td colspan="3">${p.equip || '-'}</td></tr>
+                <tr><th>회람부서</th><td colspan="3">${(p.circulationDepts || []).join(', ') || '-'}</td></tr>
             </table>
             <table><tr>
                 <td style="text-align:center;width:25%;"><div style="font-size:11px;color:#64748B;margin-bottom:20px;">발급자</div><div style="font-weight:800;">${p.issuerName || '-'} (인)</div></td>
