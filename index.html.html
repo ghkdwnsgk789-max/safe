@@ -463,6 +463,7 @@
                                 <button class="mega-item-btn" onclick="switchTab('work'); setTimeout(()=>permitShowList('outsourced'),80)">외주작업허가서</button>
                                 <button class="mega-item-btn" onclick="switchTab('work'); setTimeout(()=>permitShowList('self'),80)">자체작업허가서</button>
                                 <button class="mega-item-btn" onclick="switchTab('work'); setTimeout(()=>workstdShowList(),80)">작업표준 · 수시위험성평가</button>
+                                <button class="mega-item-btn" onclick="switchTab('work'); setTimeout(()=>spShowList(),80)">안전관리계획서 작성</button>
                             </div>
                         </div>
                     </div>
@@ -2257,6 +2258,11 @@
                     <p class="font-extrabold text-[14px]" style="color:var(--scm-navy);">작업표준 · 수시위험성평가</p>
                     <p class="text-[11.5px] mt-1" style="color:var(--scm-subtext);">반복 작업(자체작업 등)에 재사용하는 표준/위험성평가 라이브러리</p>
                 </button>
+                <button onclick="spShowList()" class="scm-card p-5 text-left hover:shadow-lg transition-shadow" style="cursor:pointer;">
+                    <div class="text-2xl mb-2">📘</div>
+                    <p class="font-extrabold text-[14px]" style="color:var(--scm-navy);">안전관리계획서 작성</p>
+                    <p class="text-[11.5px] mt-1" style="color:var(--scm-subtext);">항목별로 채우면 완성 · 작업허가서와 자동 연동 가능</p>
+                </button>
             </div>
 
             <!-- ============================================
@@ -2343,9 +2349,9 @@
                                     <div class="permit-form-grid-2col">
                                         <label>🔒 허가번호</label><input id="permit-f-no" type="text" readonly class="permit-input" style="background:#94A3B8;color:white;font-weight:800;cursor:not-allowed;">
                                         <label>🔒 발급일자</label><input id="permit-f-issuedate" type="date" readonly class="permit-input" style="background:#94A3B8;color:white;font-weight:800;cursor:not-allowed;">
-                                        <label>신청업체/부서</label><input id="permit-f-company" type="text" class="permit-input">
-                                        <label>성명</label><input id="permit-f-appname" type="text" class="permit-input">
-                                        <label>연락처</label><input id="permit-f-contact" type="text" placeholder="010-0000-0000" class="permit-input">
+                                        <label>신청업체/부서 <span style="color:#DC2626;">*</span></label><input id="permit-f-company" type="text" class="permit-input">
+                                        <label>성명 <span style="color:#DC2626;">*</span></label><input id="permit-f-appname" type="text" class="permit-input">
+                                        <label>연락처 <span style="color:#DC2626;">*</span></label><input id="permit-f-contact" type="text" placeholder="010-0000-0000" class="permit-input">
                                         <label>직책</label><input id="permit-f-position" type="text" class="permit-input">
                                     </div>
                                 </fieldset>
@@ -2356,14 +2362,14 @@
                                     <div class="permit-form-grid-2col">
                                         <label>작업명 <span style="color:#DC2626;">*</span></label>
                                         <input id="permit-f-workname" type="text" class="permit-input span-all">
-                                        <label>작업일자</label>
+                                        <label>작업일자 <span style="color:#DC2626;">*</span></label>
                                         <div class="flex items-center gap-1.5 span-all">
                                             <input id="permit-f-workstart" type="date" class="permit-input" style="width:130px;" onchange="permitRenderBudgetInfo()">
                                             <span>~</span>
                                             <input id="permit-f-workend" type="date" class="permit-input" style="width:130px;" onchange="permitRenderBudgetInfo()">
                                         </div>
                                         <label>작업지역</label><input id="permit-f-area" type="text" class="permit-input">
-                                        <label>대상설비</label>
+                                        <label>대상설비 <span style="color:#DC2626;">*</span></label>
                                         <select id="permit-f-facility" class="permit-input">
                                             <option value="해당없음">해당없음</option>
                                             <option value="OVEN">OVEN</option>
@@ -2373,7 +2379,7 @@
                                             <option value="수소탱크">수소탱크</option>
                                         </select>
                                         <div id="permit-costtier-row" class="contents">
-                                        <label>공사금액</label>
+                                        <label>공사금액 <span style="color:#DC2626;">*</span></label>
                                         <div class="flex items-center gap-3 text-[12px] span-all">
                                             <label class="flex items-center gap-1"><input type="radio" name="permit-cost" value="1억이상" onchange="permitRenderBudgetInfo()"> 1억이상</label>
                                             <label class="flex items-center gap-1"><input type="radio" name="permit-cost" value="2천만원이상" onchange="permitRenderBudgetInfo()"> 2천만원 이상 1억미만</label>
@@ -2647,7 +2653,130 @@
                     </div>
                 </div>
             </div>
+
+            <!-- ============================================
+                 안전관리계획서 작성 (공사업체 제출용 — 작업허가서와 연동 가능)
+                 ============================================ -->
+            <div id="work-view-safetyplan" class="hidden">
+                <div class="scm-card p-0 overflow-hidden" style="border-color:#B9C3D6;background:#F4F6FB;">
+                    <div class="flex items-center justify-between px-3 py-2" style="background:#EEF1F7;border-bottom:1px solid #C7D0E0;">
+                        <div class="flex items-center gap-1.5 text-[13px] font-extrabold" style="color:#243B67;"><span>📘</span><span>안전관리계획서 작성</span></div>
+                        <button onclick="permitBackToMenu()" class="permit-toolbar-btn">← 작업 관리 메뉴로</button>
+                    </div>
+
+                    <!-- 목록 -->
+                    <div id="sp-view-list" class="p-3">
+                        <div class="flex items-center justify-between flex-wrap gap-2 mb-2">
+                            <p class="text-[12px]" style="color:#64748B;max-width:640px;">항목별로 채우면 완성됩니다. 사진·조직도 등 그림 자료는 제외하고, 실제로 매번 바뀌는 정보(작업내용·인원·절차·위험성평가 등) 위주로만 입력하면 됩니다. "작성완료"를 누르면 문서로 다운로드되고, 연동한 작업허가서의 "안전관리계획서 첨부"가 자동으로 완료 처리됩니다.</p>
+                            <button onclick="spNewPlan()" class="text-white text-[13px] font-bold px-4 py-2.5 rounded-lg hover:opacity-90" style="background:var(--scm-navy);white-space:nowrap;">+ 새 안전관리계획서 작성</button>
+                        </div>
+                        <div id="sp-list-area"></div>
+                    </div>
+
+                    <!-- 작성 폼 -->
+                    <div id="sp-view-form" class="hidden p-3 space-y-3">
+                        <input type="hidden" id="sp-f-id">
+                        <fieldset class="permit-fieldset">
+                            <legend>표지</legend>
+                            <div class="permit-form-grid-2col">
+                                <label>작업명 <span style="color:#DC2626;">*</span></label><input id="sp-f-workname" type="text" class="permit-input">
+                                <label>작성일</label><input id="sp-f-date" type="date" class="permit-input">
+                                <label>연동 작업허가서</label>
+                                <select id="sp-f-linkedpermit" class="permit-input span-all">
+                                    <option value="">연동 안 함(따로 다운로드만)</option>
+                                </select>
+                            </div>
+                            <p class="text-[10.5px] mt-1.5" style="color:#2563EB;">ℹ️ 작업허가서를 선택하면, 작성완료 시 그 허가서의 "안전관리계획서 첨부"가 자동으로 완료 처리됩니다.</p>
+                        </fieldset>
+
+                        <fieldset class="permit-fieldset">
+                            <legend>1. 작업개요</legend>
+                            <label class="block text-[11.5px] font-bold mb-1" style="color:#475569;">작업내용</label>
+                            <textarea id="sp-f-workcontent" rows="2" class="permit-input" style="width:100%;" placeholder="예: OO라인 OO설비 교체공사"></textarea>
+                            <p class="text-[11.5px] font-bold mt-3 mb-1" style="color:#475569;">작업주체 <span style="color:#2563EB;font-weight:600;">(대상업체별 근로자수·관리감독자를 적어주세요)</span></p>
+                            <div style="overflow-x:auto;"><table class="permit-grid-table"><thead><tr><th>대상업체</th><th>대상공정</th><th>근로자수</th><th>관리감독자</th><th>연락처</th><th></th></tr></thead><tbody id="sp-entities-body"></tbody></table></div>
+                            <button class="permit-nav-btn mt-1.5" onclick="spAddRow('sp-entities-body',5)">+ 행 추가</button>
+                            <p class="text-[11.5px] font-bold mt-3 mb-1" style="color:#475569;">작업일정(개요)</p>
+                            <div style="overflow-x:auto;"><table class="permit-grid-table"><thead><tr><th>작업내용</th><th>작업부서</th><th>추진일정</th><th>작업허가서 종류</th><th>비고</th><th></th></tr></thead><tbody id="sp-schedule-body"></tbody></table></div>
+                            <button class="permit-nav-btn mt-1.5" onclick="spAddRow('sp-schedule-body',5)">+ 행 추가</button>
+                        </fieldset>
+
+                        <fieldset class="permit-fieldset">
+                            <legend>2. 작업실시자</legend>
+                            <p class="text-[10.5px] mb-1" style="color:#2563EB;">ℹ️ 현장에 투입되는 도급업체 담당자 명단을 적어주세요.</p>
+                            <div style="overflow-x:auto;"><table class="permit-grid-table"><thead><tr><th>담당자</th><th>연락처</th><th>비고</th><th></th></tr></thead><tbody id="sp-performers-body"></tbody></table></div>
+                            <button class="permit-nav-btn mt-1.5" onclick="spAddRow('sp-performers-body',3)">+ 행 추가</button>
+                        </fieldset>
+
+                        <fieldset class="permit-fieldset">
+                            <legend>3. 표준작업절차 (SOP)</legend>
+                            <p class="text-[10.5px] mb-1" style="color:#2563EB;">ℹ️ 업체 작업 순서에 맞게 단계별로 적어주세요.</p>
+                            <div style="overflow-x:auto;"><table class="permit-grid-table"><thead><tr><th>단계</th><th>작업내용</th><th>담당부서</th><th>비고</th><th></th></tr></thead><tbody id="sp-sop-body"></tbody></table></div>
+                            <button class="permit-nav-btn mt-1.5" onclick="spAddRow('sp-sop-body',4)">+ 행 추가</button>
+                        </fieldset>
+
+                        <fieldset class="permit-fieldset">
+                            <legend>4. 작업일정</legend>
+                            <div class="permit-form-grid-2col">
+                                <label>공사기간</label>
+                                <div class="flex items-center gap-1.5 span-all">
+                                    <input id="sp-f-period-start" type="date" class="permit-input" style="width:150px;">~<input id="sp-f-period-end" type="date" class="permit-input" style="width:150px;">
+                                </div>
+                            </div>
+                            <label class="block text-[11.5px] font-bold mt-2 mb-1" style="color:#475569;">세부일정</label>
+                            <textarea id="sp-f-schedule-detail" rows="2" class="permit-input" style="width:100%;" placeholder="예: 사전작업(~), 해체작업(~), 조립작업(~), 가동전점검(~)"></textarea>
+                        </fieldset>
+
+                        <fieldset class="permit-fieldset">
+                            <legend>5. 교육계획</legend>
+                            <p class="text-[10.5px] mb-1" style="color:#2563EB;">ℹ️ 시작 전 안전교육, 공사업체 안전교육, 일일교육 등 실시 계획을 간단히 적어주세요.</p>
+                            <textarea id="sp-f-edu" rows="2" class="permit-input" style="width:100%;"></textarea>
+                        </fieldset>
+
+                        <fieldset class="permit-fieldset">
+                            <legend>6. 수시위험성평가</legend>
+                            <p class="text-[11.5px] font-bold mb-1" style="color:#475569;">평가 담당자</p>
+                            <div style="overflow-x:auto;"><table class="permit-grid-table"><thead><tr><th>분야</th><th>성명</th><th>직급</th><th>경력</th><th></th></tr></thead><tbody id="sp-rateam-body"></tbody></table></div>
+                            <button class="permit-nav-btn mt-1.5" onclick="spAddRow('sp-rateam-body',4)">+ 행 추가</button>
+                            <p class="text-[11.5px] font-bold mt-3 mb-1" style="color:#475569;">위험성평가표 <span style="color:#2563EB;font-weight:600;">(빈도·강도는 1~4 숫자로)</span></p>
+                            <div style="overflow-x:auto;"><table class="permit-grid-table"><thead><tr><th>작업내용</th><th>유해위험요인</th><th>빈도</th><th>강도</th><th>위험도</th><th>개선대책</th><th></th></tr></thead><tbody id="sp-ratable-body"></tbody></table></div>
+                            <button class="permit-nav-btn mt-1.5" onclick="spAddRow('sp-ratable-body',6)">+ 행 추가</button>
+                        </fieldset>
+
+                        <fieldset class="permit-fieldset">
+                            <legend>7. 보호구 사용계획</legend>
+                            <div style="overflow-x:auto;"><table class="permit-grid-table"><thead><tr><th>물품명</th><th>규격</th><th>수량</th><th>비고</th><th></th></tr></thead><tbody id="sp-ppe-body"></tbody></table></div>
+                            <button class="permit-nav-btn mt-1.5" onclick="spAddRow('sp-ppe-body',4)">+ 행 추가</button>
+                        </fieldset>
+
+                        <fieldset class="permit-fieldset">
+                            <legend>8. 공사 지정현황</legend>
+                            <p class="text-[10.5px] mb-1" style="color:#2563EB;">ℹ️ 작업지휘자, 크레인 운전원, 신호수, 화재감시자 배치 계획을 적어주세요. (해당 없으면 비워두면 됩니다)</p>
+                            <div class="permit-form-grid-2col">
+                                <label>관리감독자</label><input id="sp-f-desig-supervisor" type="text" placeholder="이름 / 연락처" class="permit-input">
+                                <label>크레인 운전원</label><input id="sp-f-desig-crane" type="text" placeholder="이름 / 연락처" class="permit-input">
+                                <label>신호수</label><input id="sp-f-desig-signal" type="text" placeholder="이름 / 연락처" class="permit-input">
+                                <label>화재감시자</label><input id="sp-f-desig-firewatch" type="text" placeholder="이름 / 연락처" class="permit-input">
+                            </div>
+                        </fieldset>
+
+                        <fieldset class="permit-fieldset">
+                            <legend>9. 안전작업허가서 발행계획</legend>
+                            <textarea id="sp-f-permitplan" rows="2" class="permit-input" style="width:100%;" placeholder="예: 배관 변경 및 계장작업에 대해 안전작업허가서 발행 예정"></textarea>
+                        </fieldset>
+
+                        <div class="flex justify-between items-center pb-2">
+                            <button onclick="spBackToList()" class="border text-[13px] font-bold px-5 py-2.5 rounded-lg hover:bg-slate-50" style="border-color:var(--scm-border);color:#1E293B;background:white;">← 목록으로</button>
+                            <div class="flex gap-2">
+                                <button onclick="spSaveDraft()" class="border text-[13px] font-bold px-5 py-2.5 rounded-lg hover:bg-slate-50" style="border-color:var(--scm-border);color:#1E293B;background:white;">💾 임시저장</button>
+                                <button onclick="spComplete()" class="text-white text-[13px] font-bold px-5 py-2.5 rounded-lg hover:opacity-90" style="background:#059669;">✅ 작성완료 &amp; 다운로드</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
+
 
         <!-- ==============================================
              4. 교육 탭 - 교육 평가 시스템 포함
@@ -4277,6 +4406,7 @@
         function permitBackToMenu() {
             document.getElementById('work-view-permit').classList.add('hidden');
             document.getElementById('work-view-workstd').classList.add('hidden');
+            document.getElementById('work-view-safetyplan').classList.add('hidden');
             document.getElementById('work-view-menu').classList.remove('hidden');
         }
 
@@ -4284,6 +4414,7 @@
             if (context) PERMIT_CONTEXT = context;
             document.getElementById('work-view-menu').classList.add('hidden');
             document.getElementById('work-view-workstd').classList.add('hidden');
+            document.getElementById('work-view-safetyplan').classList.add('hidden');
             document.getElementById('work-view-permit').classList.remove('hidden');
             document.getElementById('permit-window-title').textContent = PERMIT_CONTEXT === 'self' ? '🛠️ 자체작업허가서 관리' : '📋 외주작업허가서 관리';
             permitPopulateDeptFilter();
@@ -4726,7 +4857,22 @@
             return p;
         }
 
+        // 작성완료 시 필수항목(*) 검증 — 신청업체/부서, 성명, 연락처, 작업명, 작업일자, 대상설비, 공사금액(외주만)
+        function permitValidateRequiredForFinalize() {
+            const missing = [];
+            if (!document.getElementById('permit-f-company').value.trim()) missing.push('신청업체/부서');
+            if (!document.getElementById('permit-f-appname').value.trim()) missing.push('성명');
+            if (!document.getElementById('permit-f-contact').value.trim()) missing.push('연락처');
+            if (!document.getElementById('permit-f-workname').value.trim()) missing.push('작업명');
+            if (!document.getElementById('permit-f-workstart').value || !document.getElementById('permit-f-workend').value) missing.push('작업일자');
+            if (!document.getElementById('permit-f-facility').value) missing.push('대상설비');
+            if (PERMIT_CONTEXT !== 'self' && !document.querySelector('input[name="permit-cost"]:checked')) missing.push('공사금액');
+            return missing;
+        }
+
         function permitFinalize() {
+            const missing = permitValidateRequiredForFinalize();
+            if (missing.length) { showToast(`⚠️ 필수 항목(*)을 입력해 주세요: ${missing.join(', ')}`, 'warn'); return; }
             const p = permitToolbarSave();
             if (!p) return;
             const list = permitLoad();
@@ -5301,6 +5447,7 @@
         function workstdShowList() {
             document.getElementById('work-view-menu').classList.add('hidden');
             document.getElementById('work-view-permit').classList.add('hidden');
+            document.getElementById('work-view-safetyplan').classList.add('hidden');
             document.getElementById('work-view-workstd').classList.remove('hidden');
             document.getElementById('workstd-form-area').classList.add('hidden');
             workstdRenderList();
@@ -5353,6 +5500,276 @@
             workstdSaveAll(workstdLoad().filter(x => x.id !== id));
             logActivity('작업표준', '삭제', `작업표준 삭제 (id:${id})`);
             workstdRenderList();
+        }
+
+        // ============================================
+        // 안전관리계획서 작성 (공사업체 제출용, 작업허가서와 연동)
+        // ============================================
+        const SP_STORAGE = 'seahcm_safetyplans_v1';
+        function spLoad() { try { return JSON.parse(localStorage.getItem(SP_STORAGE) || '[]'); } catch (e) { return []; } }
+        function spSaveAll(list) { localStorage.setItem(SP_STORAGE, JSON.stringify(list)); }
+
+        // 동적 표 공용 헬퍼 — 안전관리계획서 안의 표 7개가 전부 이 패턴을 재사용한다.
+        function spAddRow(tbodyId, colCount, values) {
+            const tbody = document.getElementById(tbodyId);
+            const tr = document.createElement('tr');
+            tr.innerHTML = Array.from({ length: colCount }).map((_, i) =>
+                `<td><input type="text" class="permit-input sp-cell" style="width:100%;min-width:90px;" value="${(values && values[i] || '').replace(/"/g, '&quot;')}"></td>`
+            ).join('') + `<td><button class="permit-nav-btn" style="color:#DC2626;" onclick="this.closest('tr').remove()">삭제</button></td>`;
+            tbody.appendChild(tr);
+        }
+        function spFillTable(tbodyId, rows, fields) {
+            const tbody = document.getElementById(tbodyId);
+            tbody.innerHTML = '';
+            const data = rows && rows.length ? rows : [{}];
+            data.forEach(row => spAddRow(tbodyId, fields.length, fields.map(f => row[f] || '')));
+        }
+        function spCollectTable(tbodyId, fields) {
+            return Array.from(document.querySelectorAll(`#${tbodyId} tr`)).map(tr => {
+                const cells = tr.querySelectorAll('.sp-cell');
+                const obj = {};
+                fields.forEach((f, i) => obj[f] = (cells[i]?.value || '').trim());
+                return obj;
+            }).filter(o => Object.values(o).some(v => v));
+        }
+
+        function spShowList() {
+            document.getElementById('work-view-menu').classList.add('hidden');
+            document.getElementById('work-view-permit').classList.add('hidden');
+            document.getElementById('work-view-workstd').classList.add('hidden');
+            document.getElementById('work-view-safetyplan').classList.remove('hidden');
+            document.getElementById('sp-view-list').classList.remove('hidden');
+            document.getElementById('sp-view-form').classList.add('hidden');
+            spRenderList();
+        }
+        function spRenderList() {
+            const list = spLoad().filter(p => IS_VENDOR ? p.createdById === CURRENT_SESSION.id : true).sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+            const area = document.getElementById('sp-list-area');
+            if (!list.length) { area.innerHTML = `<div class="p-8 text-center text-[13px]" style="color:#94A3B8;">작성된 안전관리계획서가 없습니다.</div>`; return; }
+            const permits = permitLoad();
+            area.innerHTML = `<table class="permit-grid-table"><thead><tr><th>작업명</th><th>작성일</th><th>상태</th><th>연동 작업허가서</th><th>-</th></tr></thead><tbody>
+                ${list.map(p => {
+                    const linked = p.linkedPermitId ? permits.find(x => x.id === p.linkedPermitId) : null;
+                    return `<tr>
+                        <td style="text-align:left;font-weight:700;">${p.workName || '(제목없음)'}</td>
+                        <td>${p.date || '-'}</td>
+                        <td style="font-weight:800;color:${p.status === '완료' ? '#059669' : '#CA8A04'};">${p.status || '작성중'}</td>
+                        <td>${linked ? linked.no : (p.linkedPermitId ? '(연동 허가서 삭제됨)' : '-')}</td>
+                        <td>
+                            <button class="permit-nav-btn" onclick="spEditPlan(${p.id})">열기</button>
+                            ${p.status === '완료' ? `<button class="permit-nav-btn" onclick="spDownload(${p.id})">📥 다운로드</button>` : ''}
+                            <button class="permit-nav-btn" style="color:#DC2626;" onclick="spDeletePlan(${p.id})">삭제</button>
+                        </td>
+                    </tr>`;
+                }).join('')}
+                </tbody></table>`;
+        }
+        function spBackToList() { spShowList(); }
+
+        function spPopulateLinkedPermitSelect(selectedId) {
+            const sel = document.getElementById('sp-f-linkedpermit');
+            const mine = permitLoad().filter(p => !p.selfWork && (!IS_VENDOR || p.vendorId === CURRENT_SESSION.id));
+            sel.innerHTML = '<option value="">연동 안 함(따로 다운로드만)</option>' +
+                mine.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)).map(p => `<option value="${p.id}">${p.no} — ${p.workName || '(제목없음)'}</option>`).join('');
+            sel.value = selectedId || '';
+        }
+
+        const SP_TABLE_FIELDS = {
+            'sp-entities-body': ['company', 'process', 'workers', 'supervisor', 'contact'],
+            'sp-schedule-body': ['content', 'dept', 'schedule', 'permitType', 'note'],
+            'sp-performers-body': ['name', 'contact', 'note'],
+            'sp-sop-body': ['step', 'content', 'dept', 'note'],
+            'sp-rateam-body': ['field', 'name', 'position', 'career'],
+            'sp-ratable-body': ['content', 'hazard', 'freq', 'severity', 'risk', 'measure'],
+            'sp-ppe-body': ['item', 'spec', 'qty', 'note'],
+        };
+
+        function spNewPlan() {
+            document.getElementById('sp-f-id').value = '';
+            document.getElementById('sp-f-workname').value = '';
+            document.getElementById('sp-f-date').value = new Date().toISOString().slice(0, 10);
+            document.getElementById('sp-f-workcontent').value = '';
+            document.getElementById('sp-f-schedule-detail').value = '';
+            document.getElementById('sp-f-edu').value = '';
+            document.getElementById('sp-f-permitplan').value = '';
+            document.getElementById('sp-f-period-start').value = '';
+            document.getElementById('sp-f-period-end').value = '';
+            ['supervisor','crane','signal','firewatch'].forEach(k => document.getElementById('sp-f-desig-'+k).value = '');
+            Object.entries(SP_TABLE_FIELDS).forEach(([tbodyId, fields]) => spFillTable(tbodyId, [], fields));
+            spPopulateLinkedPermitSelect();
+            document.getElementById('sp-view-list').classList.add('hidden');
+            document.getElementById('sp-view-form').classList.remove('hidden');
+        }
+
+        function spEditPlan(id) {
+            const p = spLoad().find(x => x.id === id);
+            if (!p) return;
+            document.getElementById('sp-f-id').value = p.id;
+            document.getElementById('sp-f-workname').value = p.workName || '';
+            document.getElementById('sp-f-date').value = p.date || '';
+            document.getElementById('sp-f-workcontent').value = p.workContent || '';
+            document.getElementById('sp-f-schedule-detail').value = p.scheduleDetail || '';
+            document.getElementById('sp-f-edu').value = p.edu || '';
+            document.getElementById('sp-f-permitplan').value = p.permitPlan || '';
+            document.getElementById('sp-f-period-start').value = p.periodStart || '';
+            document.getElementById('sp-f-period-end').value = p.periodEnd || '';
+            document.getElementById('sp-f-desig-supervisor').value = p.desigSupervisor || '';
+            document.getElementById('sp-f-desig-crane').value = p.desigCrane || '';
+            document.getElementById('sp-f-desig-signal').value = p.desigSignal || '';
+            document.getElementById('sp-f-desig-firewatch').value = p.desigFirewatch || '';
+            spFillTable('sp-entities-body', p.workEntities, SP_TABLE_FIELDS['sp-entities-body']);
+            spFillTable('sp-schedule-body', p.workSchedule, SP_TABLE_FIELDS['sp-schedule-body']);
+            spFillTable('sp-performers-body', p.performers, SP_TABLE_FIELDS['sp-performers-body']);
+            spFillTable('sp-sop-body', p.sop, SP_TABLE_FIELDS['sp-sop-body']);
+            spFillTable('sp-rateam-body', p.raTeam, SP_TABLE_FIELDS['sp-rateam-body']);
+            spFillTable('sp-ratable-body', p.raTable, SP_TABLE_FIELDS['sp-ratable-body']);
+            spFillTable('sp-ppe-body', p.ppeList, SP_TABLE_FIELDS['sp-ppe-body']);
+            spPopulateLinkedPermitSelect(p.linkedPermitId);
+            document.getElementById('sp-view-list').classList.add('hidden');
+            document.getElementById('sp-view-form').classList.remove('hidden');
+        }
+
+        function spCollectForm() {
+            const obj = {
+                workName: document.getElementById('sp-f-workname').value.trim(),
+                date: document.getElementById('sp-f-date').value,
+                linkedPermitId: Number(document.getElementById('sp-f-linkedpermit').value) || null,
+                workContent: document.getElementById('sp-f-workcontent').value.trim(),
+                scheduleDetail: document.getElementById('sp-f-schedule-detail').value.trim(),
+                edu: document.getElementById('sp-f-edu').value.trim(),
+                permitPlan: document.getElementById('sp-f-permitplan').value.trim(),
+                periodStart: document.getElementById('sp-f-period-start').value,
+                periodEnd: document.getElementById('sp-f-period-end').value,
+                desigSupervisor: document.getElementById('sp-f-desig-supervisor').value.trim(),
+                desigCrane: document.getElementById('sp-f-desig-crane').value.trim(),
+                desigSignal: document.getElementById('sp-f-desig-signal').value.trim(),
+                desigFirewatch: document.getElementById('sp-f-desig-firewatch').value.trim(),
+            };
+            obj.workEntities = spCollectTable('sp-entities-body', SP_TABLE_FIELDS['sp-entities-body']);
+            obj.workSchedule = spCollectTable('sp-schedule-body', SP_TABLE_FIELDS['sp-schedule-body']);
+            obj.performers = spCollectTable('sp-performers-body', SP_TABLE_FIELDS['sp-performers-body']);
+            obj.sop = spCollectTable('sp-sop-body', SP_TABLE_FIELDS['sp-sop-body']);
+            obj.raTeam = spCollectTable('sp-rateam-body', SP_TABLE_FIELDS['sp-rateam-body']);
+            obj.raTable = spCollectTable('sp-ratable-body', SP_TABLE_FIELDS['sp-ratable-body']);
+            obj.ppeList = spCollectTable('sp-ppe-body', SP_TABLE_FIELDS['sp-ppe-body']);
+            return obj;
+        }
+
+        function spDoSave(status) {
+            const data = spCollectForm();
+            if (!data.workName) { showToast('⚠️ 작업명을 입력해 주세요.', 'warn'); return null; }
+            const idVal = Number(document.getElementById('sp-f-id').value) || null;
+            const list = spLoad();
+            let p = idVal ? list.find(x => x.id === idVal) : null;
+            const isNew = !p;
+            if (isNew) { p = { id: Date.now(), createdAt: Date.now(), createdById: CURRENT_SESSION.id, createdBy: CURRENT_SESSION.name }; list.push(p); }
+            Object.assign(p, data);
+            p.status = status;
+            p.updatedAt = Date.now();
+            if (status === '완료') p.completedAt = Date.now();
+            spSaveAll(list);
+            logActivity('안전관리계획서', isNew ? '등록' : '수정', `"${p.workName}" ${status === '완료' ? '작성완료' : '임시저장'}`);
+            document.getElementById('sp-f-id').value = p.id;
+            return p;
+        }
+
+        function spSaveDraft() {
+            const p = spDoSave('작성중');
+            if (p) showToast('💾 임시저장되었습니다.', 'success');
+        }
+
+        function spComplete() {
+            const p = spDoSave('완료');
+            if (!p) return;
+            // 연동한 작업허가서가 있으면 "안전관리계획서 첨부"를 자동으로 완료 처리
+            if (p.linkedPermitId) {
+                const permits = permitLoad();
+                const permit = permits.find(x => x.id === p.linkedPermitId);
+                if (permit) {
+                    permit.attachments = permit.attachments || {};
+                    permit.attachments.safetyPlan = `안전관리계획서_${p.workName}_${p.date}.pdf`;
+                    permit.history = permit.history || [];
+                    permit.history.push({ action: `안전관리계획서 자동첨부 (${p.workName})`, actorName: CURRENT_SESSION.name, at: Date.now() });
+                    permitSaveAll(permits);
+                    logActivity('작업허가서', '수정', `"${permit.no}" 안전관리계획서 자동첨부 (안전관리계획서 작성 완료 연동)`);
+                }
+            }
+            showToast(p.linkedPermitId ? '✅ 작성완료! 연동된 작업허가서에 자동 첨부되었습니다. 다운로드를 시작합니다.' : '✅ 작성완료! 다운로드를 시작합니다.', 'success');
+            spDownload(p.id);
+            spShowList();
+        }
+
+        function spDeletePlan(id) {
+            if (!confirm('이 안전관리계획서를 삭제하시겠습니까?')) return;
+            spSaveAll(spLoad().filter(x => x.id !== id));
+            logActivity('안전관리계획서', '삭제', `id:${id} 삭제`);
+            spRenderList();
+        }
+
+        // 작성완료된 계획서를 인쇄용 문서로 열어 다운로드(인쇄 대화상자에서 "PDF로 저장")할 수 있게 한다.
+        function spDownload(id) {
+            const p = spLoad().find(x => x.id === id);
+            if (!p) return;
+            const rows = (arr, cols) => (arr && arr.length) ? arr.map(r => `<tr>${cols.map(c => `<td>${r[c] || '-'}</td>`).join('')}</tr>`).join('') : `<tr><td colspan="${cols.length}" style="color:#94A3B8;">작성된 내용 없음</td></tr>`;
+            const html = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>안전관리계획서 - ${p.workName}</title>
+            <style>
+            body { font-family:'Malgun Gothic','Apple Gothic',sans-serif; margin:0; padding:24px; color:#1E293B; font-size:12px; }
+            h1 { font-size:20px; text-align:center; margin:0 0 4px; }
+            h2 { font-size:14px; background:#1B3A6B; color:white; padding:6px 10px; margin:18px 0 8px; border-radius:4px; }
+            .sub { text-align:center; color:#64748B; margin:0 0 20px; }
+            table { width:100%; border-collapse:collapse; margin-bottom:10px; }
+            td, th { border:1px solid #CBD5E1; padding:6px 8px; font-size:11.5px; text-align:left; }
+            th { background:#F1F5F9; font-weight:700; }
+            p.txt { white-space:pre-wrap; border:1px solid #CBD5E1; border-radius:6px; padding:8px 10px; }
+            @media print { @page { margin:14mm; size:A4; } }
+            </style></head><body>
+            <h1>안전관리계획서</h1>
+            <p class="sub">[${p.workName}] · 작성일: ${p.date || '-'}</p>
+
+            <h2>1. 작업개요</h2>
+            <p class="txt">${p.workContent || '-'}</p>
+            <table><thead><tr><th>대상업체</th><th>대상공정</th><th>근로자수</th><th>관리감독자</th><th>연락처</th></tr></thead>
+            <tbody>${rows(p.workEntities, ['company','process','workers','supervisor','contact'])}</tbody></table>
+            <table><thead><tr><th>작업내용</th><th>작업부서</th><th>추진일정</th><th>작업허가서 종류</th><th>비고</th></tr></thead>
+            <tbody>${rows(p.workSchedule, ['content','dept','schedule','permitType','note'])}</tbody></table>
+
+            <h2>2. 작업실시자</h2>
+            <table><thead><tr><th>담당자</th><th>연락처</th><th>비고</th></tr></thead>
+            <tbody>${rows(p.performers, ['name','contact','note'])}</tbody></table>
+
+            <h2>3. 표준작업절차(SOP)</h2>
+            <table><thead><tr><th>단계</th><th>작업내용</th><th>담당부서</th><th>비고</th></tr></thead>
+            <tbody>${rows(p.sop, ['step','content','dept','note'])}</tbody></table>
+
+            <h2>4. 작업일정</h2>
+            <p class="txt">공사기간: ${p.periodStart || '-'} ~ ${p.periodEnd || '-'}\n\n${p.scheduleDetail || '-'}</p>
+
+            <h2>5. 교육계획</h2>
+            <p class="txt">${p.edu || '-'}</p>
+
+            <h2>6. 수시위험성평가</h2>
+            <table><thead><tr><th>분야</th><th>성명</th><th>직급</th><th>경력</th></tr></thead>
+            <tbody>${rows(p.raTeam, ['field','name','position','career'])}</tbody></table>
+            <table><thead><tr><th>작업내용</th><th>유해위험요인</th><th>빈도</th><th>강도</th><th>위험도</th><th>개선대책</th></tr></thead>
+            <tbody>${rows(p.raTable, ['content','hazard','freq','severity','risk','measure'])}</tbody></table>
+
+            <h2>7. 보호구 사용계획</h2>
+            <table><thead><tr><th>물품명</th><th>규격</th><th>수량</th><th>비고</th></tr></thead>
+            <tbody>${rows(p.ppeList, ['item','spec','qty','note'])}</tbody></table>
+
+            <h2>8. 공사 지정현황</h2>
+            <table><tr><th style="width:20%;">관리감독자</th><td>${p.desigSupervisor || '-'}</td></tr>
+            <tr><th>크레인 운전원</th><td>${p.desigCrane || '-'}</td></tr>
+            <tr><th>신호수</th><td>${p.desigSignal || '-'}</td></tr>
+            <tr><th>화재감시자</th><td>${p.desigFirewatch || '-'}</td></tr></table>
+
+            <h2>9. 안전작업허가서 발행계획</h2>
+            <p class="txt">${p.permitPlan || '-'}</p>
+
+            <script>window.onload=()=>setTimeout(()=>window.print(),300);<\/script>
+            </body></html>`;
+            const w = window.open('', '_blank');
+            if (w) { w.document.write(html); w.document.close(); }
         }
 
         // ============================================
