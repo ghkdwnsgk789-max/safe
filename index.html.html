@@ -2406,6 +2406,12 @@
                                     <!-- 산업안전보건관리비 자동계산 (별표1 계상기준표 기준) -->
                                     <div class="mt-3 p-3 rounded" style="background:#EEF3FB;border:1px solid #C7D0E0;">
                                         <p style="font-size:11.5px;font-weight:800;color:#1B3A6B;margin-bottom:8px;">🧮 산업안전보건관리비 자동계산 (「건설업 산업안전보건관리비 계상 및 사용기준」 별표1)</p>
+
+                                        <div class="flex items-center gap-4 text-[12px] mb-2">
+                                            <label class="flex items-center gap-1.5"><input type="radio" name="uf-calc-method" value="lump" checked onchange="permitToggleCalcMethod()"> ① 1식 (원가계산서 없이 총액만 있는 경우)</label>
+                                            <label class="flex items-center gap-1.5"><input type="radio" name="uf-calc-method" value="breakdown" onchange="permitToggleCalcMethod()"> ② 원가계산서 항목별 입력</label>
+                                        </div>
+
                                         <div class="flex items-end gap-2 flex-wrap">
                                             <div>
                                                 <label style="font-size:11px;font-weight:700;color:#475569;display:block;margin-bottom:3px;">공사종류</label>
@@ -2416,18 +2422,42 @@
                                                     <option value="특수건설공사">특수건설공사</option>
                                                 </select>
                                             </div>
-                                            <div>
+
+                                            <!-- ① 1식: 대상액 직접입력 -->
+                                            <div id="uf-lump-row">
                                                 <label style="font-size:11px;font-weight:700;color:#475569;display:block;margin-bottom:3px;">대상액(공사금액, 원)</label>
-                                                <input id="uf-amount" type="number" class="permit-input" style="width:180px;" placeholder="예: 80000000">
+                                                <input id="uf-amount" type="text" inputmode="numeric" class="permit-input" style="width:180px;" placeholder="예: 80,000,000" oninput="permitFormatWon(this)">
                                             </div>
+
                                             <button onclick="permitCalcSafetyBudget()" class="text-white text-[12px] font-bold px-4 py-2 rounded" style="background:#059669;">자동계산 →</button>
                                             <div>
                                                 <label style="font-size:11px;font-weight:700;color:#475569;display:block;margin-bottom:3px;">계상된 안전관리비(원)</label>
-                                                <input id="uf-budgeted" type="number" class="permit-input" style="width:180px;" oninput="permitUsageFormRecalc()">
+                                                <input id="uf-budgeted" type="text" inputmode="numeric" class="permit-input" style="width:180px;" oninput="permitFormatWon(this); permitUsageFormRecalc();">
                                             </div>
                                         </div>
+
+                                        <!-- ② 원가계산서 항목별 입력 -->
+                                        <div id="uf-breakdown-row" class="hidden flex items-end gap-2 flex-wrap mt-2 pt-2" style="border-top:1px dashed #C7D0E0;">
+                                            <div>
+                                                <label style="font-size:11px;font-weight:700;color:#475569;display:block;margin-bottom:3px;">직접재료비(원)</label>
+                                                <input id="uf-mat-direct" type="text" inputmode="numeric" class="permit-input" style="width:150px;" oninput="permitFormatWon(this); permitSumBreakdown();">
+                                            </div>
+                                            <div>
+                                                <label style="font-size:11px;font-weight:700;color:#475569;display:block;margin-bottom:3px;">간접재료비(원)</label>
+                                                <input id="uf-mat-indirect" type="text" inputmode="numeric" class="permit-input" style="width:150px;" oninput="permitFormatWon(this); permitSumBreakdown();">
+                                            </div>
+                                            <div>
+                                                <label style="font-size:11px;font-weight:700;color:#475569;display:block;margin-bottom:3px;">직접노무비(원)</label>
+                                                <input id="uf-labor-direct" type="text" inputmode="numeric" class="permit-input" style="width:150px;" oninput="permitFormatWon(this); permitSumBreakdown();">
+                                            </div>
+                                            <div>
+                                                <label style="font-size:11px;font-weight:700;color:#1B3A6B;display:block;margin-bottom:3px;">대상액 합계(자동, 원)</label>
+                                                <input id="uf-amount-breakdown" type="text" class="permit-input" style="width:170px;background:#F1F5F9;font-weight:800;" readonly>
+                                            </div>
+                                        </div>
+
                                         <p id="uf-calc-note" class="text-[11px] mt-2" style="color:#059669;font-weight:700;"></p>
-                                        <p style="font-size:10px;color:#94A3B8;margin-top:4px;">※ 대상액은 재료비+직접노무비 기준이 원칙이나, 간이 계산을 위해 입력하신 공사금액을 대상액으로 그대로 사용합니다. 정확한 대상액 산정은 계약서를 기준으로 확인해 주세요.</p>
+                                        <p style="font-size:10px;color:#94A3B8;margin-top:4px;">※ ① 1식은 입력하신 공사금액을 그대로 대상액으로 사용합니다. ② 원가계산서가 있는 경우 대상액 = 직접재료비 + 간접재료비 + 직접노무비 로 자동 합산됩니다. 정확한 대상액 산정은 계약서를 기준으로 확인해 주세요.</p>
                                     </div>
                                     <div class="mt-3" style="overflow-x:auto;">
                                         <table class="permit-grid-table" style="min-width:560px;">
@@ -4139,8 +4169,60 @@
         //    permitLoad()/permitSaveAll() 두 함수만 Firestore read/write로 교체하면 됩니다.
         // ============================================
         const PERMIT_STORAGE = 'seahcm_permits_v2';
+        const PERMIT_STORAGE_V1 = 'seahcm_permits_v1'; // 구버전(전자결재 방식) 저장 키 — 아래 1회성 복구 로직에서 사용
         function permitLoad() { try { return JSON.parse(localStorage.getItem(PERMIT_STORAGE) || '[]'); } catch (e) { return []; } }
         function permitSaveAll(list) { localStorage.setItem(PERMIT_STORAGE, JSON.stringify(list)); }
+
+        // ── 구버전 데이터 1회성 복구 ──────────────────────────────
+        // ERP 화면으로 전면 재설계하면서 저장 키를 seahcm_permits_v1 → v2로 바꿨는데, 그 결과
+        // v1으로 저장돼 있던 허가서들이 화면에 안 보이게 됐다. 이 브라우저에 v1 데이터가 남아있고
+        // 아직 v2로 옮긴 적이 없다면, 필드명을 최대한 맞춰서 자동으로 v2로 옮겨준다(최선 매칭, 1회만 실행).
+        function permitMigrateV1IfNeeded() {
+            try {
+                if (localStorage.getItem('seahcm_permits_v1_migrated')) return;
+                const raw = localStorage.getItem(PERMIT_STORAGE_V1);
+                if (!raw) { localStorage.setItem('seahcm_permits_v1_migrated', '1'); return; }
+                const oldList = JSON.parse(raw);
+                if (!Array.isArray(oldList) || !oldList.length) { localStorage.setItem('seahcm_permits_v1_migrated', '1'); return; }
+                const STATUS_MAP = {
+                    draft: { writeStatus: '작성중', approveStatus: '미승인' },
+                    pending_orderer: { writeStatus: '작성완료', approveStatus: '미승인' },
+                    pending_depthead: { writeStatus: '작성완료', approveStatus: '미승인' },
+                    pending_safety: { writeStatus: '작성완료', approveStatus: '미승인' },
+                    approved: { writeStatus: '작성완료', approveStatus: '승인' },
+                    rejected: { writeStatus: '작성완료', approveStatus: '미승인' },
+                };
+                const converted = oldList.map(o => {
+                    const st = STATUS_MAP[o.status] || { writeStatus: '작성중', approveStatus: '미승인' };
+                    return {
+                        id: o.id, no: o.no, createdAt: o.createdAt, updatedAt: o.updatedAt || o.createdAt,
+                        vendorId: o.vendorId, company: o.company || '', appName: o.vendorName || '',
+                        workName: o.workTitle || '', area: o.workLocation || '',
+                        workStart: o.workStart || '', workEnd: o.workEnd || '',
+                        selfWork: false, // 구버전은 자체작업 구분이 없었으므로 외주작업으로 이관
+                        permitTypes: o.hazardTypes || [],
+                        approver1Id: o.ordererId || null, approver1Name: o.ordererName || '', approver1Email: o.ordererEmail || '',
+                        approver2Id: o.deptHeadId || null, approver2Name: o.deptHeadName || '', approver2Email: o.deptHeadEmail || '',
+                        deptApprovedFlag: st.approveStatus === '승인', deptApprovedFlag2: st.approveStatus === '승인',
+                        safetyMgrFlag: st.approveStatus === '승인',
+                        writeStatus: st.writeStatus, approveStatus: st.approveStatus,
+                        history: (o.history || []).map(h => ({ action: `[구버전 이관] ${h.action || ''}`, actorName: h.actorName || '', at: h.at || o.createdAt })),
+                        _migratedFromV1: true,
+                    };
+                });
+                const currentV2 = permitLoad();
+                const mergedIds = new Set(currentV2.map(p => p.id));
+                const toAdd = converted.filter(p => !mergedIds.has(p.id));
+                if (toAdd.length) {
+                    permitSaveAll(currentV2.concat(toAdd));
+                    logActivity('작업허가서', '등록', `구버전(v1) 저장 데이터 ${toAdd.length}건을 새 화면 형식으로 자동 복구`);
+                    setTimeout(() => showToast(`♻️ 예전 형식으로 저장돼 있던 작업허가서 ${toAdd.length}건을 복구했습니다. (일부 항목은 새 서식과 달라 비어있을 수 있습니다)`, 'success'), 800);
+                }
+                localStorage.setItem('seahcm_permits_v1_migrated', '1');
+            } catch (e) { console.warn('[작업허가서] v1 데이터 복구 중 오류:', e); }
+        }
+        // (CURRENT_SESSION 등 이후에 선언되는 전역이 필요하므로, 스크립트 전체 실행이 끝난 뒤 비동기로 1회 실행)
+        setTimeout(permitMigrateV1IfNeeded, 0);
 
         function permitGenerateNo() {
             const ymd = new Date().toISOString().slice(0, 10).replace(/-/g, '');
@@ -4922,18 +5004,23 @@
             document.getElementById('uf-address').value = uf.address || p?.area || '';
             document.getElementById('uf-ceo').value = uf.ceo || '';
             document.getElementById('uf-worktype').value = uf.worktype || '건축공사';
-            document.getElementById('uf-amount').value = uf.amount || '';
+            document.querySelectorAll('input[name="uf-calc-method"]').forEach(r => r.checked = (r.value === (uf.calcMethod || 'lump')));
+            document.getElementById('uf-amount').value = uf.amount ? Number(uf.amount).toLocaleString('ko-KR') : '';
+            document.getElementById('uf-mat-direct').value = uf.matDirect ? Number(uf.matDirect).toLocaleString('ko-KR') : '';
+            document.getElementById('uf-mat-indirect').value = uf.matIndirect ? Number(uf.matIndirect).toLocaleString('ko-KR') : '';
+            document.getElementById('uf-labor-direct').value = uf.laborDirect ? Number(uf.laborDirect).toLocaleString('ko-KR') : '';
+            permitToggleCalcMethod();
             document.getElementById('uf-calc-note').textContent = '';
             document.getElementById('uf-start').value = uf.start || p?.workStart || '';
             document.getElementById('uf-end').value = uf.end || p?.workEnd || '';
             document.getElementById('uf-orderer').value = uf.orderer || '세아씨엠';
             document.getElementById('uf-progress').value = uf.progress || '';
-            document.getElementById('uf-budgeted').value = uf.budgeted || '';
+            document.getElementById('uf-budgeted').value = uf.budgeted ? Number(uf.budgeted).toLocaleString('ko-KR') : '';
             const items = uf.items || BUDGET_ITEM_NAMES.map(name => ({ name, month: 0, cumulative: 0 }));
             document.getElementById('uf-items-body').innerHTML = items.map((it, i) => `
                 <tr><td style="text-align:left;">${it.name}</td>
-                    <td><input type="number" class="permit-input uf-item-month" data-idx="${i}" value="${it.month || 0}" style="width:110px;" oninput="permitUsageFormRecalc()"></td>
-                    <td><input type="number" class="permit-input uf-item-cum" data-idx="${i}" value="${it.cumulative || 0}" style="width:110px;" oninput="permitUsageFormRecalc()"></td>
+                    <td><input type="text" inputmode="numeric" class="permit-input uf-item-month" data-idx="${i}" value="${(it.month || 0).toLocaleString('ko-KR')}" style="width:110px;" oninput="permitFormatWon(this); permitUsageFormRecalc();"></td>
+                    <td><input type="text" inputmode="numeric" class="permit-input uf-item-cum" data-idx="${i}" value="${(it.cumulative || 0).toLocaleString('ko-KR')}" style="width:110px;" oninput="permitFormatWon(this); permitUsageFormRecalc();"></td>
                 </tr>`).join('');
             document.getElementById('permit-usageform-fieldset').dataset.itemNames = JSON.stringify(items.map(it => it.name));
             document.getElementById('permit-usageform-fieldset').classList.remove('hidden');
@@ -4941,12 +5028,37 @@
             document.getElementById('permit-usageform-fieldset').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
         function permitUsageFormHide() { /* 대상 공사가 아니면 permitRenderBudgetInfo가 다시 숨김 처리함 */ permitRenderBudgetInfo(); }
+
+        // 천단위 콤마 표시용 헬퍼 — 입력 중엔 숫자만 걸러서 콤마로 다시 표시하고, 계산 시엔 permitParseWon으로 콤마를 떼어 숫자로 읽는다.
+        function permitFormatWon(el) {
+            const raw = (el.value || '').replace(/[^0-9]/g, '');
+            el.value = raw ? Number(raw).toLocaleString('ko-KR') : '';
+        }
+        function permitParseWon(el) {
+            if (!el) return 0;
+            return Number((el.value || '').replace(/[^0-9]/g, '')) || 0;
+        }
+
+        function permitToggleCalcMethod() {
+            const isBreakdown = document.querySelector('input[name="uf-calc-method"]:checked').value === 'breakdown';
+            document.getElementById('uf-lump-row').classList.toggle('hidden', isBreakdown);
+            document.getElementById('uf-breakdown-row').classList.toggle('hidden', !isBreakdown);
+            if (isBreakdown) permitSumBreakdown();
+        }
+        // 원가계산서 방식: 대상액 = 직접재료비 + 간접재료비 + 직접노무비
+        function permitSumBreakdown() {
+            const sum = permitParseWon(document.getElementById('uf-mat-direct'))
+                + permitParseWon(document.getElementById('uf-mat-indirect'))
+                + permitParseWon(document.getElementById('uf-labor-direct'));
+            document.getElementById('uf-amount-breakdown').value = sum.toLocaleString('ko-KR');
+        }
+
         function permitUsageFormRecalc() {
             let tMonth = 0, tCum = 0;
-            document.querySelectorAll('.uf-item-month').forEach(inp => tMonth += Number(inp.value) || 0);
-            document.querySelectorAll('.uf-item-cum').forEach(inp => tCum += Number(inp.value) || 0);
-            document.getElementById('uf-total-month').textContent = tMonth.toLocaleString();
-            document.getElementById('uf-total-cum').textContent = tCum.toLocaleString();
+            document.querySelectorAll('.uf-item-month').forEach(inp => tMonth += permitParseWon(inp));
+            document.querySelectorAll('.uf-item-cum').forEach(inp => tCum += permitParseWon(inp));
+            document.getElementById('uf-total-month').textContent = tMonth.toLocaleString('ko-KR');
+            document.getElementById('uf-total-cum').textContent = tCum.toLocaleString('ko-KR');
         }
 
         // 「건설업 산업안전보건관리비 계상 및 사용기준」 별표1 — 공사종류 및 규모별 계상기준표
@@ -4961,9 +5073,12 @@
         };
         function permitCalcSafetyBudget() {
             const type = document.getElementById('uf-worktype').value;
-            const amount = Number(document.getElementById('uf-amount').value);
+            const isBreakdown = document.querySelector('input[name="uf-calc-method"]:checked').value === 'breakdown';
+            const amount = isBreakdown
+                ? permitParseWon(document.getElementById('uf-mat-direct')) + permitParseWon(document.getElementById('uf-mat-indirect')) + permitParseWon(document.getElementById('uf-labor-direct'))
+                : permitParseWon(document.getElementById('uf-amount'));
             const noteEl = document.getElementById('uf-calc-note');
-            if (!amount || amount <= 0) { showToast('⚠️ 대상액(공사금액)을 입력해 주세요.', 'warn'); return; }
+            if (!amount || amount <= 0) { showToast(isBreakdown ? '⚠️ 직접재료비·간접재료비·직접노무비를 입력해 주세요.' : '⚠️ 대상액(공사금액)을 입력해 주세요.', 'warn'); return; }
             const t = SAFETY_BUDGET_TABLE[type];
             let result, bracket, rateUsed;
             if (amount < 500000000) {
@@ -4971,38 +5086,44 @@
                 bracket = '5억원 미만'; rateUsed = `${t.r1}%`;
             } else if (amount < 5000000000) {
                 result = amount * t.r2 / 100 + t.base;
-                bracket = '5억원 이상 50억원 미만'; rateUsed = `${t.r2}% + 기초액 ${t.base.toLocaleString()}원`;
+                bracket = '5억원 이상 50억원 미만'; rateUsed = `${t.r2}% + 기초액 ${t.base.toLocaleString('ko-KR')}원`;
             } else {
                 result = amount * t.r3 / 100;
                 bracket = '50억원 이상'; rateUsed = `${t.r3}%`;
             }
             result = Math.round(result);
-            document.getElementById('uf-budgeted').value = result;
-            noteEl.textContent = `✅ 적용: ${type} · 대상액 ${bracket} · 요율 ${rateUsed} → 계상액 ${result.toLocaleString()}원`;
+            document.getElementById('uf-budgeted').value = result.toLocaleString('ko-KR');
+            const methodLabel = isBreakdown ? `원가계산서 합산(직접재료비+간접재료비+직접노무비 = ${amount.toLocaleString('ko-KR')}원)` : `1식 대상액 ${amount.toLocaleString('ko-KR')}원`;
+            noteEl.textContent = `✅ 적용: ${type} · ${methodLabel} · 구간 ${bracket} · 요율 ${rateUsed} → 계상액 ${result.toLocaleString('ko-KR')}원`;
             showToast('🧮 산업안전보건관리비가 자동계산되었습니다. 필요 시 직접 수정도 가능합니다.', 'success');
         }
 
         function permitUsageFormSave() {
             const idVal = Number(document.getElementById('permit-f-id').value) || null;
             if (!idVal) return;
-            const budgeted = Number(document.getElementById('uf-budgeted').value) || 0;
+            const budgeted = permitParseWon(document.getElementById('uf-budgeted'));
             if (!budgeted) { showToast('⚠️ "계상된 안전관리비" 금액을 입력해 주세요.', 'warn'); return; }
             const names = JSON.parse(document.getElementById('permit-usageform-fieldset').dataset.itemNames || '[]');
             const items = names.map((name, i) => ({
                 name,
-                month: Number(document.querySelector(`.uf-item-month[data-idx="${i}"]`)?.value) || 0,
-                cumulative: Number(document.querySelector(`.uf-item-cum[data-idx="${i}"]`)?.value) || 0,
+                month: permitParseWon(document.querySelector(`.uf-item-month[data-idx="${i}"]`)),
+                cumulative: permitParseWon(document.querySelector(`.uf-item-cum[data-idx="${i}"]`)),
             }));
             const list = permitLoad();
             const p = list.find(x => x.id === idVal);
             if (!p) return;
+            const calcMethod = document.querySelector('input[name="uf-calc-method"]:checked').value;
             p.budgetUsageForm = {
                 company: document.getElementById('uf-company').value.trim(),
                 workName: document.getElementById('uf-workname').value.trim(),
                 address: document.getElementById('uf-address').value.trim(),
                 ceo: document.getElementById('uf-ceo').value.trim(),
                 worktype: document.getElementById('uf-worktype').value,
-                amount: document.getElementById('uf-amount').value.trim(),
+                calcMethod,
+                amount: calcMethod === 'breakdown' ? permitParseWon(document.getElementById('uf-amount-breakdown')) : permitParseWon(document.getElementById('uf-amount')),
+                matDirect: permitParseWon(document.getElementById('uf-mat-direct')),
+                matIndirect: permitParseWon(document.getElementById('uf-mat-indirect')),
+                laborDirect: permitParseWon(document.getElementById('uf-labor-direct')),
                 start: document.getElementById('uf-start').value,
                 end: document.getElementById('uf-end').value,
                 orderer: document.getElementById('uf-orderer').value.trim(),
