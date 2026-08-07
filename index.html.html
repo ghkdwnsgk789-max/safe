@@ -318,7 +318,7 @@
         .permit-attach-btn { border:1px solid #C7D0E0; border-radius:4px; padding:3px 8px; cursor:pointer; background:white; font-size:12px; }
         .permit-attach-name { font-size:11px; color:#2563EB; word-break:break-all; }
         .permit-grid-table { border-collapse:collapse; width:100%; min-width:920px; font-size:12px; }
-        .permit-grid-table th { border:1px solid #C7D0E0; background:#EEF1F7; color:#475569; padding:6px 4px; font-weight:700; white-space:nowrap; }
+        .permit-grid-table th { border:1px solid #C7D0E0; background:#DCE4F2; color:#1B3A6B; padding:6px 4px; font-weight:800; white-space:nowrap; }
         .permit-grid-table td { border:1px solid #DCE3EE; padding:5px 4px; text-align:center; color:#1E293B; white-space:nowrap; }
         .permit-grid-table tr:hover td { background:#F5F8FD; cursor:pointer; }
         .permit-grid-table tr.selected td { background:#DCE7FB; }
@@ -2668,7 +2668,7 @@
                     <div id="sp-view-list" class="p-3">
                         <div class="flex items-center justify-between flex-wrap gap-2 mb-2">
                             <p class="text-[12px]" style="color:#64748B;max-width:640px;">항목별로 채우면 완성됩니다. 사진·조직도 등 그림 자료는 제외하고, 실제로 매번 바뀌는 정보(작업내용·인원·절차·위험성평가 등) 위주로만 입력하면 됩니다. "작성완료"를 누르면 문서로 다운로드되고, 연동한 작업허가서의 "안전관리계획서 첨부"가 자동으로 완료 처리됩니다.</p>
-                            <button onclick="spNewPlan()" class="text-white text-[13px] font-bold px-4 py-2.5 rounded-lg hover:opacity-90" style="background:var(--scm-navy);white-space:nowrap;">+ 새 안전관리계획서 작성</button>
+                            <button onclick="spNewPlan()" class="text-white text-[14px] font-black px-5 py-3 rounded-lg hover:opacity-90" style="background:#1D4ED8;white-space:nowrap;box-shadow:0 4px 14px rgba(29,78,216,0.45);">+ 새 안전관리계획서 작성</button>
                         </div>
                         <div id="sp-list-area"></div>
                     </div>
@@ -2710,37 +2710,40 @@
 
                         <fieldset class="permit-fieldset">
                             <legend>3. 표준작업절차 (SOP)</legend>
-                            <p class="text-[10.5px] mb-1" style="color:#2563EB;">ℹ️ 업체 작업 순서에 맞게 단계별로 적어주세요.</p>
+                            <p class="text-[10.5px] mb-1" style="color:#2563EB;">ℹ️ 업체 작업 순서에 맞게 단계별로 적어주세요. 여기 적은 "작업내용"은 아래 4번 수시위험성평가와 5번 작업일정표에 자동으로 반영됩니다.</p>
                             <div style="overflow-x:auto;"><table class="permit-grid-table"><thead><tr><th>단계</th><th>작업내용</th><th>담당부서</th><th>비고</th><th></th></tr></thead><tbody id="sp-sop-body"></tbody></table></div>
-                            <button class="permit-nav-btn mt-1.5" onclick="spAddRow('sp-sop-body',4)">+ 행 추가</button>
+                            <button class="permit-nav-btn mt-1.5" onclick="spAddRow('sp-sop-body',4); spSyncFromSOP();">+ 행 추가</button>
                         </fieldset>
 
                         <fieldset class="permit-fieldset">
-                            <legend>4. 작업일정</legend>
+                            <legend>4. 수시위험성평가</legend>
+                            <p class="text-[10.5px] mb-1" style="color:#2563EB;">ℹ️ 3번 표준작업절차에 적은 작업단계가 자동으로 채워집니다. [🤖 AI 추천]을 누르면 유해위험요인·개선대책 초안이 채워지니 현장에 맞게 검토해서 수정해 주세요. <b>빈도·강도는 자동입력되지 않으니 직접 선택해 주세요.</b></p>
+                            <div style="overflow-x:auto;"><table class="permit-grid-table"><thead>
+                                <tr><th rowspan="2">번호</th><th rowspan="2">작업단계 및 내용</th><th rowspan="2">유해위험요인</th><th colspan="3" style="background:#FEE2E2;color:#991B1B;">현재 위험성</th><th rowspan="2">개선대책</th><th colspan="3" style="background:#DCFCE7;color:#15803D;">개선후 위험성</th><th rowspan="2"></th></tr>
+                                <tr><th style="background:#FEE2E2;color:#991B1B;">빈도</th><th style="background:#FEE2E2;color:#991B1B;">강도</th><th style="background:#FEE2E2;color:#991B1B;">위험성</th><th style="background:#DCFCE7;color:#15803D;">빈도</th><th style="background:#DCFCE7;color:#15803D;">강도</th><th style="background:#DCFCE7;color:#15803D;">위험성</th></tr>
+                                </thead><tbody id="sp-risk-body"></tbody></table></div>
+                            <button class="permit-nav-btn mt-1.5" onclick="spAddBlankRiskRow()">+ 행 추가</button>
+                        </fieldset>
+
+                        <fieldset class="permit-fieldset">
+                            <legend>5. 작업일정</legend>
                             <div class="permit-form-grid-2col">
                                 <label>공사기간</label>
                                 <div class="flex items-center gap-1.5 span-all">
-                                    <input id="sp-f-period-start" type="date" class="permit-input" style="width:150px;">~<input id="sp-f-period-end" type="date" class="permit-input" style="width:150px;">
+                                    <input id="sp-f-period-start" type="date" class="permit-input" style="width:150px;" onchange="spRenderGantt()">~<input id="sp-f-period-end" type="date" class="permit-input" style="width:150px;" onchange="spRenderGantt()">
                                 </div>
                             </div>
-                            <label class="block text-[11.5px] font-bold mt-2 mb-1" style="color:#475569;">세부일정</label>
+                            <p class="text-[10.5px] mt-2 mb-1" style="color:#2563EB;">ℹ️ 공사기간을 입력하면 날짜별 표가 자동 생성됩니다. 구분(작업단계)은 3번 SOP에서 자동으로 가져옵니다. 시작일 칸을 클릭하고 종료일 칸을 클릭하면 그 구간이 칠해집니다 (같은 칸을 두 번 클릭하면 하루만 선택).</p>
+                            <div id="sp-gantt-area" style="overflow-x:auto;"></div>
+                            <button class="permit-nav-btn mt-1.5" onclick="spClearGantt()">전체 지우기</button>
+                            <label class="block text-[11.5px] font-bold mt-3 mb-1" style="color:#475569;">세부일정 (텍스트로 보충 설명이 필요하면)</label>
                             <textarea id="sp-f-schedule-detail" rows="2" class="permit-input" style="width:100%;" placeholder="예: 사전작업(~), 해체작업(~), 조립작업(~), 가동전점검(~)"></textarea>
                         </fieldset>
 
                         <fieldset class="permit-fieldset">
-                            <legend>5. 교육계획</legend>
+                            <legend>6. 교육계획</legend>
                             <p class="text-[10.5px] mb-1" style="color:#2563EB;">ℹ️ 시작 전 안전교육, 공사업체 안전교육, 일일교육 등 실시 계획을 간단히 적어주세요.</p>
-                            <textarea id="sp-f-edu" rows="2" class="permit-input" style="width:100%;"></textarea>
-                        </fieldset>
-
-                        <fieldset class="permit-fieldset">
-                            <legend>6. 수시위험성평가</legend>
-                            <p class="text-[11.5px] font-bold mb-1" style="color:#475569;">평가 담당자</p>
-                            <div style="overflow-x:auto;"><table class="permit-grid-table"><thead><tr><th>분야</th><th>성명</th><th>직급</th><th>경력</th><th></th></tr></thead><tbody id="sp-rateam-body"></tbody></table></div>
-                            <button class="permit-nav-btn mt-1.5" onclick="spAddRow('sp-rateam-body',4)">+ 행 추가</button>
-                            <p class="text-[11.5px] font-bold mt-3 mb-1" style="color:#475569;">위험성평가표 <span style="color:#2563EB;font-weight:600;">(빈도·강도는 1~4 숫자로)</span></p>
-                            <div style="overflow-x:auto;"><table class="permit-grid-table"><thead><tr><th>작업내용</th><th>유해위험요인</th><th>빈도</th><th>강도</th><th>위험도</th><th>개선대책</th><th></th></tr></thead><tbody id="sp-ratable-body"></tbody></table></div>
-                            <button class="permit-nav-btn mt-1.5" onclick="spAddRow('sp-ratable-body',6)">+ 행 추가</button>
+                            <textarea id="sp-f-edu" rows="2" class="permit-input" style="width:100%;" placeholder="예: 시작 전 안전교육(현장개설 前), 공사업체 안전교육(매일), 일일교육(작업 전·후) 실시"></textarea>
                         </fieldset>
 
                         <fieldset class="permit-fieldset">
@@ -5510,11 +5513,20 @@
         function spSaveAll(list) { localStorage.setItem(SP_STORAGE, JSON.stringify(list)); }
 
         // 동적 표 공용 헬퍼 — 안전관리계획서 안의 표 7개가 전부 이 패턴을 재사용한다.
+        // 표별 예시(placeholder) — 원본 안전관리계획서 샘플의 실제 기재 사례를 참고해 만들었다.
+        const SP_PLACEHOLDERS = {
+            'sp-entities-body': ['예: OO건설(주)', '예: OO라인', '예: 5명', '예: 홍길동', '예: 010-1234-5678'],
+            'sp-schedule-body': ['예: 배관 교체', '예: 설비팀', '예: 12.15~12.20', '예: 화기, 밀폐공간', ''],
+            'sp-performers-body': ['예: 김철수(현장소장)', '예: 010-0000-0000', ''],
+            'sp-sop-body': ['예: 1단계', '예: 구역 이동', '예: 설비팀', ''],
+            'sp-ppe-body': ['예: 화학물질보호복', '예: 4형식', '예: 10', ''],
+        };
         function spAddRow(tbodyId, colCount, values) {
             const tbody = document.getElementById(tbodyId);
             const tr = document.createElement('tr');
+            const ph = SP_PLACEHOLDERS[tbodyId] || [];
             tr.innerHTML = Array.from({ length: colCount }).map((_, i) =>
-                `<td><input type="text" class="permit-input sp-cell" style="width:100%;min-width:90px;" value="${(values && values[i] || '').replace(/"/g, '&quot;')}"></td>`
+                `<td><input type="text" class="permit-input sp-cell" style="width:100%;min-width:90px;" placeholder="${(ph[i] || '').replace(/"/g, '&quot;')}" value="${(values && values[i] || '').replace(/"/g, '&quot;')}"></td>`
             ).join('') + `<td><button class="permit-nav-btn" style="color:#DC2626;" onclick="this.closest('tr').remove()">삭제</button></td>`;
             tbody.appendChild(tr);
         }
@@ -5532,6 +5544,10 @@
                 return obj;
             }).filter(o => Object.values(o).some(v => v));
         }
+        // SOP(3번) 입력칸에서 포커스가 빠질 때마다(어느 칸이든) 수시위험성평가·작업일정표를 자동 동기화
+        document.addEventListener('focusout', function (e) {
+            if (e.target && e.target.closest && e.target.closest('#sp-sop-body')) spSyncFromSOP();
+        });
 
         function spShowList() {
             document.getElementById('work-view-menu').classList.add('hidden');
@@ -5579,10 +5595,174 @@
             'sp-schedule-body': ['content', 'dept', 'schedule', 'permitType', 'note'],
             'sp-performers-body': ['name', 'contact', 'note'],
             'sp-sop-body': ['step', 'content', 'dept', 'note'],
-            'sp-rateam-body': ['field', 'name', 'position', 'career'],
-            'sp-ratable-body': ['content', 'hazard', 'freq', 'severity', 'risk', 'measure'],
             'sp-ppe-body': ['item', 'spec', 'qty', 'note'],
         };
+
+        // ── 4. 수시위험성평가 — SOP 작업내용과 자동 연동 + AI 추천(사내 위험성평가 AI 지식베이스 재사용) ──
+        function spCollectRiskTable() {
+            return Array.from(document.querySelectorAll('#sp-risk-body tr')).map(tr => ({
+                content: tr.querySelector('.sp-risk-content')?.value.trim() || '',
+                hazard: tr.querySelector('.sp-risk-hazard')?.value.trim() || '',
+                freq: Number(tr.querySelector('.sp-risk-freq')?.value) || 3,
+                sev: Number(tr.querySelector('.sp-risk-sev')?.value) || 3,
+                measure: tr.querySelector('.sp-risk-measure')?.value.trim() || '',
+                afterFreq: Number(tr.querySelector('.sp-risk-after-freq')?.value) || 3,
+                afterSev: Number(tr.querySelector('.sp-risk-after-sev')?.value) || 3,
+            })).filter(r => r.content || r.hazard || r.measure);
+        }
+        function spRenderRiskTable(rows) {
+            const tbody = document.getElementById('sp-risk-body');
+            const data = rows && rows.length ? rows : [];
+            const freqOpts = (val) => [5,4,3,2,1].map(v => `<option value="${v}" ${val==v?'selected':''}>${v}</option>`).join('');
+            const sevOpts = (val) => [4,3,2,1].map(v => `<option value="${v}" ${val==v?'selected':''}>${v}</option>`).join('');
+            tbody.innerHTML = data.map((r, i) => `<tr>
+                <td>${i + 1}</td>
+                <td><input type="text" class="permit-input sp-risk-content" style="width:100%;min-width:110px;" value="${(r.content || '').replace(/"/g, '&quot;')}" placeholder="예: 구역 이동" onblur="spRenderGantt()"></td>
+                <td>
+                    <input type="text" class="permit-input sp-risk-hazard" style="width:100%;min-width:150px;margin-bottom:4px;" value="${(r.hazard || '').replace(/"/g, '&quot;')}" placeholder="예: 이동 중 넘어짐·부딪힘">
+                    <button type="button" class="permit-nav-btn" style="width:100%;background:#4338CA;color:white;border-color:#4338CA;" onclick="spAiSuggestRow(this)">🤖 AI 추천</button>
+                </td>
+                <td><select class="permit-input sp-risk-freq" onchange="spUpdateRiskScore(this)">${freqOpts(r.freq || 3)}</select></td>
+                <td><select class="permit-input sp-risk-sev" onchange="spUpdateRiskScore(this)">${sevOpts(r.sev || 3)}</select></td>
+                <td><span class="sp-risk-score" style="display:inline-block;min-width:26px;padding:3px 8px;border-radius:6px;font-weight:800;"></span></td>
+                <td><input type="text" class="permit-input sp-risk-measure" style="width:100%;min-width:150px;" value="${(r.measure || '').replace(/"/g, '&quot;')}" placeholder="예: 통로 확보, 안전화 착용"></td>
+                <td><select class="permit-input sp-risk-after-freq" onchange="spUpdateRiskScore(this)">${freqOpts(r.afterFreq || 2)}</select></td>
+                <td><select class="permit-input sp-risk-after-sev" onchange="spUpdateRiskScore(this)">${sevOpts(r.afterSev || 2)}</select></td>
+                <td><span class="sp-risk-after-score" style="display:inline-block;min-width:26px;padding:3px 8px;border-radius:6px;font-weight:800;"></span></td>
+                <td><button class="permit-nav-btn" style="color:#DC2626;" onclick="this.closest('tr').remove(); spRenumberRiskRows();">삭제</button></td>
+            </tr>`).join('');
+            tbody.querySelectorAll('.sp-risk-freq').forEach(el => spUpdateRiskScore(el));
+        }
+        function spRenumberRiskRows() {
+            document.querySelectorAll('#sp-risk-body tr').forEach((tr, i) => { tr.children[0].textContent = i + 1; });
+        }
+        // 현재위험성/개선후위험성 배지를 갱신하고, 개선후 위험성이 현재보다 낮아지지 않으면 경고한다.
+        function spUpdateRiskScore(el) {
+            const tr = el.closest('tr');
+            const freq = Number(tr.querySelector('.sp-risk-freq').value);
+            const sev = Number(tr.querySelector('.sp-risk-sev').value);
+            const score = freq * sev;
+            const g = assessGrade(score);
+            const badge = tr.querySelector('.sp-risk-score');
+            badge.textContent = score;
+            badge.style.background = g.bg;
+            badge.style.color = g.color;
+
+            const afterFreq = Number(tr.querySelector('.sp-risk-after-freq').value);
+            const afterSev = Number(tr.querySelector('.sp-risk-after-sev').value);
+            const afterScore = afterFreq * afterSev;
+            const ag = assessGrade(afterScore);
+            const afterBadge = tr.querySelector('.sp-risk-after-score');
+            afterBadge.textContent = afterScore;
+
+            const isTriggeringChange = el.classList.contains('sp-risk-after-freq') || el.classList.contains('sp-risk-after-sev') || el.classList.contains('sp-risk-freq') || el.classList.contains('sp-risk-sev');
+            if (afterScore >= score) {
+                afterBadge.style.background = '#FEE2E2';
+                afterBadge.style.color = '#DC2626';
+                afterBadge.style.outline = '2px solid #DC2626';
+                if (isTriggeringChange) showToast('⚠️ 개선후 위험성이 현재안전조치의 위험성보다 낮아야 합니다. 개선대책이나 빈도·강도를 다시 검토해 주세요.', 'warn');
+            } else {
+                afterBadge.style.background = ag.bg;
+                afterBadge.style.color = ag.color;
+                afterBadge.style.outline = '';
+            }
+        }
+        function spAiSuggestRow(btn) {
+            const tr = btn.closest('tr');
+            const contentInput = tr.querySelector('.sp-risk-content');
+            const content = contentInput.value.trim();
+            if (!content) { showToast('⚠️ 작업단계 및 내용을 먼저 입력해 주세요.', 'warn'); contentInput.focus(); return; }
+            const result = raAiFindMatch(content); // 사내 위험성평가 AI 지식베이스 그대로 재사용
+            tr.querySelector('.sp-risk-hazard').value = result.hazard;
+            tr.querySelector('.sp-risk-measure').value = result.reduction;
+            showToast(result.matched ? '🤖 AI 추천 문구가 입력되었습니다. 현장 여건에 맞게 검토 후 사용해 주세요.' : '🤖 일치하는 항목이 없어 기본 가이드 문구를 입력했습니다. 현장에 맞게 직접 수정해 주세요.', result.matched ? 'success' : 'warn');
+        }
+        function spAddBlankRiskRow() {
+            const rows = spCollectRiskTable();
+            rows.push({ content: '', hazard: '', freq: 3, sev: 3, measure: '', afterFreq: 2, afterSev: 2 });
+            spRenderRiskTable(rows);
+        }
+        // 3번 SOP의 "작업내용" 열이 바뀔 때마다 호출 — 4번 위험성평가표와 5번 작업일정표의 "구분" 행을 맞춰준다.
+        function spSyncFromSOP() {
+            const sopContents = Array.from(document.querySelectorAll('#sp-sop-body tr')).map(tr => {
+                const cells = tr.querySelectorAll('.sp-cell');
+                return (cells[1]?.value || '').trim(); // SP_TABLE_FIELDS['sp-sop-body'] = ['step','content','dept','note']
+            }).filter(v => v);
+            const existing = spCollectRiskTable();
+            const existingMap = {};
+            existing.forEach(r => { if (r.content) existingMap[r.content] = r; });
+            const newRows = sopContents.map(c => existingMap[c] || { content: c, hazard: '', freq: 3, sev: 3, measure: '', afterFreq: 2, afterSev: 2 });
+            existing.forEach(r => { if (r.content && !sopContents.includes(r.content)) newRows.push(r); }); // SOP에서 빠진 것도 데이터 보존 위해 뒤에 유지
+            spRenderRiskTable(newRows);
+            spRenderGantt();
+        }
+
+        // ── 5. 작업일정 — 공사기간 × SOP 구분으로 자동 생성되는 달력, 클릭 2번으로 구간 색칠 ──
+        let SP_GANTT_SELECTIONS = {};
+        let SP_GANTT_PENDING = null;
+        function spRenderGantt() {
+            const area = document.getElementById('sp-gantt-area');
+            if (!area) return;
+            const start = document.getElementById('sp-f-period-start').value;
+            const end = document.getElementById('sp-f-period-end').value;
+            const tasks = Array.from(document.querySelectorAll('#sp-sop-body tr')).map(tr => (tr.querySelectorAll('.sp-cell')[1]?.value || '').trim()).filter(v => v);
+            if (!start || !end || !tasks.length) {
+                area.innerHTML = `<div class="p-4 text-center text-[12px]" style="color:#94A3B8;border:1px solid #DCE3EE;border-radius:6px;">공사기간과 3번 표준작업절차(SOP)를 먼저 입력하면 일정표가 자동으로 만들어집니다.</div>`;
+                return;
+            }
+            const dates = [];
+            let d = new Date(start + 'T00:00:00');
+            const endD = new Date(end + 'T00:00:00');
+            while (d <= endD && dates.length <= 92) { dates.push(d.toISOString().slice(0, 10)); d.setDate(d.getDate() + 1); }
+            if (d <= endD) { area.innerHTML = `<div class="p-4 text-center text-[12px]" style="color:#DC2626;">공사기간이 너무 깁니다(최대 92일). 기간을 나눠서 입력해 주세요.</div>`; return; }
+            const monthGroups = [];
+            dates.forEach(ds => {
+                const m = ds.slice(0, 7);
+                let g = monthGroups.find(x => x.month === m);
+                if (!g) { g = { month: m, days: [] }; monthGroups.push(g); }
+                g.days.push(ds);
+            });
+            area.innerHTML = `<table class="permit-grid-table" style="min-width:${120 + dates.length * 28}px;"><thead>
+                <tr><th rowspan="2">구분</th>${monthGroups.map(g => `<th colspan="${g.days.length}">${Number(g.month.slice(5, 7))}월</th>`).join('')}</tr>
+                <tr>${dates.map(ds => `<th style="min-width:24px;">${Number(ds.slice(8, 10))}</th>`).join('')}</tr>
+                </thead><tbody>
+                ${tasks.map(task => `<tr>
+                    <td style="text-align:left;font-weight:700;white-space:nowrap;">${task}</td>
+                    ${dates.map(ds => {
+                        const active = (SP_GANTT_SELECTIONS[task] || []).includes(ds);
+                        return `<td class="sp-gantt-cell" data-task="${task.replace(/"/g, '&quot;')}" data-date="${ds}" onclick="spGanttCellClick(this)" style="cursor:pointer;background:${active ? '#64748B' : 'white'};min-width:24px;height:26px;"></td>`;
+                    }).join('')}
+                </tr>`).join('')}
+                </tbody></table>`;
+            SP_GANTT_PENDING = null;
+        }
+        function spGanttCellClick(td) {
+            const task = td.dataset.task, date = td.dataset.date;
+            if (!SP_GANTT_PENDING || SP_GANTT_PENDING.task !== task) {
+                // 이전에 다른 칸을 눌러놓은 상태였다면 표시 해제
+                document.querySelectorAll('.sp-gantt-cell').forEach(c => c.style.outline = '');
+                SP_GANTT_PENDING = { task, date };
+                td.style.outline = '2px solid #1B3A6B';
+                showToast('시작일 선택됨 — 종료일을 클릭해 주세요 (같은 칸을 다시 누르면 하루만 선택됩니다)', 'success');
+                return;
+            }
+            const a = SP_GANTT_PENDING.date <= date ? SP_GANTT_PENDING.date : date;
+            const b = SP_GANTT_PENDING.date <= date ? date : SP_GANTT_PENDING.date;
+            SP_GANTT_SELECTIONS[task] = SP_GANTT_SELECTIONS[task] || [];
+            document.querySelectorAll(`.sp-gantt-cell[data-task="${CSS.escape(task)}"]`).forEach(c => {
+                if (c.dataset.date >= a && c.dataset.date <= b) {
+                    if (!SP_GANTT_SELECTIONS[task].includes(c.dataset.date)) SP_GANTT_SELECTIONS[task].push(c.dataset.date);
+                    c.style.background = '#64748B';
+                }
+            });
+            document.querySelectorAll('.sp-gantt-cell').forEach(c => c.style.outline = '');
+            SP_GANTT_PENDING = null;
+        }
+        function spClearGantt() {
+            if (!confirm('작업일정표에 칠해둔 구간을 전부 지우시겠습니까?')) return;
+            SP_GANTT_SELECTIONS = {};
+            spRenderGantt();
+        }
 
         function spNewPlan() {
             document.getElementById('sp-f-id').value = '';
@@ -5596,6 +5776,9 @@
             document.getElementById('sp-f-period-end').value = '';
             ['supervisor','crane','signal','firewatch'].forEach(k => document.getElementById('sp-f-desig-'+k).value = '');
             Object.entries(SP_TABLE_FIELDS).forEach(([tbodyId, fields]) => spFillTable(tbodyId, [], fields));
+            spRenderRiskTable([]);
+            SP_GANTT_SELECTIONS = {};
+            spRenderGantt();
             spPopulateLinkedPermitSelect();
             document.getElementById('sp-view-list').classList.add('hidden');
             document.getElementById('sp-view-form').classList.remove('hidden');
@@ -5621,9 +5804,10 @@
             spFillTable('sp-schedule-body', p.workSchedule, SP_TABLE_FIELDS['sp-schedule-body']);
             spFillTable('sp-performers-body', p.performers, SP_TABLE_FIELDS['sp-performers-body']);
             spFillTable('sp-sop-body', p.sop, SP_TABLE_FIELDS['sp-sop-body']);
-            spFillTable('sp-rateam-body', p.raTeam, SP_TABLE_FIELDS['sp-rateam-body']);
-            spFillTable('sp-ratable-body', p.raTable, SP_TABLE_FIELDS['sp-ratable-body']);
             spFillTable('sp-ppe-body', p.ppeList, SP_TABLE_FIELDS['sp-ppe-body']);
+            spRenderRiskTable(p.raTable || []);
+            SP_GANTT_SELECTIONS = p.ganttSelections ? JSON.parse(JSON.stringify(p.ganttSelections)) : {};
+            spRenderGantt();
             spPopulateLinkedPermitSelect(p.linkedPermitId);
             document.getElementById('sp-view-list').classList.add('hidden');
             document.getElementById('sp-view-form').classList.remove('hidden');
@@ -5644,13 +5828,13 @@
                 desigCrane: document.getElementById('sp-f-desig-crane').value.trim(),
                 desigSignal: document.getElementById('sp-f-desig-signal').value.trim(),
                 desigFirewatch: document.getElementById('sp-f-desig-firewatch').value.trim(),
+                ganttSelections: SP_GANTT_SELECTIONS,
             };
             obj.workEntities = spCollectTable('sp-entities-body', SP_TABLE_FIELDS['sp-entities-body']);
             obj.workSchedule = spCollectTable('sp-schedule-body', SP_TABLE_FIELDS['sp-schedule-body']);
             obj.performers = spCollectTable('sp-performers-body', SP_TABLE_FIELDS['sp-performers-body']);
             obj.sop = spCollectTable('sp-sop-body', SP_TABLE_FIELDS['sp-sop-body']);
-            obj.raTeam = spCollectTable('sp-rateam-body', SP_TABLE_FIELDS['sp-rateam-body']);
-            obj.raTable = spCollectTable('sp-ratable-body', SP_TABLE_FIELDS['sp-ratable-body']);
+            obj.raTable = spCollectRiskTable();
             obj.ppeList = spCollectTable('sp-ppe-body', SP_TABLE_FIELDS['sp-ppe-body']);
             return obj;
         }
@@ -5711,6 +5895,17 @@
             const p = spLoad().find(x => x.id === id);
             if (!p) return;
             const rows = (arr, cols) => (arr && arr.length) ? arr.map(r => `<tr>${cols.map(c => `<td>${r[c] || '-'}</td>`).join('')}</tr>`).join('') : `<tr><td colspan="${cols.length}" style="color:#94A3B8;">작성된 내용 없음</td></tr>`;
+            const riskRows = (p.raTable && p.raTable.length) ? p.raTable.map((r, i) => `<tr><td>${i+1}</td><td>${r.content||'-'}</td><td>${r.hazard||'-'}</td><td>${r.freq||'-'}</td><td>${r.sev||'-'}</td><td>${(r.freq||0)*(r.sev||0)}</td><td>${r.measure||'-'}</td><td>${r.afterFreq||'-'}</td><td>${r.afterSev||'-'}</td><td>${(r.afterFreq||0)*(r.afterSev||0)}</td></tr>`).join('') : `<tr><td colspan="10" style="color:#94A3B8;">작성된 내용 없음</td></tr>`;
+            // 작업일정(간트) — 구분별로 어느 날짜가 색칠됐는지 텍스트로 요약해서 출력물에 담는다
+            const ganttSummary = (() => {
+                const tasks = Object.keys(p.ganttSelections || {});
+                if (!tasks.length) return `<tr><td colspan="2" style="color:#94A3B8;">작성된 내용 없음</td></tr>`;
+                return tasks.map(t => {
+                    const ds = (p.ganttSelections[t] || []).slice().sort();
+                    const label = ds.length ? `${ds[0]} ~ ${ds[ds.length - 1]} (${ds.length}일)` : '-';
+                    return `<tr><td>${t}</td><td>${label}</td></tr>`;
+                }).join('');
+            })();
             const html = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>안전관리계획서 - ${p.workName}</title>
             <style>
             body { font-family:'Malgun Gothic','Apple Gothic',sans-serif; margin:0; padding:24px; color:#1E293B; font-size:12px; }
@@ -5741,17 +5936,16 @@
             <table><thead><tr><th>단계</th><th>작업내용</th><th>담당부서</th><th>비고</th></tr></thead>
             <tbody>${rows(p.sop, ['step','content','dept','note'])}</tbody></table>
 
-            <h2>4. 작업일정</h2>
+            <h2>4. 수시위험성평가</h2>
+            <table><thead><tr><th>번호</th><th>작업단계 및 내용</th><th>유해위험요인</th><th>빈도</th><th>강도</th><th>위험성</th><th>개선대책</th><th>개선후빈도</th><th>개선후강도</th><th>개선후위험성</th></tr></thead>
+            <tbody>${riskRows}</tbody></table>
+
+            <h2>5. 작업일정</h2>
             <p class="txt">공사기간: ${p.periodStart || '-'} ~ ${p.periodEnd || '-'}\n\n${p.scheduleDetail || '-'}</p>
+            <table><thead><tr><th>구분</th><th>진행기간</th></tr></thead><tbody>${ganttSummary}</tbody></table>
 
-            <h2>5. 교육계획</h2>
+            <h2>6. 교육계획</h2>
             <p class="txt">${p.edu || '-'}</p>
-
-            <h2>6. 수시위험성평가</h2>
-            <table><thead><tr><th>분야</th><th>성명</th><th>직급</th><th>경력</th></tr></thead>
-            <tbody>${rows(p.raTeam, ['field','name','position','career'])}</tbody></table>
-            <table><thead><tr><th>작업내용</th><th>유해위험요인</th><th>빈도</th><th>강도</th><th>위험도</th><th>개선대책</th></tr></thead>
-            <tbody>${rows(p.raTable, ['content','hazard','freq','severity','risk','measure'])}</tbody></table>
 
             <h2>7. 보호구 사용계획</h2>
             <table><thead><tr><th>물품명</th><th>규격</th><th>수량</th><th>비고</th></tr></thead>
