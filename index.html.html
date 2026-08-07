@@ -302,7 +302,7 @@
         .permit-toolbar-btn:hover { background:#E8EDF6; }
         .permit-filter-label { font-weight:700; color:#475569; white-space:nowrap; }
         .permit-filter-input { border:1px solid #C7D0E0; border-radius:4px; padding:3px 6px; font-size:12px; background:white; color:#1E293B; }
-        .permit-subtab-btn { font-size:13px; font-weight:800; color:#94A3B8; background:none; border:none; padding:8px 16px; cursor:pointer; border-bottom:3px solid transparent; }
+        .permit-subtab-btn { font-size:13px; font-weight:800; color:#64748B; background:none; border:none; padding:8px 16px; cursor:pointer; border-bottom:3px solid transparent; }
         .permit-subtab-btn.active { color:#1B3A6B; border-bottom-color:#1B3A6B; }
         .permit-nav-btn { font-size:13px; background:white; border:1px solid #C7D0E0; border-radius:4px; padding:3px 8px; cursor:pointer; }
         .permit-nav-btn:hover { background:#E8EDF6; }
@@ -310,6 +310,9 @@
         .permit-fieldset legend { font-size:12px; font-weight:800; color:#1B3A6B; padding:0 6px; }
         .permit-form-grid { display:grid; grid-template-columns:110px 1fr; gap:8px 10px; align-items:center; font-size:12.5px; }
         .permit-form-grid label { font-weight:700; color:#475569; }
+        .permit-form-grid-2col { display:grid; grid-template-columns:90px 1fr 90px 1fr; gap:8px 10px; align-items:center; font-size:12.5px; }
+        .permit-form-grid-2col label { font-weight:700; color:#475569; }
+        .permit-form-grid-2col .span-all { grid-column:2 / 5; }
         .permit-input { border:1px solid #C7D0E0; border-radius:4px; padding:5px 8px; font-size:12.5px; width:100%; background:white; color:#1E293B; }
         .permit-attach-btn { border:1px solid #C7D0E0; border-radius:4px; padding:3px 8px; cursor:pointer; background:white; font-size:12px; }
         .permit-attach-name { font-size:11px; color:#2563EB; word-break:break-all; }
@@ -2259,7 +2262,7 @@
                  작업허가서 모듈 — 기존 ERP "안전작업 허가서 관리" 화면 골격 그대로 재현
                  ============================================ -->
             <div id="work-view-permit" class="hidden">
-                <div class="scm-card p-0 overflow-hidden" style="border-color:#B9C3D6;">
+                <div class="scm-card p-0 overflow-hidden" style="border-color:#B9C3D6;background:#F4F6FB;">
 
                     <!-- 창 제목 + 최상단 툴바 -->
                     <div class="flex items-center justify-between flex-wrap gap-2 px-3 py-2" style="background:#EEF1F7;border-bottom:1px solid #C7D0E0;">
@@ -2322,7 +2325,7 @@
                             <button onclick="permitCreateAndOpenNew()" class="permit-nav-btn" style="color:#059669;" title="신규">➕</button>
                             <button onclick="permitDeleteSelected()" class="permit-nav-btn" style="color:#DC2626;" title="삭제">➖</button>
                             <button onclick="permitRenderGrid()" class="permit-nav-btn" title="새로고침">🔄</button>
-                            <span id="permit-nav-count" class="ml-2 font-bold" style="color:var(--scm-subtext);">0 / 0 행</span>
+                            <span id="permit-nav-count" class="ml-2 font-bold" style="color:#64748B;">0 / 0 행</span>
                         </div>
                         <div id="permit-grid-area" style="overflow-x:auto;border:1px solid #C7D0E0;"></div>
                     </div>
@@ -2336,7 +2339,7 @@
                                 <!-- 기본정보 -->
                                 <fieldset class="permit-fieldset">
                                     <legend>기본정보</legend>
-                                    <div class="permit-form-grid">
+                                    <div class="permit-form-grid-2col">
                                         <label>허가번호</label><input id="permit-f-no" type="text" readonly class="permit-input" style="background:#F1F5F9;">
                                         <label>발급일자</label><input id="permit-f-issuedate" type="date" class="permit-input">
                                         <label>신청업체/부서</label><input id="permit-f-company" type="text" class="permit-input">
@@ -2349,14 +2352,14 @@
                                 <!-- 작업정보 -->
                                 <fieldset class="permit-fieldset">
                                     <legend>작업정보</legend>
-                                    <div class="permit-form-grid">
-                                        <label>작업명 <span style="color:#DC2626;">*</span></label><input id="permit-f-workname" type="text" class="permit-input">
+                                    <div class="permit-form-grid-2col">
+                                        <label>작업명 <span style="color:#DC2626;">*</span></label>
+                                        <input id="permit-f-workname" type="text" class="permit-input span-all">
                                         <label>작업일자</label>
-                                        <div class="flex items-center gap-1.5">
+                                        <div class="flex items-center gap-1.5 span-all">
                                             <input id="permit-f-workstart" type="date" class="permit-input" style="width:130px;" onchange="permitRenderBudgetInfo()">
                                             <span>~</span>
                                             <input id="permit-f-workend" type="date" class="permit-input" style="width:130px;" onchange="permitRenderBudgetInfo()">
-                                            <label class="flex items-center gap-1 ml-3 text-[12px]" style="color:var(--scm-subtext);"><input id="permit-f-selfwork" type="checkbox" disabled style="accent-color:#94A3B8;"> 자체작업여부 <span id="permit-selfwork-badge" style="font-weight:800;color:var(--scm-navy);"></span></label>
                                         </div>
                                         <label>작업지역</label><input id="permit-f-area" type="text" class="permit-input">
                                         <label>대상설비</label>
@@ -2370,7 +2373,7 @@
                                         </select>
                                         <div id="permit-costtier-row" class="contents">
                                         <label>공사금액</label>
-                                        <div class="flex items-center gap-3 text-[12px]">
+                                        <div class="flex items-center gap-3 text-[12px] span-all">
                                             <label class="flex items-center gap-1"><input type="radio" name="permit-cost" value="1억이상" onchange="permitRenderBudgetInfo()"> 1억이상</label>
                                             <label class="flex items-center gap-1"><input type="radio" name="permit-cost" value="2천만원이상" onchange="permitRenderBudgetInfo()"> 2천만원 이상 1억미만</label>
                                             <label class="flex items-center gap-1"><input type="radio" name="permit-cost" value="2천만원미만" onchange="permitRenderBudgetInfo()"> 2천만원 미만 공사</label>
@@ -2418,9 +2421,7 @@
                                 <!-- 장치 및 장비 -->
                                 <fieldset class="permit-fieldset">
                                     <legend>장치 및 장비</legend>
-                                    <div class="permit-form-grid">
-                                        <label>장치번호</label><input id="permit-f-devno" type="text" class="permit-input">
-                                        <label>장치명</label><input id="permit-f-devname" type="text" class="permit-input">
+                                    <div class="permit-form-grid-2col">
                                         <label>투입장비</label><input id="permit-f-equip" type="text" class="permit-input">
                                         <label>장비구분</label>
                                         <div class="flex items-center gap-3 text-[12px]">
@@ -2531,24 +2532,24 @@
                     <input type="hidden" id="workstd-f-id">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-[12px] font-bold mb-1" style="color:var(--scm-navy);">표준명 <span style="color:#DC2626;">*</span></label>
+                            <label class="block text-[12px] font-bold mb-1" style="color:var(--scm-text);">표준명 <span style="color:#F87171;">*</span></label>
                             <input id="workstd-f-name" type="text" placeholder="예: CRM 온도/압력 일상점검" class="w-full border rounded-lg px-3 py-2 text-[13px]" style="border-color:var(--scm-border);">
                         </div>
                         <div>
-                            <label class="block text-[12px] font-bold mb-1" style="color:var(--scm-navy);">적용 설비/작업</label>
+                            <label class="block text-[12px] font-bold mb-1" style="color:var(--scm-text);">적용 설비/작업</label>
                             <input id="workstd-f-facility" type="text" placeholder="예: CRM 바스켓 필터" class="w-full border rounded-lg px-3 py-2 text-[13px]" style="border-color:var(--scm-border);">
                         </div>
                     </div>
                     <div>
-                        <label class="block text-[12px] font-bold mb-1" style="color:var(--scm-navy);">위험요인</label>
+                        <label class="block text-[12px] font-bold mb-1" style="color:var(--scm-text);">위험요인</label>
                         <textarea id="workstd-f-hazards" rows="2" class="w-full border rounded-lg px-3 py-2 text-[13px] resize-none" style="border-color:var(--scm-border);"></textarea>
                     </div>
                     <div>
-                        <label class="block text-[12px] font-bold mb-1" style="color:var(--scm-navy);">안전조치사항</label>
+                        <label class="block text-[12px] font-bold mb-1" style="color:var(--scm-text);">안전조치사항</label>
                         <textarea id="workstd-f-measures" rows="2" class="w-full border rounded-lg px-3 py-2 text-[13px] resize-none" style="border-color:var(--scm-border);"></textarea>
                     </div>
                     <div class="flex justify-end gap-2">
-                        <button onclick="workstdHideForm()" class="border text-[13px] font-bold px-5 py-2.5 rounded-lg hover:bg-slate-50" style="border-color:var(--scm-border);color:var(--scm-text);background:white;">취소</button>
+                        <button onclick="workstdHideForm()" class="border text-[13px] font-bold px-5 py-2.5 rounded-lg hover:bg-slate-50" style="border-color:var(--scm-border);color:#1E293B;background:white;">취소</button>
                         <button onclick="workstdSave()" class="text-white text-[13px] font-bold px-5 py-2.5 rounded-lg hover:opacity-90" style="background:var(--scm-navy);">저장</button>
                     </div>
                 </div>
@@ -4299,11 +4300,10 @@
             });
         }
 
-        // 자체작업여부에 따라 공사금액/산업안전관리비 계상/안전환경팀 최종승인 UI를 표시·숨김
+        // 자체작업여부(=PERMIT_CONTEXT)에 따라 공사금액/산업안전관리비 계상/안전환경팀 최종승인 UI를 표시·숨김
         // (자체작업허가서는 설비팀 내부 승인(승인자1→승인자2)만으로 결재가 종료되고, 외주작업만 안전환경팀 최종승인이 필요)
         function permitApplySelfWorkMode() {
-            const isSelf = document.getElementById('permit-f-selfwork').checked;
-            document.getElementById('permit-selfwork-badge').textContent = isSelf ? '(자체작업)' : '(외주작업)';
+            const isSelf = PERMIT_CONTEXT === 'self';
             document.getElementById('permit-costtier-row').classList.toggle('hidden', isSelf);
             document.getElementById('permit-budget-fieldset').classList.toggle('hidden', isSelf);
             document.getElementById('permit-safetymgr-row').classList.toggle('hidden', isSelf);
@@ -4350,12 +4350,9 @@
             document.getElementById('permit-f-workname').value = '';
             document.getElementById('permit-f-workstart').value = '';
             document.getElementById('permit-f-workend').value = '';
-            document.getElementById('permit-f-selfwork').checked = (PERMIT_CONTEXT === 'self');
             document.getElementById('permit-f-area').value = '';
             document.getElementById('permit-f-facility').value = '해당없음';
             document.querySelectorAll('input[name="permit-cost"]').forEach(r => r.checked = false);
-            document.getElementById('permit-f-devno').value = '';
-            document.getElementById('permit-f-devname').value = '';
             document.getElementById('permit-f-equip').value = '';
             document.querySelectorAll('.permit-equip-cb').forEach(cb => cb.checked = false);
             document.getElementById('permit-f-issuer').value = '';
@@ -4392,12 +4389,9 @@
             document.getElementById('permit-f-workname').value = p.workName || '';
             document.getElementById('permit-f-workstart').value = p.workStart || '';
             document.getElementById('permit-f-workend').value = p.workEnd || '';
-            document.getElementById('permit-f-selfwork').checked = !!p.selfWork;
             document.getElementById('permit-f-area').value = p.area || '';
             document.getElementById('permit-f-facility').value = p.facility || '해당없음';
             document.querySelectorAll('input[name="permit-cost"]').forEach(r => r.checked = (r.value === p.costTier));
-            document.getElementById('permit-f-devno').value = p.devNo || '';
-            document.getElementById('permit-f-devname').value = p.devName || '';
             document.getElementById('permit-f-equip').value = p.equip || '';
             document.querySelectorAll('.permit-equip-cb').forEach(cb => cb.checked = (p.equipTypes||[]).includes(cb.value));
             document.getElementById('permit-f-issuer').value = p.issuerId || '';
@@ -4405,12 +4399,12 @@
             document.getElementById('permit-f-approver2').value = p.approver2Id || '';
             document.getElementById('permit-f-approver3').value = p.approver3Id || '';
             document.getElementById('permit-f-deptapprove').checked = !!p.deptApprovedFlag;
-            document.getElementById('permit-f-deptapprove').disabled = !((IS_MASTER || (CURRENT_SESSION && CURRENT_SESSION.id === p.approver1Id)) && p.writeStatus === '작성완료');
+            document.getElementById('permit-f-deptapprove').disabled = !((IS_ADMIN || (CURRENT_SESSION && CURRENT_SESSION.id === p.approver1Id)) && p.writeStatus === '작성완료');
             document.getElementById('permit-f-deptapprove2').checked = !!p.deptApprovedFlag2;
-            document.getElementById('permit-f-deptapprove2').disabled = !((IS_MASTER || (CURRENT_SESSION && CURRENT_SESSION.id === p.approver2Id)) && p.deptApprovedFlag);
+            document.getElementById('permit-f-deptapprove2').disabled = !((IS_ADMIN || (CURRENT_SESSION && CURRENT_SESSION.id === p.approver2Id)) && (IS_ADMIN || p.deptApprovedFlag) && p.writeStatus === '작성완료');
             document.getElementById('permit-f-safetymgr').checked = !!p.safetyMgrFlag;
-            // 안전관리자담당(최종승인)은 안전환경팀(관리자/마스터) 계정만, 승인자(1)(2) 부서승인이 끝난 작성완료 건에서만 체크 가능
-            document.getElementById('permit-f-safetymgr').disabled = !(IS_ADMIN && p.writeStatus === '작성완료' && p.deptApprovedFlag2);
+            // 안전관리자담당(최종승인)은 안전환경팀(관리자/마스터) 계정만 — 마스터 권한이므로 승인자(1)(2) 순서와 무관하게 작성완료 건이면 체크 가능
+            document.getElementById('permit-f-safetymgr').disabled = !(IS_ADMIN && p.writeStatus === '작성완료');
             document.querySelectorAll('.permit-type-cb').forEach(cb => cb.checked = (p.permitTypes||[]).includes(cb.value));
             document.getElementById('permit-attach-safetyPlan').textContent = p.attachments?.safetyPlan || '';
             document.getElementById('permit-attach-constructionDocs').textContent = p.attachments?.constructionDocs || '';
@@ -4525,12 +4519,10 @@
                 workName: document.getElementById('permit-f-workname').value.trim(),
                 workStart: document.getElementById('permit-f-workstart').value,
                 workEnd: document.getElementById('permit-f-workend').value,
-                selfWork: document.getElementById('permit-f-selfwork').checked,
+                selfWork: PERMIT_CONTEXT === 'self',
                 area: document.getElementById('permit-f-area').value.trim(),
                 facility: document.getElementById('permit-f-facility').value,
                 costTier: costEl ? costEl.value : '',
-                devNo: document.getElementById('permit-f-devno').value.trim(),
-                devName: document.getElementById('permit-f-devname').value.trim(),
                 equip: document.getElementById('permit-f-equip').value.trim(),
                 equipTypes: Array.from(document.querySelectorAll('.permit-equip-cb:checked')).map(cb => cb.value),
                 issuerId: issuer ? issuer.id : null, issuerName: issuer ? issuer.name : '', issuerDept: issuer ? issuer.position : '',
@@ -4607,7 +4599,7 @@
             if (!p) return;
             if (p.selfWork) { checkbox.checked = false; showToast('⚠️ 자체작업허가서는 안전환경팀 최종승인 대상이 아닙니다 (승인자(1)(2) 부서 내부 승인으로 종료됩니다).', 'warn'); return; }
             if (p.writeStatus !== '작성완료') { checkbox.checked = false; showToast('⚠️ 작성완료된 허가서만 최종승인할 수 있습니다.', 'warn'); return; }
-            if (!p.deptApprovedFlag2) { checkbox.checked = false; showToast('⚠️ 승인자(1)/(2) 부서 내부 승인이 먼저 완료되어야 합니다.', 'warn'); return; }
+            // 안전환경팀(IS_ADMIN)은 마스터 권한으로 취급 — 승인자(1)(2) 순서와 무관하게 바로 체크 가능
             p.safetyMgrFlag = checkbox.checked;
             p.approveStatus = checkbox.checked ? '승인' : '미승인';
             p.updatedAt = Date.now();
@@ -4648,7 +4640,7 @@
                 <tr><th>작업지역</th><td>${p.area || '-'}</td><th>대상설비</th><td>${p.facility || '-'}</td></tr>
                 <tr><th>작업일자</th><td colspan="3">${p.workStart || '-'} ~ ${p.workEnd || '-'}</td></tr>
                 <tr><th>허가서 구분</th><td colspan="3">${(p.permitTypes||[]).join(', ') || '-'}</td></tr>
-                <tr><th>장치/장비</th><td colspan="3">${p.devName || '-'} / ${p.equip || '-'}</td></tr>
+                <tr><th>장치/장비</th><td colspan="3">${p.equip || '-'}</td></tr>
             </table>
             <table><tr>
                 <td style="text-align:center;width:25%;"><div style="font-size:11px;color:#64748B;margin-bottom:20px;">발급자</div><div style="font-weight:800;">${p.issuerName || '-'} (인)</div></td>
@@ -4685,11 +4677,12 @@
             const list = permitLoad();
             const p = list.find(x => x.id === idVal);
             if (!p) return;
-            const canApprove = IS_MASTER || (CURRENT_SESSION && CURRENT_SESSION.id === p.approver1Id);
-            if (!canApprove) { checkbox.checked = !checkbox.checked; showToast('⚠️ 지정된 승인자(1) 본인 또는 마스터만 승인할 수 있습니다.', 'warn'); return; }
+            // 안전환경팀(IS_ADMIN)은 마스터 권한으로 취급 — 지정된 승인자가 아니어도 체크 가능
+            const canApprove = IS_ADMIN || (CURRENT_SESSION && CURRENT_SESSION.id === p.approver1Id);
+            if (!canApprove) { checkbox.checked = !checkbox.checked; showToast('⚠️ 지정된 승인자(1) 본인 또는 안전환경팀만 승인할 수 있습니다.', 'warn'); return; }
             if (p.writeStatus !== '작성완료') { checkbox.checked = false; showToast('⚠️ 작성완료된 허가서만 승인할 수 있습니다.', 'warn'); return; }
             p.deptApprovedFlag = checkbox.checked;
-            if (!checkbox.checked) p.deptApprovedFlag2 = false; // 1차 취소 시 2차도 함께 취소
+            if (!checkbox.checked && !IS_ADMIN) p.deptApprovedFlag2 = false; // 1차 취소 시 2차도 함께 취소(안전환경팀은 개별 항목만 취소 가능)
             p.updatedAt = Date.now();
             p.history = p.history || [];
             p.history.push({ action: checkbox.checked ? '승인자(1) 개별승인' : '승인자(1) 승인 취소', actorName: CURRENT_SESSION.name, at: Date.now() });
@@ -4697,7 +4690,7 @@
             logActivity('작업허가서', '수정', `"${p.no}" ${checkbox.checked ? '승인자(1) 개별승인' : '승인자(1) 승인 취소'}`);
             permitRenderGrid();
             permitLoadIntoForm(p.id);
-            showToast(checkbox.checked ? '✅ 개별승인 처리되었습니다. 승인자(2) 최종승인이 남아있습니다.' : '취소되었습니다.', 'success');
+            showToast(checkbox.checked ? '✅ 개별승인 처리되었습니다.' : '취소되었습니다.', 'success');
         }
 
         function permitToggleDeptApproval2(checkbox) {
@@ -4706,9 +4699,10 @@
             const list = permitLoad();
             const p = list.find(x => x.id === idVal);
             if (!p) return;
-            const canApprove = IS_MASTER || (CURRENT_SESSION && CURRENT_SESSION.id === p.approver2Id);
-            if (!canApprove) { checkbox.checked = !checkbox.checked; showToast('⚠️ 지정된 승인자(2) 본인 또는 마스터만 승인할 수 있습니다.', 'warn'); return; }
-            if (!p.deptApprovedFlag) { checkbox.checked = false; showToast('⚠️ 승인자(1) 개별승인이 먼저 완료되어야 합니다.', 'warn'); return; }
+            // 안전환경팀(IS_ADMIN)은 마스터 권한으로 취급 — 지정된 승인자가 아니어도, 승인자(1) 순서와 무관하게 체크 가능
+            const canApprove = IS_ADMIN || (CURRENT_SESSION && CURRENT_SESSION.id === p.approver2Id);
+            if (!canApprove) { checkbox.checked = !checkbox.checked; showToast('⚠️ 지정된 승인자(2) 본인 또는 안전환경팀만 승인할 수 있습니다.', 'warn'); return; }
+            if (!IS_ADMIN && !p.deptApprovedFlag) { checkbox.checked = false; showToast('⚠️ 승인자(1) 개별승인이 먼저 완료되어야 합니다.', 'warn'); return; }
             p.deptApprovedFlag2 = checkbox.checked;
             if (p.selfWork) p.approveStatus = checkbox.checked ? '승인' : '미승인'; // 자체작업은 여기서 결재 종료(안전환경팀 승인 불필요)
             p.updatedAt = Date.now();
@@ -4721,7 +4715,7 @@
             showToast(checkbox.checked ? (p.selfWork ? '✅ 최종승인 완료 — 자체작업허가서 결재가 종료되었습니다.' : '✅ 최종승인 처리되었습니다. 이제 안전환경팀 최종승인 대상입니다.') : '취소되었습니다.', 'success');
         }
 
-        // 자체작업 다건 일괄승인 — 체크된 행에 대해 현재 로그인한 사람이 승인자(1)/(2)인 단계에서 일괄 처리
+        // 자체작업 다건 일괄승인 — 안전환경팀(IS_ADMIN)은 지정 승인자 여부·순서와 무관하게 일괄승인 가능
         function permitBulkApproveDept(stage) {
             const checked = Array.from(document.querySelectorAll('.permit-bulk-cb:checked')).map(cb => Number(cb.dataset.id));
             if (!checked.length) { showToast('⚠️ 일괄승인할 허가서를 선택해 주세요.', 'warn'); return; }
@@ -4731,14 +4725,14 @@
                 const p = list.find(x => x.id === id);
                 if (!p) return;
                 if (stage === 1) {
-                    const canApprove = IS_MASTER || (CURRENT_SESSION && CURRENT_SESSION.id === p.approver1Id);
+                    const canApprove = IS_ADMIN || (CURRENT_SESSION && CURRENT_SESSION.id === p.approver1Id);
                     if (!canApprove || p.writeStatus !== '작성완료' || p.deptApprovedFlag) { skip++; return; }
                     p.deptApprovedFlag = true;
                     p.history = p.history || [];
                     p.history.push({ action: '승인자(1) 일괄 개별승인', actorName: CURRENT_SESSION.name, at: Date.now() });
                 } else {
-                    const canApprove = IS_MASTER || (CURRENT_SESSION && CURRENT_SESSION.id === p.approver2Id);
-                    if (!canApprove || !p.deptApprovedFlag || p.deptApprovedFlag2) { skip++; return; }
+                    const canApprove = IS_ADMIN || (CURRENT_SESSION && CURRENT_SESSION.id === p.approver2Id);
+                    if (!canApprove || (!IS_ADMIN && !p.deptApprovedFlag) || p.deptApprovedFlag2) { skip++; return; }
                     p.deptApprovedFlag2 = true;
                     if (p.selfWork) p.approveStatus = '승인'; // 자체작업은 승인자(2) 일괄승인으로 결재 종료
                     p.history = p.history || [];
@@ -4788,7 +4782,7 @@
             const idVal = Number(document.getElementById('permit-f-id').value) || null;
             const list = permitLoad();
             const p = (idVal && list.find(x => x.id === idVal)) || {
-                selfWork: document.getElementById('permit-f-selfwork').checked,
+                selfWork: PERMIT_CONTEXT === 'self',
                 costTier: (document.querySelector('input[name="permit-cost"]:checked') || {}).value || '',
                 workEnd: document.getElementById('permit-f-workend').value,
             };
@@ -4982,7 +4976,7 @@
             const list = workstdLoad().slice().sort((a,b) => (b.createdAt||0)-(a.createdAt||0));
             const area = document.getElementById('workstd-list-area');
             if (!list.length) { area.innerHTML = `<div class="scm-card p-8 text-center text-[13px]" style="color:var(--scm-subtext);">등록된 작업표준이 없습니다. "+ 새 작업표준 등록"으로 추가해 주세요.</div>`; return; }
-            area.innerHTML = `<div class="scm-card p-0" style="overflow-x:auto;"><table class="permit-grid-table" style="min-width:600px;">
+            area.innerHTML = `<div class="scm-card p-0" style="overflow-x:auto;background:white;"><table class="permit-grid-table" style="min-width:600px;">
                 <thead><tr><th>표준명</th><th>적용 설비/작업</th><th>위험요인</th><th>안전조치사항</th><th>등록자</th><th>-</th></tr></thead>
                 <tbody>${list.map(s => `<tr>
                     <td style="text-align:left;font-weight:700;">${s.name}</td>
