@@ -2319,7 +2319,7 @@
                             <button onclick="permitNavPrev()" class="permit-nav-btn">◀</button>
                             <button onclick="permitNavNext()" class="permit-nav-btn">▶</button>
                             <button onclick="permitNavLast()" class="permit-nav-btn">⏭</button>
-                            <button onclick="permitNewRecord()" class="permit-nav-btn" style="color:#059669;" title="신규">➕</button>
+                            <button onclick="permitCreateAndOpenNew()" class="permit-nav-btn" style="color:#059669;" title="신규">➕</button>
                             <button onclick="permitDeleteSelected()" class="permit-nav-btn" style="color:#DC2626;" title="삭제">➖</button>
                             <button onclick="permitRenderGrid()" class="permit-nav-btn" title="새로고침">🔄</button>
                             <span id="permit-nav-count" class="ml-2 font-bold" style="color:var(--scm-subtext);">0 / 0 행</span>
@@ -4311,6 +4311,30 @@
             document.getElementById('permit-selfwork-note').classList.toggle('hidden', !isSelf);
             if (isSelf) document.querySelectorAll('input[name="permit-cost"]').forEach(r => r.checked = false);
             permitRenderBudgetInfo();
+        }
+
+        // "+" 버튼 — ERP처럼 새 행을 즉시 목록에 만들어 저장하고, 바로 상세화면으로 넘어가서 이어서 작성한다.
+        function permitCreateAndOpenNew() {
+            const draft = {
+                id: Date.now(),
+                no: permitGenerateNo(),
+                createdAt: Date.now(),
+                updatedAt: Date.now(),
+                vendorId: CURRENT_SESSION.id,
+                writeStatus: '작성중',
+                approveStatus: '미승인',
+                selfWork: PERMIT_CONTEXT === 'self',
+                company: IS_VENDOR ? (CURRENT_SESSION.company || '') : '',
+                appName: IS_VENDOR ? CURRENT_SESSION.name : '',
+                history: [{ action: '신규 작성', actorName: CURRENT_SESSION.name, at: Date.now() }],
+            };
+            const list = permitLoad();
+            list.push(draft);
+            permitSaveAll(list);
+            logActivity('작업허가서', '등록', `"${draft.no}" 신규 작성 시작`);
+            PERMIT_SELECTED_ID = draft.id;
+            permitToolbarSearch(); // 목록에 새 행 즉시 반영
+            permitSwitchSubTab('detail'); // 상세화면으로 이동 (PERMIT_SELECTED_ID가 있으므로 방금 만든 행을 그대로 불러옴)
         }
 
         function permitNewRecord() {
